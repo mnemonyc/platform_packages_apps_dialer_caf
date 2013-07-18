@@ -131,5 +131,14 @@
     <string name="simContacts_emptyLoading" msgid="6700035985448642408">"正从 SIM 卡中载入..."</string>
     <string name="simContacts_title" msgid="27341688347689769">"SIM 卡联系人"</string>
     <string name="add_contact_not_available" msgid="1419207765446461366">"必须重新启用联系人应用才能使用此功能。"</string>
+    <!--  for speed dial -->
+    <string name="set_speed_dial">快速拨号设置</string>
+    <string name="dialog_title">提示</string>
+    <string name="not_set">(未设置)</string>
+    <string name="replace">替换</string>
+    <string name="delete">删除</string>
+    <string name="speed_call">通话</string>
+    <string name="speed_sms">信息</string>
+    <string name="is_set_speed">数字键<xliff:g id="number">%s</xliff:g>未设置快速拨号，是否设置？\n</string>
     <string name="device_id">设备标识符</string>
 </resources>

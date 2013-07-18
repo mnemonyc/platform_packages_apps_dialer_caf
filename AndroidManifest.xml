@@ -221,6 +221,14 @@
             </intent-filter>
         </receiver>
 
+        <activity android:name=".SpeedDialListActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden|uiMode"
+            android:label="@string/set_speed_dial" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+            </intent-filter>
+        </activity>
+
         <service
             android:name=".calllog.CallLogNotificationsService"
             android:exported="false"
