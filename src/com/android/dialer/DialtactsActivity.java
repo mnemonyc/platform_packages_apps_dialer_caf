@@ -29,7 +29,9 @@ import android.app.FragmentTransaction;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.TypedArray;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
@@ -38,6 +40,7 @@ import android.preference.PreferenceManager;
 import android.provider.CallLog.Calls;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Intents.UI;
+import android.provider.Settings;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
@@ -70,6 +73,7 @@ import com.android.contacts.common.list.OnPhoneNumberPickerActionListener;
 import com.android.contacts.common.list.PhoneNumberPickerFragment;
 import com.android.contacts.common.util.AccountFilterUtil;
 import com.android.dialer.calllog.CallLogFragment;
+import com.android.dialer.calllog.MSimCallLogFragment;
 import com.android.dialer.dialpad.DialpadFragment;
 import com.android.dialer.interactions.PhoneNumberInteraction;
 import com.android.dialer.list.PhoneFavoriteFragment;
@@ -131,7 +135,11 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
                 case TAB_INDEX_DIALER:
                     return new DialpadFragment();
                 case TAB_INDEX_CALL_LOG:
-                    return new CallLogFragment();
+                    if (MSimTelephonyManager.getDefault().getPhoneCount() > 1) {
+                        return new MSimCallLogFragment();
+                    } else {
+                        return new CallLogFragment();
+                    }
                 case TAB_INDEX_FAVORITES:
                     return new PhoneFavoriteFragment();
             }
@@ -1272,6 +1280,47 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
         }
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         return intent;
+    }
+
+    /**
+     * @return the SIM name for the special subscription.
+     */
+    public static String getMultiSimName(Context context, int subscription) {
+        if (context == null) {
+            // If the context is null, return null.
+            return null;
+        }
+
+        String name = Settings.System.getString(context.getContentResolver(),
+                Settings.System.MULTI_SIM_NAME[subscription]);
+        if (TextUtils.isEmpty(name)) {
+            return context.getString(R.string.slot_name) + " " + (subscription + 1);
+        }
+        return name;
+    }
+
+    /**
+     * @return the SIM icon for the special subscription.
+     */
+    public static Drawable getMultiSimIcon(Context context, int subscription) {
+        if (context == null) {
+            // If the context is null, return 0 as no resource found.
+            return null;
+        }
+
+        TypedArray icons = context.getResources().obtainTypedArray(
+                com.android.internal.R.array.sim_icons);
+        String simIconIndex = Settings.System.getString(context.getContentResolver(),
+                Settings.System.PREFERRED_SIM_ICON_INDEX);
+        if (TextUtils.isEmpty(simIconIndex)) {
+            return icons.getDrawable(subscription);
+        } else {
+            String[] indexs = simIconIndex.split(",");
+            if (subscription >= indexs.length) {
+                return null;
+            }
+            return icons.getDrawable(Integer.parseInt(indexs[subscription]));
+        }
     }
 
     @Override

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ Copyright (C) 2012 The Android Open Source Project
+  ~ Copyright (C) 2013 The Linux Foundation. All Rights Reserved.
   ~
+  ~ Not a Contribution.
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
   ~ You may obtain a copy of the License at
@@ -310,6 +312,8 @@
 
     <!-- Menu item to copy something [CHAR_LIMIT=10] -->
     <string name="menu_copy">Copy</string>
+    <!-- The header to show all call log. [CHAR LIMIT=40] -->
+    <string name="call_log_all_calls_header">All calls</string>
 
     <!-- Menu item used to show only outgoing in the call log. [CHAR LIMIT=30] -->
     <string name="menu_show_outgoing_only">Show outgoing only</string>
@@ -524,4 +528,10 @@
     <string name="dial_conference">Dial conference</string>
     <string name="to_hint">1111:to;sip:abby@example.com:bcc;sip:bill@example.com:cc;</string>
     <string name="device_id">Device Identifier</string>
+
+    <!-- The slot common name -->
+    <string name="slot_name">SIM</string>
+
+    <!-- To match the DSDS/DSDA, add the filter for call log. -->
+    <string name="call_log_show_all_slots">All SIMs</string>
 </resources>
