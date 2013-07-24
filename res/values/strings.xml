@@ -517,6 +517,12 @@
     <string name="meid">MEID</string>
 
     <!-- Dialog text displayed when loading a phone number from the SIM card for speed dial -->
+    <string name="description_target_slot1">Slot1</string>
+    <string name="description_target_slot2">Slot2</string>
+    <string name="btn_ok">Ok</string>
+    <string name="description_direction_left">"Slide left for <xliff:g id="target_description" example="slot1">%s</xliff:g>.</string>
+    <string name="description_direction_right">Slide right for <xliff:g id="target_description" example="slot2">%s</xliff:g>.</string>
+    <string name="dialpad_cling_multi_sim_call">Slide dial button to call via slot1 or slot2.</string>
     <string name="simContacts_emptyLoading">Loading from SIM card\u2026</string>
 
     <!-- Dialog title displayed when loading a phone number from the SIM card for speed dial -->

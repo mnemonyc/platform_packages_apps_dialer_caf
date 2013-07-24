@@ -134,13 +134,13 @@ public class DialpadFragment extends Fragment
      * isn't enclosed by the container.
      */
     private View mDigitsContainer;
-    private EditText mDigits;
+    protected EditText mDigits;
 
     private EditText mRecipients;
     private View mDialpadStub;
 
     /** Remembers if we need to clear digits field when the screen is completely gone. */
-    private boolean mClearDigitsOnStop;
+    protected boolean mClearDigitsOnStop;
 
     private View mDelete;
     private ToneGenerator mToneGenerator;
@@ -155,7 +155,7 @@ public class DialpadFragment extends Fragment
     private int mDialpadPressCount;
 
     private View mDialButtonContainer;
-    private View mDialButton;
+    protected View mDialButton;
     private ImageButton mDialConferenceButton;
     private ListView mDialpadChooser;
     private DialpadChooserAdapter mDialpadChooserAdapter;
@@ -178,7 +178,7 @@ public class DialpadFragment extends Fragment
     /**
      * Regular expression prohibiting manual phone call. Can be empty, which means "no rule".
      */
-    private String mProhibitedPhoneNumberRegexp;
+    protected String mProhibitedPhoneNumberRegexp;
 
     private int mSubscription = 0;
 
@@ -192,7 +192,7 @@ public class DialpadFragment extends Fragment
     private boolean mDTMFToneEnabled;
 
     // Vibration (haptic feedback) for dialer key presses.
-    private final HapticFeedback mHaptic = new HapticFeedback();
+    protected final HapticFeedback mHaptic = new HapticFeedback();
 
     /** Identifier for the "Add Call" intent extra. */
     private static final String ADD_CALL_MODE_KEY = "add_call_mode";
@@ -1233,7 +1233,7 @@ public class DialpadFragment extends Fragment
         showDialConference(show);
     }
 
-    private void handleDialButtonClickWithEmptyDigits() {
+    protected void handleDialButtonClickWithEmptyDigits() {
         if (phoneIsCdma() && phoneIsOffhook()) {
             // This is really CDMA specific. On GSM is it possible
             // to be off hook and wanted to add a 3rd party using
@@ -1785,7 +1785,7 @@ public class DialpadFragment extends Fragment
     /**
      * @return true if the widget with the phone number digits is empty.
      */
-    private boolean isDigitsEmpty() {
+    protected boolean isDigitsEmpty() {
         return mDigits.length() == 0;
     }
 
