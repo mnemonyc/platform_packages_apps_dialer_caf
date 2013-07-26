@@ -763,10 +763,17 @@ public class DialpadFragment extends Fragment
         }
     }
 
+    public boolean isVTSupported(){
+            return SystemProperties.getBoolean(
+                    "persist.radio.csvt.enabled"
+           /* TelephonyProperties.PROPERTY_CSVT_ENABLED*/, false);
+    }
+
     private void setupMenuItems(Menu menu) {
         final MenuItem callSettingsMenuItem = menu.findItem(R.id.menu_call_settings_dialpad);
         final MenuItem addToContactMenuItem = menu.findItem(R.id.menu_add_contacts);
-
+        final MenuItem videocallMenuItem = menu.findItem(R.id.menu_videocall);
+        final MenuItem videocallSettingsMenuItem = menu.findItem(R.id.menu_videocall_settings);
         // Check if all the menu items are inflated correctly. As a shortcut, we assume all menu
         // items are ready if the first item is non-null.
         if (callSettingsMenuItem == null) {
@@ -782,17 +789,30 @@ public class DialpadFragment extends Fragment
             callSettingsMenuItem.setIntent(DialtactsActivity.getCallSettingsIntent());
         }
 
+        if (isVTSupported()) {
+            videocallSettingsMenuItem.setVisible(true);
+        } else {
+            videocallSettingsMenuItem.setVisible(false);
+        }
+
         // We show "add to contacts" menu only when the user is
         // seeing usual dialpad and has typed at least one digit.
         // We never show a menu if the "choose dialpad" UI is up.
         if (dialpadChooserVisible() || isDigitsEmpty()) {
             addToContactMenuItem.setVisible(false);
+            videocallMenuItem.setVisible(false);
         } else {
             final CharSequence digits = mDigits.getText();
 
             // Put the current digits string into an intent
             addToContactMenuItem.setIntent(getAddToContactIntent(digits));
             addToContactMenuItem.setVisible(true);
+
+            if (isVTSupported()) {
+                videocallMenuItem.setVisible(true);
+            } else {
+                videocallMenuItem.setVisible(false);
+            }
         }
     }
 
@@ -1356,6 +1376,10 @@ public class DialpadFragment extends Fragment
 
         if (enabled) {
             // Log.i(TAG, "Showing dialpad chooser!");
+            if (isVTActive()) {
+                startActivity(getVTCallIntent(getValidDialNumber()));
+                return;
+            }
             if (mDigitsContainer != null) {
                 mDigitsContainer.setVisibility(View.GONE);
             } else {
@@ -1644,9 +1668,19 @@ public class DialpadFragment extends Fragment
             case R.id.menu_add_wait:
                 updateDialString(WAIT);
                 return true;
+            case R.id.menu_videocall:
+                // Put the current digits string into an intent for video call
+                startActivity(getVTCallIntent(getValidDialNumber()));
+                mClearDigitsOnStop = true;
+                mLastNumberDialed = getValidDialNumber();
+                updateDialAndDeleteButtonEnabledState();
+                return true;
+            case R.id.menu_videocall_settings:
+                startActivity(getVTCallSettingsIntent());
+                return true;
             default:
                 return false;
-        }
+            }
     }
 
     @Override
@@ -1819,6 +1853,54 @@ public class DialpadFragment extends Fragment
         intent.putExtra(SUBSCRIPTION_KEY, mSubscription);
         return intent;
     }
+
+    // Borqs Ext
+    private static Intent getVTCallIntent(String number) {
+        Intent intent = new Intent("com.borqs.videocall.action.LaunchVideoCallScreen");
+        intent.addCategory(Intent.CATEGORY_DEFAULT);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+
+        intent.putExtra("IsCallOrAnswer", true); // true as a
+        // call,
+        // while
+        // false as
+        // answer
+
+        intent.putExtra("LaunchMode", 1); // nLaunchMode: 1 as
+        // telephony, while
+        // 0 as socket
+        intent.putExtra("call_number_key", number);
+        return intent;
+    }
+
+    private static Intent getVTCallSettingsIntent() {
+        Intent intent = new Intent("com.borqs.videocall.action.LaunchVideoCallSettingsScreen");
+        intent.addCategory(Intent.CATEGORY_DEFAULT);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+        return intent;
+    }
+
+    private String getValidDialNumber() {
+        if (mDigits != null)
+            return mDigits.getText().toString();
+        else
+            return null;
+    }
+
+    public static boolean isVTActive() {
+        /*
+         * try { if (MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
+         * IVideoTelephony vtCall =
+         * IVideoTelephony.Stub.asInterface(ServiceManager
+         * .checkService("videophone"));
+         *
+         * if (vtCall != null) { if (!vtCall.isVtIdle()) return true; } } }
+         * catch (RemoteException e) { Log.w(TAG, "isVTActive() failed", e); }
+         */
+        return false;
+    }
+
+    // Borqs Ext end
 
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {

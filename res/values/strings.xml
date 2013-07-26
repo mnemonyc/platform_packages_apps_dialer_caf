@@ -53,6 +53,12 @@
     <!-- Menu item used to copy a number from the call log to the dialer so it can be edited before calling it -->
     <string name="recentCalls_editNumberBeforeCall">Edit number before call</string>
 
+    <!-- Menu item used to initiate videocall from dialer -->
+    <string name="videocall">Video call</string>
+
+    <!-- Menu item used to initiate videocall settings from dialer -->
+    <string name="videocall_settings">Video call settings</string>
+
     <!-- Menu item used to add a number from the call log to contacts -->
     <string name="recentCalls_addToContact">Add to contacts</string>
 
@@ -540,4 +546,12 @@
 
     <!-- To match the DSDS/DSDA, add the filter for call log. -->
     <string name="call_log_show_all_slots">All SIMs</string>
+
+	<string name="description_videocall">Video call <xliff:g id="name">%1$s</xliff:g></string>
+	<!-- String describing the text for a  Video call number in quick contact.
+
+        Note: AccessibilityServices use this attribute to announce what the view represents.
+              This is especially valuable for views without textual representation like ImageView.
+    -->
+    <string name="description_dial_vt">Dial vt <xliff:g id="name">%1$s</xliff:g></string>
 </resources>

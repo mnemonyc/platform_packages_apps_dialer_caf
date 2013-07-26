@@ -242,6 +242,13 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
         }
     };
 
+    private final View.OnClickListener mThirdActionListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            startActivity(((ViewEntry) view.getTag()).thirdIntent);
+        }
+    };
+
     private final View.OnLongClickListener mPrimaryLongClickListener =
             new View.OnLongClickListener() {
         @Override
@@ -549,6 +556,15 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
                                 new Intent(Intent.ACTION_SENDTO,
                                            Uri.fromParts("sms", mNumber, null)),
                                 getString(R.string.description_send_text_message, nameOrNumber));
+               }
+                    // The third action allows to invoke videocall to the number that placed the
+                    // call.
+                        if (canPlaceCallsTo) {
+                            entry.setThirdAction(
+                                    R.drawable.ic_contact_quick_contact_call_video_holo_dark,
+                                    getVTCallIntent(mNumber),
+                                    getString(R.string.description_videocall,
+                                            nameOrNumber));
                     }
 
                     configureCallButton(entry);
@@ -684,6 +700,12 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
         public Intent secondaryIntent = null;
         /** The description for accessibility of the secondary action. */
         public String secondaryDescription = null;
+        /** Icon for the third action. */
+        public int thirdIcon = 0;
+        /** Intent for the third action. If not null, an icon must be defined. */
+        public Intent thirdIntent = null;
+        /** The description for accessibility of the third action. */
+        public String thirdDescription = null;
 
         public ViewEntry(String text, Intent intent, String description) {
             this.text = text;
@@ -695,6 +717,12 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
             secondaryIcon = icon;
             secondaryIntent = intent;
             secondaryDescription = description;
+        }
+
+        public void setThirdAction(int icon, Intent intent, String description) {
+            thirdIcon = icon;
+            thirdIntent = intent;
+            thirdDescription = description;
         }
     }
 
@@ -711,6 +739,8 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
         ImageView icon = (ImageView) convertView.findViewById(R.id.call_and_sms_icon);
         View divider = convertView.findViewById(R.id.call_and_sms_divider);
         TextView text = (TextView) convertView.findViewById(R.id.call_and_sms_text);
+        ImageView icon_third = (ImageView) convertView.findViewById(R.id.videocall);
+        View divider_third = convertView.findViewById(R.id.videocall_and_sms_divider);
 
         View mainAction = convertView.findViewById(R.id.call_and_sms_main_action);
         mainAction.setOnClickListener(mPrimaryActionListener);
@@ -729,6 +759,19 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
             icon.setVisibility(View.GONE);
             divider.setVisibility(View.GONE);
         }
+
+        if(entry.thirdIntent != null) {
+            icon_third.setOnClickListener(mThirdActionListener);
+            icon_third.setImageResource(R.drawable.ic_contact_quick_contact_call_video_holo_dark);
+            icon_third.setVisibility(View.VISIBLE);
+            icon_third.setTag(entry);
+            icon_third.setContentDescription(entry.thirdDescription);
+            divider_third.setVisibility(View.VISIBLE);
+        } else {
+            icon_third.setVisibility(View.GONE);
+            divider_third.setVisibility(View.GONE);
+        }
+
         text.setText(entry.text);
 
         TextView label = (TextView) convertView.findViewById(R.id.call_and_sms_label);
@@ -954,7 +997,27 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
             mTargetView.setBackground(mOriginalViewBackground);
         }
     }
+  //Borqs Ext
+    private static Intent getVTCallIntent(String number) {
+                Intent intent = new Intent("com.borqs.videocall.action.LaunchVideoCallScreen");
+                intent.addCategory(Intent.CATEGORY_DEFAULT);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                                | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
 
+                intent.putExtra("IsCallOrAnswer", true); // true as a
+                // call,
+                // while
+                // false as
+                // answer
+
+                intent.putExtra("LaunchMode", 1); // nLaunchMode: 1 as
+                // telephony, while
+                // 0 as socket
+                intent.putExtra("call_number_key", number);
+                return intent;
+        }
+
+   //Borqs Ext end
     /** Returns the given text, forced to be left-to-right. */
     private static CharSequence forceLeftToRight(CharSequence text) {
         StringBuilder sb = new StringBuilder();
