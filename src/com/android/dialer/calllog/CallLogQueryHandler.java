@@ -148,9 +148,9 @@ import javax.annotation.concurrent.GuardedBy;
                 new MatrixCursor(CallLogQuery.EXTENDED_PROJECTION);
         // The values in this row correspond to default values for _PROJECTION from CallLogQuery
         // plus the section value.
-        matrixCursor.addRow(new Object[]{
-                0L, "", 0L, 0L, 0, "", "", "", null, 0, null, null, null, null, 0L, null, 0,
-                section
+        matrixCursor.addRow(new Object[] {
+                0L, "", 0L, 0L, 0, "", "", "", null, 0, null, null, null, null, 0L, null, 0, 0,
+                Calls.DURATION_TYPE_ACTIVE, section
         });
         return matrixCursor;
     }
