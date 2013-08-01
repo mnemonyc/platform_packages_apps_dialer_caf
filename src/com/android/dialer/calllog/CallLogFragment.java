@@ -383,7 +383,8 @@ public class CallLogFragment extends ListFragment
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.delete_all:
-                ClearCallLogDialog.show(getFragmentManager());
+                //ClearCallLogDialog.show(getFragmentManager());
+                onDelCallLog();
                 return true;
 
             case R.id.show_outgoing_only:
@@ -422,6 +423,11 @@ public class CallLogFragment extends ListFragment
             default:
                 return false;
         }
+    }
+
+    private void onDelCallLog() {
+        Intent intent = new Intent("com.android.contacts.action.MULTI_PICK_CALL");
+        startActivity(intent);
     }
 
     private void updateFilterTypeAndHeader(int filterType) {
