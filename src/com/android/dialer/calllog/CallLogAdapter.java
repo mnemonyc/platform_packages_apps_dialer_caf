@@ -530,6 +530,7 @@ import java.util.LinkedList;
         final int callType = c.getInt(CallLogQuery.CALL_TYPE);
         final String countryIso = c.getString(CallLogQuery.COUNTRY_ISO);
         final int subscription = c.getInt(CallLogQuery.SUBSCRIPTION);
+        final int durationType = c.getInt(CallLogQuery.DURATION_TYPE);
 
         final ContactInfo cachedContactInfo = getContactInfoFromCallLog(c);
 
@@ -609,11 +610,12 @@ import java.util.LinkedList;
         final PhoneCallDetails details;
         if (TextUtils.isEmpty(name)) {
             details = new PhoneCallDetails(number, formattedNumber, countryIso, geocode,
-                    callTypes, date, duration, subscription);
+                    callTypes, date, duration, subscription, durationType);
         } else {
             // We do not pass a photo id since we do not need the high-res picture.
             details = new PhoneCallDetails(number, formattedNumber, countryIso, geocode,
-                    callTypes, date, duration, name, ntype, label, lookupUri, null, subscription);
+                    callTypes, date, duration, name, ntype, label, lookupUri,
+                    null, subscription, durationType);
         }
 
         final boolean isNew = c.getInt(CallLogQuery.IS_READ) == 0;

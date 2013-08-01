@@ -40,6 +40,7 @@ public class CallLogListItemHelperTest extends AndroidTestCase {
     private static final long TEST_DURATION = 62300;
     /** A test subscription value for phone calls. */
     private static final int TEST_SUBSCRIPTION = 0;
+    private static final int TEST_DURATIONTYPE = 0;
     /** A test voicemail number. */
     private static final String TEST_VOICEMAIL_NUMBER = "123";
     /** The country ISO name used in the tests. */
@@ -131,7 +132,8 @@ public class CallLogListItemHelperTest extends AndroidTestCase {
             int callType) {
         mHelper.setPhoneCallDetails(mViews,
                 new PhoneCallDetails(number, formattedNumber, TEST_COUNTRY_ISO, TEST_GEOCODE,
-                        new int[]{ callType }, TEST_DATE, TEST_DURATION, TEST_SUBSCRIPTION),
+                        new int[]{ callType }, TEST_DATE, TEST_DURATION, TEST_SUBSCRIPTION,
+                        TEST_DURATIONTYPE),
                 false);
     }
 
@@ -139,7 +141,8 @@ public class CallLogListItemHelperTest extends AndroidTestCase {
     private void setPhoneCallDetailsWithTypes(int... types) {
         mHelper.setPhoneCallDetails(mViews,
                 new PhoneCallDetails(TEST_NUMBER, TEST_FORMATTED_NUMBER, TEST_COUNTRY_ISO,
-                        TEST_GEOCODE, types, TEST_DATE, TEST_DURATION, TEST_SUBSCRIPTION),
+                        TEST_GEOCODE, types, TEST_DATE, TEST_DURATION, TEST_SUBSCRIPTION,
+                        TEST_DURATIONTYPE),
                 false);
     }
 
@@ -147,7 +150,8 @@ public class CallLogListItemHelperTest extends AndroidTestCase {
     private void setUnreadPhoneCallDetailsWithTypes(int... types) {
         mHelper.setPhoneCallDetails(mViews,
                 new PhoneCallDetails(TEST_NUMBER, TEST_FORMATTED_NUMBER, TEST_COUNTRY_ISO,
-                        TEST_GEOCODE, types, TEST_DATE, TEST_DURATION, TEST_SUBSCRIPTION),
+                        TEST_GEOCODE, types, TEST_DATE, TEST_DURATION, TEST_SUBSCRIPTION,
+                        TEST_DURATIONTYPE),
                 true);
     }
 }

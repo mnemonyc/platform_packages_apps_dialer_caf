@@ -17,6 +17,7 @@
 package com.android.dialer.calllog;
 
 import android.content.Context;
+import android.os.SystemProperties;
 import android.provider.CallLog.Calls;
 import android.telephony.MSimTelephonyManager;
 import android.text.format.DateUtils;
@@ -39,6 +40,8 @@ public class CallDetailHistoryAdapter extends BaseAdapter {
     private static final int VIEW_TYPE_HEADER = 0;
     /** Each history item shows the detail of a call. */
     private static final int VIEW_TYPE_HISTORY_ITEM = 1;
+
+    private static final String PROPERTY = "persist.env.phone.activetime";
 
     private final Context mContext;
     private final LayoutInflater mLayoutInflater;
@@ -167,13 +170,13 @@ public class CallDetailHistoryAdapter extends BaseAdapter {
             durationView.setVisibility(View.GONE);
         } else {
             durationView.setVisibility(View.VISIBLE);
-            durationView.setText(formatDuration(details.duration));
+            durationView.setText(formatDuration(details.duration, details.durationType));
         }
 
         return result;
     }
 
-    private String formatDuration(long elapsedSeconds) {
+    private String formatDuration(long elapsedSeconds, int durationType) {
         long minutes = 0;
         long seconds = 0;
 
@@ -183,6 +186,22 @@ public class CallDetailHistoryAdapter extends BaseAdapter {
         }
         seconds = elapsedSeconds;
 
-        return mContext.getString(R.string.callDetailsDurationFormat, minutes, seconds);
+        String timeStr = mContext.getString(
+                R.string.callDetailsDurationFormat, minutes, seconds);
+        boolean property = SystemProperties.getBoolean(PROPERTY, false);
+        if (property) {
+            switch (durationType) {
+                case Calls.DURATION_TYPE_ACTIVE:
+                    return mContext.getString(R.string.call_duration_active)
+                            + timeStr;
+                case Calls.DURATION_TYPE_CALLOUT:
+                    return mContext.getString(R.string.call_duration_call_out)
+                            + timeStr;
+                default:
+                    return timeStr;
+            }
+        } else {
+            return timeStr;
+        }
     }
 }
