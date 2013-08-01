@@ -101,6 +101,7 @@
     <string name="menu_newContact" msgid="1209922412763274638">"新建联系人"</string>
     <string name="callDetailTitle" msgid="5340227785196217938">"通话详情"</string>
     <string name="toast_call_detail_error" msgid="7200975244804730096">"无法读取所请求呼叫的详细信息。"</string>
+    <string name="assignSpeedDialFailToast">此号码已分配了快速拨号键，请选择其它号码</string>
     <string name="dialer_useDtmfDialpad" msgid="1707548397435075040">"使用按键式键盘"</string>
     <string name="dialer_returnToInCallScreen" msgid="3719386377550913067">"返回正在进行的通话"</string>
     <string name="dialer_addAnotherCall" msgid="4205688819890074468">"添加通话"</string>
