@@ -83,6 +83,8 @@
     <string name="description_delete_button" msgid="6263102114033407382">"Backspace"</string>
     <string name="description_digits_edittext" msgid="8760207516497016437">"撥號號碼"</string>
     <string name="action_menu_overflow_description" msgid="2303272250613084574">"更多選項"</string>
+    <!-- Menu item used to show no contact prompted-->
+    <string name="menu_noContact">"無指定聯繫人"</string>
     <string name="menu_copy" msgid="6108677035381940698">"複製"</string>
     <string name="menu_show_outgoing_only" msgid="1965570298133301970">"僅顯示撥出電話"</string>
     <string name="menu_show_incoming_only" msgid="7534206815238877417">"僅顯示來電"</string>

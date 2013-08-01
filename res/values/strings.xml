@@ -464,6 +464,8 @@
     <!-- Menu item used to call a contact, containing the number of the contact to call -->
     <string name="menu_callNumber">Call <xliff:g id="number">%s</xliff:g></string>
 
+    <!-- Menu item used to show no contact prompted-->
+    <string name="menu_noContact">No designated contact</string>
     <!-- String used to display calls from unknown numbers in the call log -->
     <string name="unknown">Unknown</string>
 

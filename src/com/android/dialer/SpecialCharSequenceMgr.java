@@ -480,6 +480,7 @@ public class SpecialCharSequenceMgr {
             // get the EditText to update or see if the request was cancelled.
             EditText text = sc.getTextField();
 
+            Context context = sc.progressDialog.getContext();
             // if the textview is valid, and the cursor is valid and postionable
             // on the Nth number, then we update the text field and display a
             // toast indicating the caller name.
@@ -491,10 +492,13 @@ public class SpecialCharSequenceMgr {
                 text.getText().replace(0, 0, number);
 
                 // display the name as a toast
-                Context context = sc.progressDialog.getContext();
                 name = context.getString(R.string.menu_callNumber, name);
                 Toast.makeText(context, name, Toast.LENGTH_SHORT)
                     .show();
+            } else {
+                 // display no designated contact as a toast
+                 Toast.makeText(context, R.string.menu_noContact,
+                         Toast.LENGTH_SHORT).show();
             }
         }
 
