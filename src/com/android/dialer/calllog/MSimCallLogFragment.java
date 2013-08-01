@@ -21,6 +21,7 @@ package com.android.dialer.calllog;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.CallLog.Calls;
@@ -188,12 +189,18 @@ public class MSimCallLogFragment extends CallLogFragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.delete_all:
-                ClearCallLogDialog.show(getFragmentManager());
+                //ClearCallLogDialog.show(getFragmentManager());
+                onDelCallLog();
                 return true;
 
             default:
                 return false;
         }
+    }
+
+    private void onDelCallLog() {
+        Intent intent = new Intent("com.android.contacts.action.MULTI_PICK_CALL");
+        startActivity(intent);
     }
 
     private void registerPhoneCallReceiver() {
