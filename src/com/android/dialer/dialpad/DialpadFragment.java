@@ -145,7 +145,7 @@ public class DialpadFragment extends Fragment
     private View mDelete;
     private ToneGenerator mToneGenerator;
     private final Object mToneGeneratorLock = new Object();
-    private View mDialpad;
+    protected View mDialpad;
     /**
      * Remembers the number of dialpad buttons which are pressed at this moment.
      * If it becomes 0, meaning no buttons are pressed, we'll call
@@ -173,7 +173,7 @@ public class DialpadFragment extends Fragment
      * Master switch controlling whether or not smart dialing is enabled, and whether the
      * smart dialing suggestion strip is visible.
      */
-    private boolean mSmartDialEnabled = false;
+    protected boolean mSmartDialEnabled = false;
 
     /**
      * Regular expression prohibiting manual phone call. Can be empty, which means "no rule".
@@ -340,6 +340,9 @@ public class DialpadFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedState) {
         View fragmentView = inflater.inflate(R.layout.dialpad_fragment, container, false);
 
+        if (!SystemProperties.getBoolean("persist.env.phone.smartdialer", true)) {
+            fragmentView.findViewById(R.id.listlayout).setVisibility(View.GONE);
+        }
         // Load up the resources for the text field.
         Resources r = getResources();
 
@@ -618,7 +621,8 @@ public class DialpadFragment extends Fragment
 
         // retrieve dialpad autocomplete setting
         mSmartDialEnabled = Settings.Secure.getInt(contentResolver,
-                Settings.Secure.DIALPAD_AUTOCOMPLETE, 0) == 1 && mSmartDialContainer != null;
+                Settings.Secure.DIALPAD_AUTOCOMPLETE, 0) == 1 && mSmartDialContainer != null
+                && !SystemProperties.getBoolean("persist.env.phone.smartdialer", true);
 
         stopWatch.lap("dtwd");
 
@@ -816,7 +820,7 @@ public class DialpadFragment extends Fragment
         }
     }
 
-    private static Intent getAddToContactIntent(CharSequence digits) {
+    protected static Intent getAddToContactIntent(CharSequence digits) {
         final Intent intent = new Intent(Intent.ACTION_INSERT_OR_EDIT);
         intent.putExtra(Insert.PHONE, digits);
         intent.setType(People.CONTENT_ITEM_TYPE);
@@ -1288,7 +1292,7 @@ public class DialpadFragment extends Fragment
     /**
      * Plays the specified tone for TONE_LENGTH_MS milliseconds.
      */
-    private void playTone(int tone) {
+    protected void playTone(int tone) {
         playTone(tone, TONE_LENGTH_MS);
     }
 
@@ -1368,7 +1372,7 @@ public class DialpadFragment extends Fragment
      * @param enabled If true, show the "dialpad chooser" instead
      *                of the regular Dialer UI
      */
-    private void showDialpadChooser(boolean enabled) {
+    protected void showDialpadChooser(boolean enabled) {
         // Check if onCreateView() is already called by checking one of View objects.
         if (!isLayoutReady()) {
             return;
@@ -1408,7 +1412,7 @@ public class DialpadFragment extends Fragment
         }
     }
 
-    private void showDialConference(boolean enabled) {
+    protected void showDialConference(boolean enabled) {
         // Check if onCreateView() is already called by checking one of View objects.
         if (!isLayoutReady()) {
             return;
