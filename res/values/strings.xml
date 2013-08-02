@@ -353,6 +353,11 @@
     <!-- Toast for call detail screen when couldn't read the requested details -->
     <string name="toast_call_detail_error">Couldn\'t read details for the requested call.</string>
 
+    <!-- Toast displayed when assign speed dial number failed. [CHAR LIMIT=NONE] -->
+    <string name="assignSpeedDialFailToast">
+        The number has already been assigned to a speed dial key, please select another number.
+    </string>
+
     <!-- Item label: jump to the in-call DTMF dialpad.
          (Part of a list of options shown in the dialer when another call
          is already in progress.) -->
