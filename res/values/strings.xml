@@ -557,4 +557,8 @@
               This is especially valuable for views without textual representation like ImageView.
     -->
     <string name="description_dial_vt">Dial vt <xliff:g id="name">%1$s</xliff:g></string>
+    <!-- Toast displayed when assign speed dial number failed. [CHAR LIMIT=NONE] -->
+    <string name="assignSpeedDialFailToast">
+        The number has already been assigned to a speed dial key, please select another number.
+    </string>
 </resources>
