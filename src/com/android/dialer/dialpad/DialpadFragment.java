@@ -1918,6 +1918,7 @@ public class DialpadFragment extends Fragment
         SpeedDialUtils speedDialUtils = new SpeedDialUtils(getActivity());
         int numId = 0;
         String speedNumber;
+        String speedName;
         switch(id) {
         case R.id.two:
             numId = speedDialUtils.NUM_TWO;
@@ -1945,7 +1946,9 @@ public class DialpadFragment extends Fragment
             break;
         }
         speedNumber = speedDialUtils.getContactDataNumber(numId);
-        if (speedNumber == null || speedNumber.length() == 0) {
+        speedName = speedDialUtils.getContactDataName(numId);
+        if (speedNumber == null || speedNumber.length() == 0
+                || !speedDialUtils.nameIsValid(speedName, speedNumber)) {
             showNoSpeedNumberDialog(numId);
         } else {
             Intent intent = new Intent(Intent.ACTION_CALL_PRIVILEGED);
