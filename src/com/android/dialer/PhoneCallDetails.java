@@ -59,20 +59,21 @@ public class PhoneCallDetails {
     public final Uri photoUri;
     /** The subscription of the call. */
     public final int subscription;
+    public final int durationType;
 
     /** Create the details for a call with a number not associated with a contact. */
     public PhoneCallDetails(CharSequence number, CharSequence formattedNumber,
             String countryIso, String geocode, int[] callTypes, long date,
-            long duration, int subscription) {
+            long duration, int subscription, int durationType) {
         this(number, formattedNumber, countryIso, geocode, callTypes, date, duration, "", 0, "",
-                null, null, subscription);
+                null, null, subscription, durationType);
     }
 
     /** Create the details for a call with a number associated with a contact. */
     public PhoneCallDetails(CharSequence number, CharSequence formattedNumber,
             String countryIso, String geocode, int[] callTypes, long date, long duration,
             CharSequence name, int numberType, CharSequence numberLabel, Uri contactUri,
-            Uri photoUri, int subscription) {
+            Uri photoUri, int subscription, int durationType) {
         this.number = number;
         this.formattedNumber = formattedNumber;
         this.countryIso = countryIso;
@@ -86,5 +87,6 @@ public class PhoneCallDetails {
         this.contactUri = contactUri;
         this.photoUri = photoUri;
         this.subscription = subscription;
+        this.durationType = durationType;
     }
 }
