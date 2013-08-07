@@ -29,6 +29,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.SystemProperties;
 import android.provider.CallLog;
 import android.provider.CallLog.Calls;
 import android.provider.Contacts.Intents.Insert;
@@ -561,7 +562,7 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
                }
                     // The third action allows to invoke videocall to the number that placed the
                     // call.
-                        if (canPlaceCallsTo) {
+                        if (canPlaceCallsTo && isVTSupported()) {
                             entry.setThirdAction(
                                     R.drawable.ic_contact_quick_contact_call_video_holo_dark,
                                     getVTCallIntent(mNumber),
@@ -1019,6 +1020,12 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
                 intent.putExtra("call_number_key", number);
                 return intent;
         }
+
+    public boolean isVTSupported(){
+        return SystemProperties.getBoolean(
+                "persist.radio.csvt.enabled"
+       /* TelephonyProperties.PROPERTY_CSVT_ENABLED*/, false);
+    }
 
    //Borqs Ext end
     /** Returns the given text, forced to be left-to-right. */
