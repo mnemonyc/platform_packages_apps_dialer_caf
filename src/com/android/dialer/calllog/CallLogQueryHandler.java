@@ -206,7 +206,13 @@ import javax.annotation.concurrent.GuardedBy;
         }
         if (callType > CALL_TYPE_ALL) {
             // Add a clause to fetch only items of type voicemail.
-            selection = String.format("(%s) AND (%s = ?)", selection, Calls.TYPE);
+            if ((callType == Calls.INCOMING_TYPE) || (callType == Calls.OUTGOING_TYPE)
+                    || (callType == Calls.MISSED_TYPE)) {
+                selection = String.format("(%s) AND (%s = ? OR %s = ?)", selection, Calls.TYPE,
+                        Calls.TYPE);
+            } else {
+                selection = String.format("(%s) AND (%s = ?)", selection, Calls.TYPE);
+            }
             selectionArgs.add(Integer.toString(callType));
             if (callType == Calls.INCOMING_TYPE) {
                 selectionArgs.add(Integer.toString(CallTypeHelper.INCOMING_CSVT_TYPE));
