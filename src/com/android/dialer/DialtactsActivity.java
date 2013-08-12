@@ -119,6 +119,7 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
      */
     private static final String ACTION_TOUCH_DIALER = "com.android.phone.action.TOUCH_DIALER";
 
+    private static final String ACTION_SEARCH = "android.intent.action.SEARCH";
     /** Used both by {@link ActionBar} and {@link ViewPagerAdapter} */
     public static final int TAB_INDEX_DIALER = 0;
     private static final int TAB_INDEX_CALL_LOG = 1;
@@ -603,6 +604,13 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
         updateFakeMenuButtonsVisibility(currentPosition == TAB_INDEX_DIALER && !mInSearchUi);
         for (int i = 0; i < TAB_INDEX_COUNT; i++) {
             sendFragmentVisibilityChange(i, i == currentPosition);
+        }
+        if(ACTION_SEARCH.equals(this.getIntent().getAction())){
+            Intent intent = new Intent(this, CallDetailActivity.class);
+            String id = this.getIntent().getData().getQueryParameter("id");
+            intent.putExtra(CallDetailActivity.EXTRA_CALL_LOG_IDS, new long[]{Long.decode(id)});
+            startActivity(intent);
+            finish();
         }
     }
 
