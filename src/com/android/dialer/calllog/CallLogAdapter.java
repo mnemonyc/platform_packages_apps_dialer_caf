@@ -323,6 +323,7 @@ import java.util.LinkedList;
         // Restart the request-processing thread after the next draw.
         stopRequestProcessing();
         unregisterPreDrawListener();
+        mContactPhotoManager.clear();
     }
 
     /**
