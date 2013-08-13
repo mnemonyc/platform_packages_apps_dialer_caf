@@ -222,6 +222,7 @@ public class MSimCallLogFragment extends CallLogFragment {
                         if (getActivity() == null || getActivity().isFinishing()) {
                             return;
                         }
+                        mFilterStatusSpinnerView.setSelection(INDEX_CALL_TYPE_ALL);
                         mCallTypeFilter = CallLogQueryHandler.CALL_TYPE_ALL;
                     }
                  });
