@@ -1968,7 +1968,7 @@ public class DialpadFragment extends Fragment
         speedNumber = speedDialUtils.getContactDataNumber(numId);
         speedName = speedDialUtils.getContactDataName(numId);
         if (speedNumber == null || speedNumber.length() == 0
-                || !speedDialUtils.nameIsValid(speedName, speedNumber)) {
+                || speedDialUtils.getValidName(speedNumber) == null) {
             showNoSpeedNumberDialog(numId);
         } else {
             Intent intent = new Intent(Intent.ACTION_CALL_PRIVILEGED);

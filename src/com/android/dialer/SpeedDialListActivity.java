@@ -126,20 +126,18 @@ public class SpeedDialListActivity extends ListActivity implements OnItemClickLi
         for (int i = 1; i < SPEED_ITEMS; i++) {
             // if there is no speed dial number for number key, show "not set", or lookup in contacts
             // according to number, if exist, show contact name, else show number.
-            if (!mSpeedDialUtils.nameIsValid(mContactDataName[i-1], mContactDataNumber[i-1])) {
-                // can not find contact name in db, maybe it is deleted
+            String mName = mSpeedDialUtils.getValidName(mContactDataNumber[i-1]);
+            if (null == mName) {
+                // can not find contact number in db, maybe it is deleted
                 mContactDataNumber[i-1] = "";
                 mContactDataName[i-1] = "";
                 mSpeedDialUtils.storeContactDataNumber(i-1, "");
                 mSpeedDialUtils.storeContactDataName(i-1, "");
-            }
-            if ("".equals(mContactDataNumber[i-1])) {
                 mSpeedListItems[i] = getString(R.string.speed_item, String.valueOf(i+1),
                         getString(R.string.not_set));
-            } else if ("".equals(mContactDataName[i-1])){
-                mSpeedListItems[i] = getString(R.string.speed_item, String.valueOf(i+1),
-                        mContactDataNumber[i-1]);
             } else {
+                mContactDataName[i-1] = mName;
+                mSpeedDialUtils.storeContactDataName(i-1, mName);
                 mSpeedListItems[i] = getString(R.string.speed_item, String.valueOf(i+1),
                         mContactDataName[i-1]);
             }
@@ -233,7 +231,7 @@ public class SpeedDialListActivity extends ListActivity implements OnItemClickLi
                             c.moveToFirst();
                             name = c.getString(
                                     c.getColumnIndexOrThrow("display_name"));
-                            if (!okToSet(number, name)) {
+                            if (!okToSet(number)) {
                                 Toast.makeText(this, R.string.assignSpeedDialFailToast,
                                         Toast.LENGTH_LONG).show();
                                 return ;
@@ -260,15 +258,11 @@ public class SpeedDialListActivity extends ListActivity implements OnItemClickLi
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    private boolean okToSet(String number, String name) {
+    private boolean okToSet(String number) {
         boolean isCheckOk = true;
         for (String phoneNumber: mContactDataNumber) {
             if (number.equals(phoneNumber)) {
-                for (String phoneName: mContactDataName) {
-                    if (name.equals(phoneName)) {
-                        isCheckOk = false;
-                    }
-                }
+                isCheckOk = false;
             }
         }
         return isCheckOk;
