@@ -171,52 +171,50 @@ public class SpeedDialUtils {
         return speedDialInfo;
     }
 
-    public boolean nameIsValid(String contactName, String contactNumber) {
-        boolean nameIsValid = false;
+    public String getValidName(String contactNumber) {
+        String mContactDataName = null;
         if ("".equals(contactNumber)) {
-            return false;
+            return null;
         }
         Cursor rawCursor = null;
         Cursor dataCursor = null;
         try {
-            rawCursor = mContext.getContentResolver().query(RawContacts.CONTENT_URI, null,
-                    "display_name = ? AND deleted = ?",
-                    new String[] { contactName, String.valueOf(0) }, null);
-            if (null == rawCursor) {
-                return false;
+            dataCursor = mContext.getContentResolver().query(
+                    ContactsContract.Data.CONTENT_URI, null,
+                    Data.DATA1 + " = ? AND " + Data.MIMETYPE + " = '"
+                    + ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE + "'",
+                    new String[] {contactNumber}, null);
+            if (null == dataCursor || 0 == dataCursor.getCount()) {
+                return null;
             }
-            while (rawCursor.moveToNext()) {
-                int rawContactId = rawCursor.getInt(
-                        rawCursor.getColumnIndexOrThrow(RawContacts._ID));
-                dataCursor = mContext.getContentResolver().query(
-                        ContactsContract.Data.CONTENT_URI, null, Data.RAW_CONTACT_ID
-                        + " = ?"
-                        + " AND "
-                        + Data.MIMETYPE
-                        + " = '"
-                        + ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE
-                       + "'", new String[] { String.valueOf(rawContactId) }, null);
-                if (null == dataCursor) {
-                    return false;
+            while (dataCursor.moveToNext()) {
+                int rawContactId = dataCursor.getInt(
+                        dataCursor.getColumnIndexOrThrow(Data.RAW_CONTACT_ID));
+                rawCursor = mContext.getContentResolver().query(
+                        RawContacts.CONTENT_URI, null,
+                        RawContacts._ID + " = ? AND deleted = ?",
+                        new String[] { String.valueOf(rawContactId), String.valueOf(0) },
+                        null);
+                if (null == rawCursor || 0 == rawCursor.getCount()) {
+                    return null;
                 } else {
-                    while (dataCursor.moveToNext()) {
-                        if (contactNumber.equals(dataCursor.getString(dataCursor
-                                .getColumnIndexOrThrow(Data.DATA1)))) {
-                            nameIsValid = true;
-                        }
+                    if (rawCursor.moveToFirst()) {
+                        mContactDataName = rawCursor.getString(
+                                rawCursor.getColumnIndexOrThrow(RawContacts
+                                .DISPLAY_NAME_PRIMARY));
                     }
                 }
             }
         } catch (Exception e) {
             // exception happens
         } finally {
-            if (null != rawCursor) {
-                rawCursor.close();
-            }
             if (null != dataCursor) {
                 dataCursor.close();
             }
+            if (null != rawCursor) {
+                rawCursor.close();
+            }
         }
-        return nameIsValid;
+        return mContactDataName;
     }
 }
