@@ -1965,10 +1965,10 @@ public class DialpadFragment extends Fragment
             numId = speedDialUtils.NUM_NINE;
             break;
         }
-        speedNumber = speedDialUtils.getContactDataNumber(numId);
-        speedName = speedDialUtils.getContactDataName(numId);
-        if (speedNumber == null || speedNumber.length() == 0
-                || speedDialUtils.getValidName(speedNumber) == null) {
+        int ContactDataId = speedDialUtils.getContactDataId(numId);
+        speedNumber = speedDialUtils.
+                getSpeedDialInfo(ContactDataId, speedDialUtils.INFO_NUMBER);
+        if (speedNumber == null) {
             showNoSpeedNumberDialog(numId);
         } else {
             Intent intent = new Intent(Intent.ACTION_CALL_PRIVILEGED);

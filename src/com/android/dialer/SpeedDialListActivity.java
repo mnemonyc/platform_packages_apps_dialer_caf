@@ -253,6 +253,7 @@ public class SpeedDialListActivity extends ListActivity implements OnItemClickLi
                 }
                 mSpeedDialUtils.storeContactDataNumber(numId, mContactDataNumber[numId]);
                 mSpeedDialUtils.storeContactDataName(numId,mContactDataName[numId]);
+                mSpeedDialUtils.storeContactDataId(numId, (int)ContentUris.parseId(uriRet));
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
