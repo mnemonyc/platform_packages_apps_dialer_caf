@@ -623,7 +623,11 @@ import java.util.LinkedList;
         // New items also use the highlighted version of the text.
         final boolean isHighlighted = isNew;
         mCallLogViewsHelper.setPhoneCallDetails(views, details, isHighlighted);
-        setPhoto(views, photoId, lookupUri);
+        if (lookupUri == null) {
+            setDefaultPhoto(views, photoId, info.formattedNumber);
+        } else {
+            setPhoto(views, photoId, lookupUri);
+        }
 
         // Listen for the first draw
         if (mViewTreeObserver == null) {
@@ -750,6 +754,11 @@ import java.util.LinkedList;
         }
         cursor.moveToPosition(position);
         return callTypes;
+    }
+
+    private void setDefaultPhoto(CallLogListItemViews views, long photoId, String phoneNumber) {
+        views.quickContactView.assignContactFromPhone(phoneNumber, true);
+        mContactPhotoManager.loadThumbnail(views.quickContactView, photoId, true);
     }
 
     private void setPhoto(CallLogListItemViews views, long photoId, Uri contactUri) {
