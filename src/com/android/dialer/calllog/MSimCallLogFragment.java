@@ -98,24 +98,18 @@ public class MSimCallLogFragment extends CallLogFragment {
             Log.i(TAG, "Status selected, position: " + position);
             switch (position) {
                 case INDEX_CALL_TYPE_ALL:
-                    // Filter is being turned off, receiver no longer needed.
-                    unregisterPhoneCallReceiver();
                     mCallTypeFilter = CallLogQueryHandler.CALL_TYPE_ALL;
                     break;
                 case INDEX_CALL_TYPE_INCOMING:
-                    registerPhoneCallReceiver();
                     mCallTypeFilter = Calls.INCOMING_TYPE;
                     break;
                 case INDEX_CALL_TYPE_OUTGOING:
-                    registerPhoneCallReceiver();
                     mCallTypeFilter = Calls.OUTGOING_TYPE;
                     break;
                 case INDEX_CALL_TYPE_MISSED:
-                    registerPhoneCallReceiver();
                     mCallTypeFilter = Calls.MISSED_TYPE;
                     break;
                 case INDEX_CALL_TYPE_VOICEMAIL:
-                    registerPhoneCallReceiver();
                     mCallTypeFilter = Calls.VOICEMAIL_TYPE;
                     break;
             }
@@ -201,34 +195,6 @@ public class MSimCallLogFragment extends CallLogFragment {
     private void onDelCallLog() {
         Intent intent = new Intent("com.android.contacts.action.MULTI_PICK_CALL");
         startActivity(intent);
-    }
-
-    private void registerPhoneCallReceiver() {
-        if (mPhoneStateListener != null) {
-            return; // Already registered.
-        }
-        mTelephonyManager = (TelephonyManager) getActivity().getSystemService(
-                Context.TELEPHONY_SERVICE);
-        mPhoneStateListener = new PhoneStateListener() {
-            @Override
-            public void onCallStateChanged(int state, String incomingNumber) {
-                if (state != TelephonyManager.CALL_STATE_OFFHOOK &&
-                        state != TelephonyManager.CALL_STATE_RINGING) {
-                    return;
-                }
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (getActivity() == null || getActivity().isFinishing()) {
-                            return;
-                        }
-                        mFilterStatusSpinnerView.setSelection(INDEX_CALL_TYPE_ALL);
-                        mCallTypeFilter = CallLogQueryHandler.CALL_TYPE_ALL;
-                    }
-                 });
-            }
-        };
-        mTelephonyManager.listen(mPhoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
     }
 
     /**
