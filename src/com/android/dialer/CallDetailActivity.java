@@ -562,7 +562,7 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
                }
                     // The third action allows to invoke videocall to the number that placed the
                     // call.
-                        if (canPlaceCallsTo && isVTSupported()) {
+                        if (canPlaceCallsTo && isVTSupported() && !isSipNumber) {
                             entry.setThirdAction(
                                     R.drawable.ic_contact_quick_contact_call_video_holo_dark,
                                     getVTCallIntent(mNumber),
