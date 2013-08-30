@@ -50,6 +50,8 @@
     <string name="call_log_incoming_header" msgid="2787722299753674684">"僅顯示來電"</string>
     <string name="call_log_outgoing_header" msgid="761009180766735769">"僅顯示已撥電話"</string>
     <string name="call_log_missed_header" msgid="8017148056610855956">"僅顯示未接來電"</string>
+    <string name="call_duration_active">"通話時長:"</string>
+    <string name="call_duration_call_out">"呼叫時長:"</string>
     <string name="voicemail_status_voicemail_not_available" msgid="3021980206152528883">"無法連線至語音信箱伺服器。"</string>
     <string name="voicemail_status_messages_waiting" msgid="7113421459602803605">"無法連線至語音信箱伺服器，新的語音留言仍待聽取。"</string>
     <string name="voicemail_status_configure_voicemail" msgid="3738537770636895689">"設定您的語音信箱。"</string>
@@ -83,6 +85,8 @@
     <string name="description_delete_button" msgid="6263102114033407382">"Backspace"</string>
     <string name="description_digits_edittext" msgid="8760207516497016437">"撥號號碼"</string>
     <string name="action_menu_overflow_description" msgid="2303272250613084574">"更多選項"</string>
+    <!-- Menu item used to show no contact prompted-->
+    <string name="menu_noContact">"無指定聯繫人"</string>
     <string name="menu_copy" msgid="6108677035381940698">"複製"</string>
     <string name="menu_show_outgoing_only" msgid="1965570298133301970">"僅顯示撥出電話"</string>
     <string name="menu_show_incoming_only" msgid="7534206815238877417">"僅顯示來電"</string>

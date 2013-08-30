@@ -33,8 +33,8 @@
     <dimen name="call_log_call_action_size">32dip</dimen>
     <dimen name="call_log_call_action_width">48dip</dimen>
     <dimen name="call_log_icon_margin">4dip</dimen>
-    <dimen name="call_log_inner_margin">8dip</dimen>
-    <dimen name="call_log_outer_margin">16dip</dimen>
+    <dimen name="call_log_inner_margin">5dip</dimen>
+    <dimen name="call_log_outer_margin">10dip</dimen>
     <dimen name="call_log_indent_margin">24dip</dimen>
     <dimen name="call_log_list_item_height">56dip</dimen>
     <dimen name="call_log_list_contact_photo_size">64dip</dimen>
@@ -44,12 +44,24 @@
     <!-- Layout weight values for dialpad screen. These layouts will be used in one
          LinearLayout (dialpad_fragment.xml), configuring dialpad screen's vertical
          ratio. -->
-    <integer name="dialpad_layout_weight_digits">20</integer>
+    <integer name="dialpad_layout_weight_digits">23</integer>
     <integer name="dialpad_layout_weight_dialpad">65</integer>
     <integer name="dialpad_layout_weight_additional_buttons">15</integer>
+    <integer name="dialpad_list_weight">17</integer>
 
     <!-- Min with of fake menu buttons, which should be same as ActionBar's one -->
     <dimen name="fake_menu_button_min_width">56dip</dimen>
+<!-- add for UX_enhance_dial_button -->
+    <dimen name="keyguard_lockscreen_outerring_diameter">220dp</dimen>
+    <dimen name="glowpadview_target_placement_radius">110dip</dimen>
+    <dimen name="glowpadview_glow_radius">75dip</dimen>
+    <dimen name="glowpadview_snap_margin">40dip</dimen>
+    <dimen name="glowpadview_inner_radius">15dip</dimen>
+
+    <dimen name="clingPunchThroughGraphicCenterRadius">94dp</dimen>
+    <dimen name="reveal_radius">48dp</dimen>
+    <dimen name="button_bar_height">62dip</dimen>
+<!-- add for UX_enhance_dial_button -->
 
     <!--  Smart Dial -->
     <dimen name="smartdial_suggestions_padding">4dp</dimen>

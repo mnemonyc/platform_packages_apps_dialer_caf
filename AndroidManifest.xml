@@ -119,6 +119,18 @@
             </intent-filter>
         </activity>
 
+        <activity-alias android:name="ActivityForRecentCalls"
+             android:label="@string/recentCallsIconLabel"
+             android:targetActivity=".DialtactsActivity" >
+             <intent-filter>
+                 <action android:name="android.intent.action.SEARCH" />
+             </intent-filter>
+
+             <meta-data
+                 android:name="android.app.searchable"
+                 android:resource="@xml/calllog_searchable" />
+        </activity-alias>
+
         <activity android:name="com.android.dialer.CallDetailActivity"
                   android:label="@string/callDetailTitle"
                   android:theme="@style/CallDetailActivityTheme"
@@ -131,6 +143,17 @@
                 <data android:mimeType="vnd.android.cursor.item/calls"/>
             </intent-filter>
         </activity>
+
+        <provider android:name=".calllog.RecentCallLogProvider"
+            android:authorities="com.android.dialer.calllog.RecentCallLogProvider"
+            android:exported="true" >
+            <path-permission
+                android:pathPrefix="/search_suggest_query"
+                android:readPermission="android.permission.GLOBAL_SEARCH" />
+            <path-permission
+                android:pathPrefix="/search_suggest_shortcut"
+                android:readPermission="android.permission.GLOBAL_SEARCH" />
+        </provider>
 
         <activity android:name="com.android.contacts.common.test.FragmentTestActivity">
             <intent-filter>

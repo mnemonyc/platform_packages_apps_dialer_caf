@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
   ~ Copyright (C) 2012 The Android Open Source Project
+  ~ Copyright (C) 2013 The Linux Foundation. All Rights Reserved.
   ~
+  ~ Not a Contribution.
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
   ~ You may obtain a copy of the License at
@@ -50,6 +52,8 @@
     <string name="call_log_incoming_header" msgid="2787722299753674684">"只显示来电"</string>
     <string name="call_log_outgoing_header" msgid="761009180766735769">"只显示外拨电话"</string>
     <string name="call_log_missed_header" msgid="8017148056610855956">"只显示未接来电"</string>
+    <string name="call_duration_active">"通话时长:"</string>
+    <string name="call_duration_call_out">"呼叫时长:"</string>
     <string name="voicemail_status_voicemail_not_available" msgid="3021980206152528883">"无法连接到语音信箱服务器。"</string>
     <string name="voicemail_status_messages_waiting" msgid="7113421459602803605">"无法连接到语音信箱服务器。新的语音邮件正在等待接收。"</string>
     <string name="voicemail_status_configure_voicemail" msgid="3738537770636895689">"设置您的语音信箱。"</string>
@@ -83,7 +87,11 @@
     <string name="description_delete_button" msgid="6263102114033407382">"退格"</string>
     <string name="description_digits_edittext" msgid="8760207516497016437">"要拨打的号码"</string>
     <string name="action_menu_overflow_description" msgid="2303272250613084574">"更多选项"</string>
+    <!--  No contact prompted -->
+    <string name="menu_noContact">"无指定联系人"</string>
+    <string name="non_phone_add_to_contacts" msgid="6590985286250471169">"添加到联系人"</string>
     <string name="menu_copy" msgid="6108677035381940698">"复制"</string>
+    <string name="call_log_all_calls_header">"所有通话"</string>
     <string name="menu_show_outgoing_only" msgid="1965570298133301970">"仅显示外拨电话"</string>
     <string name="menu_show_incoming_only" msgid="7534206815238877417">"仅显示来电"</string>
     <string name="menu_show_missed_only" msgid="154473166059743996">"仅显示未接来电"</string>
@@ -95,6 +103,7 @@
     <string name="menu_newContact" msgid="1209922412763274638">"新建联系人"</string>
     <string name="callDetailTitle" msgid="5340227785196217938">"通话详情"</string>
     <string name="toast_call_detail_error" msgid="7200975244804730096">"无法读取所请求呼叫的详细信息。"</string>
+    <string name="assignSpeedDialFailToast">此号码已分配了快速拨号键，请选择其它号码</string>
     <string name="dialer_useDtmfDialpad" msgid="1707548397435075040">"使用按键式键盘"</string>
     <string name="dialer_returnToInCallScreen" msgid="3719386377550913067">"返回正在进行的通话"</string>
     <string name="dialer_addAnotherCall" msgid="4205688819890074468">"添加通话"</string>
@@ -140,5 +149,15 @@
     <string name="speed_call">通话</string>
     <string name="speed_sms">信息</string>
     <string name="is_set_speed">数字键<xliff:g id="number">%s</xliff:g>未设置快速拨号，是否设置？\n</string>
+    <string name="description_target_slot1">Slot1</string>
+    <string name="description_target_slot2">Slot2</string>
+    <string name="btn_ok">"确定"</string>
+    <string name="description_direction_left">"向左滑动以<xliff:g id="TARGET_DESCRIPTION">%s</xliff:g>。"</string>
+    <string name="description_direction_right">"向右滑动以<xliff:g id="TARGET_DESCRIPTION">%s</xliff:g>。"</string>
+    <string name="dialpad_cling_multi_sim_call">滑动拨号按钮以选择卡1或卡2进行通话。</string>
     <string name="device_id">设备标识符</string>
+    <string name="slot_name">"卡"</string>
+    <string name="call_log_show_all_slots">"所有卡"</string>
+    <string name="assignSpeedDialFailToast">此号码已分配了快速拨号键，请选择其它号码。</string>
+    <string name="calllog_search_hint">"搜索通话记录"</string>
 </resources>

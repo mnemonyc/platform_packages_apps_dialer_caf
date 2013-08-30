@@ -19,6 +19,7 @@ package com.android.dialer.calllog;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.os.SystemProperties;
 import android.provider.CallLog.Calls;
 import android.util.AttributeSet;
 import android.view.View;
@@ -79,10 +80,28 @@ public class CallTypeIconsView extends View {
         switch (callType) {
             case Calls.INCOMING_TYPE:
                 return mResources.incoming;
+            case CallTypeHelper.INCOMING_CSVT_TYPE:
+                if (isVTSupported()) {
+                    return mResources.csvt_incoming;
+                } else {
+                    return mResources.incoming;
+                }
             case Calls.OUTGOING_TYPE:
                 return mResources.outgoing;
+            case CallTypeHelper.OUTGOING_CSVT_TYPE:
+                if (isVTSupported()) {
+                    return mResources.csvt_outgoing;
+                } else {
+                    return mResources.outgoing;
+                }
             case Calls.MISSED_TYPE:
                 return mResources.missed;
+            case CallTypeHelper.MISSED_CSVT_TYPE:
+                if (isVTSupported()) {
+                    return mResources.csvt_missed;
+                } else {
+                    return mResources.missed;
+                }
             case Calls.VOICEMAIL_TYPE:
                 return mResources.voicemail;
             default:
@@ -111,6 +130,9 @@ public class CallTypeIconsView extends View {
         public final Drawable incoming;
         public final Drawable outgoing;
         public final Drawable missed;
+        public final Drawable csvt_incoming;
+        public final Drawable csvt_outgoing;
+        public final Drawable csvt_missed;
         public final Drawable voicemail;
         public final int iconMargin;
 
@@ -119,8 +141,17 @@ public class CallTypeIconsView extends View {
             incoming = r.getDrawable(R.drawable.ic_call_incoming_holo_dark);
             outgoing = r.getDrawable(R.drawable.ic_call_outgoing_holo_dark);
             missed = r.getDrawable(R.drawable.ic_call_missed_holo_dark);
+            csvt_incoming = r.getDrawable(R.drawable.ic_video_incoming_holo_dark);
+            csvt_outgoing = r.getDrawable(R.drawable.ic_video_outgoing_holo_dark);
+            csvt_missed = r.getDrawable(R.drawable.ic_video_missed_holo_dark);
             voicemail = r.getDrawable(R.drawable.ic_call_voicemail_holo_dark);
             iconMargin = r.getDimensionPixelSize(R.dimen.call_log_icon_margin);
         }
+    }
+
+    private boolean isVTSupported() {
+        return SystemProperties.getBoolean(
+                "persist.radio.csvt.enabled"
+        /* TelephonyProperties.PROPERTY_CSVT_ENABLED*/, false);
     }
 }

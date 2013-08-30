@@ -25,15 +25,18 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.CallLog.Calls;
 import android.provider.ContactsContract.PhoneLookup;
+import android.telephony.MSimTelephonyManager;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.TextView;
 
 import com.android.common.widget.GroupingListAdapter;
 import com.android.contacts.common.ContactPhotoManager;
 import com.android.contacts.common.util.UriUtils;
+import com.android.dialer.DialtactsActivity;
 import com.android.dialer.PhoneCallDetails;
 import com.android.dialer.PhoneCallDetailsHelper;
 import com.android.dialer.R;
@@ -244,7 +247,7 @@ import java.util.LinkedList;
         mContactPhotoManager = ContactPhotoManager.getInstance(mContext);
         mPhoneNumberHelper = new PhoneNumberHelper(resources);
         PhoneCallDetailsHelper phoneCallDetailsHelper = new PhoneCallDetailsHelper(
-                resources, callTypeHelper, mPhoneNumberHelper);
+                mContext, callTypeHelper, mPhoneNumberHelper);
         mCallLogViewsHelper =
                 new CallLogListItemHelper(
                         phoneCallDetailsHelper, mPhoneNumberHelper, resources);
@@ -320,6 +323,7 @@ import java.util.LinkedList;
         // Restart the request-processing thread after the next draw.
         stopRequestProcessing();
         unregisterPreDrawListener();
+        mContactPhotoManager.clear();
     }
 
     /**
@@ -451,6 +455,7 @@ import java.util.LinkedList;
 
     @Override
     protected void bindStandAloneView(View view, Context context, Cursor cursor) {
+        final CallLogListItemViews views = (CallLogListItemViews) view.getTag();
         bindView(view, cursor, 1);
     }
 
@@ -525,22 +530,34 @@ import java.util.LinkedList;
         final long duration = c.getLong(CallLogQuery.DURATION);
         final int callType = c.getInt(CallLogQuery.CALL_TYPE);
         final String countryIso = c.getString(CallLogQuery.COUNTRY_ISO);
+        final int subscription = c.getInt(CallLogQuery.SUBSCRIPTION);
+        final int durationType = c.getInt(CallLogQuery.DURATION_TYPE);
 
         final ContactInfo cachedContactInfo = getContactInfoFromCallLog(c);
 
         views.primaryActionView.setTag(
                 IntentProvider.getCallDetailIntentProvider(
-                        this, c.getPosition(), c.getLong(CallLogQuery.ID), count));
+                        this, c.getPosition(), c.getLong(CallLogQuery.ID), count, subscription));
         // Store away the voicemail information so we can play it directly.
         if (callType == Calls.VOICEMAIL_TYPE) {
             String voicemailUri = c.getString(CallLogQuery.VOICEMAIL_URI);
             final long rowId = c.getLong(CallLogQuery.ID);
             views.secondaryActionView.setTag(
-                    IntentProvider.getPlayVoicemailIntentProvider(rowId, voicemailUri));
+                    IntentProvider
+                            .getPlayVoicemailIntentProvider(rowId, voicemailUri, subscription));
+            // For voicemail, needn't show the call sub icon, set it as gone.
+            views.subIconView.setVisibility(View.GONE);
         } else if (!TextUtils.isEmpty(number)) {
             // Store away the number so we can call it directly if you click on the call icon.
             views.secondaryActionView.setTag(
-                    IntentProvider.getReturnCallIntentProvider(number));
+                    IntentProvider.getReturnCallIntentProvider(number, subscription));
+            if (MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
+                views.subIconView.setVisibility(View.VISIBLE);
+                views.subIconView.setImageDrawable(
+                        DialtactsActivity.getMultiSimIcon(mContext, subscription));
+            } else {
+                views.subIconView.setVisibility(View.GONE);
+            }
         } else {
             // No action enabled.
             views.secondaryActionView.setTag(null);
@@ -594,18 +611,23 @@ import java.util.LinkedList;
         final PhoneCallDetails details;
         if (TextUtils.isEmpty(name)) {
             details = new PhoneCallDetails(number, formattedNumber, countryIso, geocode,
-                    callTypes, date, duration);
+                    callTypes, date, duration, subscription, durationType);
         } else {
             // We do not pass a photo id since we do not need the high-res picture.
             details = new PhoneCallDetails(number, formattedNumber, countryIso, geocode,
-                    callTypes, date, duration, name, ntype, label, lookupUri, null);
+                    callTypes, date, duration, name, ntype, label, lookupUri,
+                    null, subscription, durationType);
         }
 
         final boolean isNew = c.getInt(CallLogQuery.IS_READ) == 0;
         // New items also use the highlighted version of the text.
         final boolean isHighlighted = isNew;
         mCallLogViewsHelper.setPhoneCallDetails(views, details, isHighlighted);
-        setPhoto(views, photoId, lookupUri);
+        if (lookupUri == null) {
+            setDefaultPhoto(views, photoId, info.formattedNumber);
+        } else {
+            setPhoto(views, photoId, lookupUri);
+        }
 
         // Listen for the first draw
         if (mViewTreeObserver == null) {
@@ -732,6 +754,11 @@ import java.util.LinkedList;
         }
         cursor.moveToPosition(position);
         return callTypes;
+    }
+
+    private void setDefaultPhoto(CallLogListItemViews views, long photoId, String phoneNumber) {
+        views.quickContactView.assignContactFromPhone(phoneNumber, true);
+        mContactPhotoManager.loadThumbnail(views.quickContactView, photoId, true);
     }
 
     private void setPhoto(CallLogListItemViews views, long photoId, Uri contactUri) {

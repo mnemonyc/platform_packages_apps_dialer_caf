@@ -29,6 +29,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.SystemProperties;
 import android.provider.CallLog;
 import android.provider.CallLog.Calls;
 import android.provider.Contacts.Intents.Insert;
@@ -57,6 +58,7 @@ import com.android.contacts.common.ClipboardUtils;
 import com.android.contacts.common.GeoUtil;
 import com.android.dialer.BackScrollManager.ScrollableHeader;
 import com.android.dialer.calllog.CallDetailHistoryAdapter;
+import com.android.dialer.calllog.CallLogQuery;
 import com.android.dialer.calllog.CallTypeHelper;
 import com.android.dialer.calllog.ContactInfo;
 import com.android.dialer.calllog.ContactInfoHelper;
@@ -67,6 +69,7 @@ import com.android.dialer.voicemail.VoicemailPlaybackFragment;
 import com.android.dialer.voicemail.VoicemailStatusHelper;
 import com.android.dialer.voicemail.VoicemailStatusHelper.StatusMessage;
 import com.android.dialer.voicemail.VoicemailStatusHelperImpl;
+import com.android.internal.telephony.MSimConstants;
 
 import java.util.List;
 
@@ -117,6 +120,7 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
 
     private String mNumber = null;
     private String mDefaultCountryIso;
+    private int mSubscription;
 
     /* package */ LayoutInflater mInflater;
     /* package */ Resources mResources;
@@ -208,6 +212,8 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
         CallLog.Calls.TYPE,
         CallLog.Calls.COUNTRY_ISO,
         CallLog.Calls.GEOCODED_LOCATION,
+        CallLog.Calls.SUBSCRIPTION,
+        CallLog.Calls.DURATION_TYPE
     };
 
     static final int DATE_COLUMN_INDEX = 0;
@@ -216,6 +222,8 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
     static final int CALL_TYPE_COLUMN_INDEX = 3;
     static final int COUNTRY_ISO_COLUMN_INDEX = 4;
     static final int GEOCODED_LOCATION_COLUMN_INDEX = 5;
+    static final int SUBSCRIPTION = 6;
+    static final int DURATION_TYPE_COLUMN_INDEX = 7;
 
     private final View.OnClickListener mPrimaryActionListener = new View.OnClickListener() {
         @Override
@@ -234,6 +242,13 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
                 return;
             }
             startActivity(((ViewEntry) view.getTag()).secondaryIntent);
+        }
+    };
+
+    private final View.OnClickListener mThirdActionListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            startActivity(((ViewEntry) view.getTag()).thirdIntent);
         }
     };
 
@@ -261,7 +276,7 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
 
         mCallTypeHelper = new CallTypeHelper(getResources());
         mPhoneNumberHelper = new PhoneNumberHelper(mResources);
-        mPhoneCallDetailsHelper = new PhoneCallDetailsHelper(mResources, mCallTypeHelper,
+        mPhoneCallDetailsHelper = new PhoneCallDetailsHelper(this, mCallTypeHelper,
                 mPhoneNumberHelper);
         mVoicemailStatusHelper = new VoicemailStatusHelperImpl();
         mAsyncQueryHandler = new CallDetailActivityQueryHandler(this);
@@ -372,8 +387,13 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
                 TelephonyManager tm = (TelephonyManager)
                         getSystemService(Context.TELEPHONY_SERVICE);
                 if (tm.getCallState() == TelephonyManager.CALL_STATE_IDLE) {
-                    startActivity(CallUtil.getCallIntent(
-                            Uri.fromParts(CallUtil.SCHEME_TEL, mNumber, null)));
+                    Intent intent = CallUtil.getCallIntent(
+                            Uri.fromParts(CallUtil.SCHEME_TEL, mNumber, null));
+                    if (mSubscription != -1) {
+                        intent.putExtra(MSimConstants.SUBSCRIPTION_KEY, mSubscription);
+                        Log.d(TAG, "Start the activity and the call log sub is: " + mSubscription);
+                    }
+                    startActivity(intent);
                     return true;
                 }
             }
@@ -421,6 +441,7 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
                 // first.
                 PhoneCallDetails firstDetails = details[0];
                 mNumber = firstDetails.number.toString();
+                mSubscription = firstDetails.subscription;
                 final Uri contactUri = firstDetails.contactUri;
                 final Uri photoUri = firstDetails.photoUri;
 
@@ -511,10 +532,15 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
                             mPhoneNumberHelper.getDisplayNumber(
                                     firstDetails.number, firstDetails.formattedNumber);
 
+                    Intent intent = CallUtil.getCallIntent(mNumber);
+                    if (mSubscription != -1) {
+                        intent.putExtra(MSimConstants.SUBSCRIPTION_KEY, mSubscription);
+                        Log.d(TAG, "Start the activity and the call log sub is: " + mSubscription);
+                    }
                     ViewEntry entry = new ViewEntry(
                             getString(R.string.menu_callNumber,
                                     forceLeftToRight(displayNumber)),
-                                    CallUtil.getCallIntent(mNumber),
+                                    intent,
                                     getString(R.string.description_call, nameOrNumber));
 
                     // Only show a label if the number is shown and it is not a SIP address.
@@ -533,6 +559,15 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
                                 new Intent(Intent.ACTION_SENDTO,
                                            Uri.fromParts("sms", mNumber, null)),
                                 getString(R.string.description_send_text_message, nameOrNumber));
+               }
+                    // The third action allows to invoke videocall to the number that placed the
+                    // call.
+                        if (canPlaceCallsTo && isVTSupported() && !isSipNumber) {
+                            entry.setThirdAction(
+                                    R.drawable.ic_contact_quick_contact_call_video_holo_dark,
+                                    getVTCallIntent(mNumber),
+                                    getString(R.string.description_videocall,
+                                            nameOrNumber));
                     }
 
                     configureCallButton(entry);
@@ -604,6 +639,8 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
             int callType = callCursor.getInt(CALL_TYPE_COLUMN_INDEX);
             String countryIso = callCursor.getString(COUNTRY_ISO_COLUMN_INDEX);
             final String geocode = callCursor.getString(GEOCODED_LOCATION_COLUMN_INDEX);
+            final int subscription = callCursor.getInt(SUBSCRIPTION);
+            int durationType = callCursor.getInt(DURATION_TYPE_COLUMN_INDEX);
 
             if (TextUtils.isEmpty(countryIso)) {
                 countryIso = mDefaultCountryIso;
@@ -639,8 +676,8 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
                 lookupUri = info.lookupUri;
             }
             return new PhoneCallDetails(number, formattedNumber, countryIso, geocode,
-                    new int[]{ callType }, date, duration,
-                    nameText, numberType, numberLabel, lookupUri, photoUri);
+                    new int[]{ callType }, date, duration, nameText, numberType,
+                    numberLabel, lookupUri, photoUri, subscription, durationType);
         } finally {
             if (callCursor != null) {
                 callCursor.close();
@@ -667,6 +704,12 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
         public Intent secondaryIntent = null;
         /** The description for accessibility of the secondary action. */
         public String secondaryDescription = null;
+        /** Icon for the third action. */
+        public int thirdIcon = 0;
+        /** Intent for the third action. If not null, an icon must be defined. */
+        public Intent thirdIntent = null;
+        /** The description for accessibility of the third action. */
+        public String thirdDescription = null;
 
         public ViewEntry(String text, Intent intent, String description) {
             this.text = text;
@@ -678,6 +721,12 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
             secondaryIcon = icon;
             secondaryIntent = intent;
             secondaryDescription = description;
+        }
+
+        public void setThirdAction(int icon, Intent intent, String description) {
+            thirdIcon = icon;
+            thirdIntent = intent;
+            thirdDescription = description;
         }
     }
 
@@ -694,6 +743,8 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
         ImageView icon = (ImageView) convertView.findViewById(R.id.call_and_sms_icon);
         View divider = convertView.findViewById(R.id.call_and_sms_divider);
         TextView text = (TextView) convertView.findViewById(R.id.call_and_sms_text);
+        ImageView icon_third = (ImageView) convertView.findViewById(R.id.videocall);
+        View divider_third = convertView.findViewById(R.id.videocall_and_sms_divider);
 
         View mainAction = convertView.findViewById(R.id.call_and_sms_main_action);
         mainAction.setOnClickListener(mPrimaryActionListener);
@@ -712,6 +763,19 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
             icon.setVisibility(View.GONE);
             divider.setVisibility(View.GONE);
         }
+
+        if(entry.thirdIntent != null) {
+            icon_third.setOnClickListener(mThirdActionListener);
+            icon_third.setImageResource(R.drawable.ic_contact_quick_contact_call_video_holo_dark);
+            icon_third.setVisibility(View.VISIBLE);
+            icon_third.setTag(entry);
+            icon_third.setContentDescription(entry.thirdDescription);
+            divider_third.setVisibility(View.VISIBLE);
+        } else {
+            icon_third.setVisibility(View.GONE);
+            divider_third.setVisibility(View.GONE);
+        }
+
         text.setText(entry.text);
 
         TextView label = (TextView) convertView.findViewById(R.id.call_and_sms_label);
@@ -937,7 +1001,33 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
             mTargetView.setBackground(mOriginalViewBackground);
         }
     }
+  //Borqs Ext
+    private static Intent getVTCallIntent(String number) {
+                Intent intent = new Intent("com.borqs.videocall.action.LaunchVideoCallScreen");
+                intent.addCategory(Intent.CATEGORY_DEFAULT);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                                | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
 
+                intent.putExtra("IsCallOrAnswer", true); // true as a
+                // call,
+                // while
+                // false as
+                // answer
+
+                intent.putExtra("LaunchMode", 1); // nLaunchMode: 1 as
+                // telephony, while
+                // 0 as socket
+                intent.putExtra("call_number_key", number);
+                return intent;
+        }
+
+    public boolean isVTSupported(){
+        return SystemProperties.getBoolean(
+                "persist.radio.csvt.enabled"
+       /* TelephonyProperties.PROPERTY_CSVT_ENABLED*/, false);
+    }
+
+   //Borqs Ext end
     /** Returns the given text, forced to be left-to-right. */
     private static CharSequence forceLeftToRight(CharSequence text) {
         StringBuilder sb = new StringBuilder();
