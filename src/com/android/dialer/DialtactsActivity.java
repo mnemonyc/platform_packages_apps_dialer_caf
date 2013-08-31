@@ -32,14 +32,17 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.TypedArray;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.SystemProperties;
@@ -102,6 +105,8 @@ import com.android.internal.telephony.TelephonyIntents;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
+import org.codeaurora.ims.csvt.ICsvtService;
+
 /**
  * The dialer activity that has one tab with the virtual 12key
  * dialer, a tab with recent calls in it, a tab with the contacts and
@@ -158,6 +163,50 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
                 ImportExportDialogFragment.destroyExportToSimThread();
                 mExportThread = null;
             }
+        }
+    };
+
+    public static ICsvtService mCsvtService;
+
+    public static boolean isCsvtActive() {
+        boolean result = false;
+        if (mCsvtService != null) {
+            try{
+                result = mCsvtService.isActive();
+                if (DEBUG) Log.d(TAG, "mCsvtService.isActive = " + result);
+            } catch (RemoteException e) {
+                Log.e(TAG, Log.getStackTraceString(new Throwable()));
+            }
+        }
+        return result;
+    }
+
+    private boolean isVTSupported() {
+        return SystemProperties.getBoolean("persist.radio.csvt.enabled"
+                /* TelephonyProperties.PROPERTY_CSVT_ENABLED*/, false);
+    }
+
+    private void createCsvtService() {
+        if (isVTSupported()) {
+            try {
+                Intent intent = new Intent("org.codeaurora.ims.csvt.ICsvtService");
+                boolean bound = bindService(intent,
+                        mCsvtServiceConnection, Context.BIND_AUTO_CREATE);
+                if (DEBUG) Log.d(TAG, "ICsvtService bound request : " + bound);
+            } catch (NoClassDefFoundError e) {
+                Log.e(TAG, "Ignoring ICsvtService class not found exception " + e);
+            }
+        }
+    }
+
+    private static ServiceConnection mCsvtServiceConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mCsvtService = ICsvtService.Stub.asInterface(service);
+            if (DEBUG) Log.d(TAG,"Csvt Service Connected: " + mCsvtService);
+        }
+
+        public void onServiceDisconnected(ComponentName arg0) {
+            if (DEBUG) Log.d(TAG,"Csvt Service onServiceDisconnected");
         }
     };
 
@@ -535,6 +584,8 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
     @Override
     protected void onCreate(Bundle icicle) {
         super.onCreate(icicle);
+
+        createCsvtService();
 
         final Intent intent = getIntent();
         fixIntent(intent);
