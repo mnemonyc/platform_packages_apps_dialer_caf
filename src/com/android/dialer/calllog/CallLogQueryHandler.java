@@ -72,6 +72,11 @@ import javax.annotation.concurrent.GuardedBy;
     public static final int CALL_TYPE_ALL = -1;
 
     /**
+     * To specify all slots.
+     */
+    public static final int CALL_SUB_ALL = -1;
+
+    /**
      * The time window from the current time within which an unread entry will be added to the new
      * section.
      */
@@ -143,9 +148,9 @@ import javax.annotation.concurrent.GuardedBy;
                 new MatrixCursor(CallLogQuery.EXTENDED_PROJECTION);
         // The values in this row correspond to default values for _PROJECTION from CallLogQuery
         // plus the section value.
-        matrixCursor.addRow(new Object[]{
-                0L, "", 0L, 0L, 0, "", "", "", null, 0, null, null, null, null, 0L, null, 0,
-                section
+        matrixCursor.addRow(new Object[] {
+                0L, "", 0L, 0L, 0, "", "", "", null, 0, null, null, null, null, 0L, null, 0, 0,
+                Calls.DURATION_TYPE_ACTIVE, section
         });
         return matrixCursor;
     }
@@ -166,10 +171,19 @@ import javax.annotation.concurrent.GuardedBy;
      * It will asynchronously update the content of the list view when the fetch completes.
      */
     public void fetchCalls(int callType) {
+        fetchCalls(callType, CallLogQueryHandler.CALL_SUB_ALL);
+    }
+
+    /**
+     * Fetches the list of calls from the call log for a given type and the given subscription.
+     * <p>
+     * It will asynchronously update the content of the list view when the fetch completes.
+     */
+    public void fetchCalls(int callType, int sub) {
         cancelFetch();
         int requestId = newCallsRequest();
-        fetchCalls(QUERY_NEW_CALLS_TOKEN, requestId, true /*isNew*/, callType);
-        fetchCalls(QUERY_OLD_CALLS_TOKEN, requestId, false /*isNew*/, callType);
+        fetchCalls(QUERY_NEW_CALLS_TOKEN, requestId, true /*isNew*/, callType, sub);
+        fetchCalls(QUERY_OLD_CALLS_TOKEN, requestId, false /*isNew*/, callType, sub);
     }
 
     public void fetchVoicemailStatus() {
@@ -178,7 +192,7 @@ import javax.annotation.concurrent.GuardedBy;
     }
 
     /** Fetches the list of calls in the call log, either the new one or the old ones. */
-    private void fetchCalls(int token, int requestId, boolean isNew, int callType) {
+    private void fetchCalls(int token, int requestId, boolean isNew, int callType, int sub) {
         // We need to check for NULL explicitly otherwise entries with where READ is NULL
         // may not match either the query or its negation.
         // We consider the calls that are not yet consumed (i.e. IS_READ = 0) as "new".
@@ -192,8 +206,26 @@ import javax.annotation.concurrent.GuardedBy;
         }
         if (callType > CALL_TYPE_ALL) {
             // Add a clause to fetch only items of type voicemail.
-            selection = String.format("(%s) AND (%s = ?)", selection, Calls.TYPE);
+            if ((callType == Calls.INCOMING_TYPE) || (callType == Calls.OUTGOING_TYPE)
+                    || (callType == Calls.MISSED_TYPE)) {
+                selection = String.format("(%s) AND (%s = ? OR %s = ?)", selection, Calls.TYPE,
+                        Calls.TYPE);
+            } else {
+                selection = String.format("(%s) AND (%s = ?)", selection, Calls.TYPE);
+            }
             selectionArgs.add(Integer.toString(callType));
+            if (callType == Calls.INCOMING_TYPE) {
+                selectionArgs.add(Integer.toString(CallTypeHelper.INCOMING_CSVT_TYPE));
+            } else if (callType == Calls.OUTGOING_TYPE) {
+                selectionArgs.add(Integer.toString(CallTypeHelper.OUTGOING_CSVT_TYPE));
+            } else if (callType == Calls.MISSED_TYPE) {
+                selectionArgs.add(Integer.toString(CallTypeHelper.MISSED_CSVT_TYPE));
+            }
+        }
+        if (sub > CALL_SUB_ALL) {
+            // Add a clause to fetch only items of sub.
+            selection = String.format("(%s) AND (%s = ?)", selection, Calls.SUBSCRIPTION);
+            selectionArgs.add(Integer.toString(sub));
         }
         Uri uri = Calls.CONTENT_URI_WITH_VOICEMAIL.buildUpon()
                 .appendQueryParameter(Calls.LIMIT_PARAM_KEY, Integer.toString(NUM_LOGS_TO_DISPLAY))

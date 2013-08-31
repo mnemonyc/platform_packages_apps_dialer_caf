@@ -18,6 +18,9 @@
 
 package com.android.dialer;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
 import android.app.ActionBar;
 import android.app.ActionBar.LayoutParams;
 import android.app.ActionBar.Tab;
@@ -27,21 +30,28 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.res.TypedArray;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.os.ServiceManager;
+import android.os.SystemProperties;
 import android.preference.PreferenceManager;
 import android.provider.CallLog.Calls;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Intents.UI;
+import android.provider.Settings;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.telephony.MSimTelephonyManager;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -70,11 +80,16 @@ import com.android.contacts.common.list.OnPhoneNumberPickerActionListener;
 import com.android.contacts.common.list.PhoneNumberPickerFragment;
 import com.android.contacts.common.util.AccountFilterUtil;
 import com.android.dialer.calllog.CallLogFragment;
+import com.android.dialer.calllog.MSimCallLogFragment;
+import com.android.dialer.CustomViewPager;
+import com.android.dialer.DialpadCling;
 import com.android.dialer.dialpad.DialpadFragment;
+import com.android.dialer.dialpad.SmartDialpadFragment;
 import com.android.dialer.interactions.PhoneNumberInteraction;
 import com.android.dialer.list.PhoneFavoriteFragment;
 import com.android.dialer.util.OrientationUtil;
 import com.android.internal.telephony.ITelephony;
+import com.android.internal.telephony.TelephonyIntents;
 
 /**
  * The dialer activity that has one tab with the virtual 12key
@@ -104,14 +119,15 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
      */
     private static final String ACTION_TOUCH_DIALER = "com.android.phone.action.TOUCH_DIALER";
 
+    private static final String ACTION_SEARCH = "android.intent.action.SEARCH";
     /** Used both by {@link ActionBar} and {@link ViewPagerAdapter} */
-    private static final int TAB_INDEX_DIALER = 0;
+    public static final int TAB_INDEX_DIALER = 0;
     private static final int TAB_INDEX_CALL_LOG = 1;
     private static final int TAB_INDEX_FAVORITES = 2;
 
     private static final int TAB_INDEX_COUNT = 3;
 
-    private SharedPreferences mPrefs;
+    public SharedPreferences mPrefs;
 
     /** Last manually selected tab index */
     private static final String PREF_LAST_MANUALLY_SELECTED_TAB =
@@ -119,6 +135,7 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
     private static final int PREF_LAST_MANUALLY_SELECTED_TAB_DEFAULT = TAB_INDEX_DIALER;
 
     private static final int SUBACTIVITY_ACCOUNT_FILTER = 1;
+    public static boolean mDialpadClingShowed = false;
 
     public class ViewPagerAdapter extends FragmentPagerAdapter {
         public ViewPagerAdapter(FragmentManager fm) {
@@ -129,9 +146,17 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
         public Fragment getItem(int position) {
             switch (position) {
                 case TAB_INDEX_DIALER:
-                    return new DialpadFragment();
+                    if (SystemProperties.getBoolean("persist.env.phone.smartdialer", true)) {
+                        return new SmartDialpadFragment();
+                    } else {
+                        return new DialpadFragment();
+                    }
                 case TAB_INDEX_CALL_LOG:
-                    return new CallLogFragment();
+                    if (MSimTelephonyManager.getDefault().getPhoneCount() > 1) {
+                        return new MSimCallLogFragment();
+                    } else {
+                        return new CallLogFragment();
+                    }
                 case TAB_INDEX_FAVORITES:
                     return new PhoneFavoriteFragment();
             }
@@ -171,7 +196,7 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
      */
     boolean mUserTabClick = false;
 
-    private class PageChangeListener implements OnPageChangeListener {
+    public class PageChangeListener implements OnPageChangeListener {
         private int mCurrentPosition = -1;
         /**
          * Used during page migration, to remember the next position {@link #onPageSelected(int)}
@@ -246,6 +271,10 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
                     invalidateOptionsMenu();
 
                     mCurrentPosition = mNextPosition;
+                    if (mCurrentPosition == TAB_INDEX_DIALER && !mDialpadClingShowed
+                            && canShowDialpadCling()) {
+                        ((SmartDialpadFragment)mDialpadFragment).showFirstRunDialpadCling();
+                    }
                     break;
                 }
                 case ViewPager.SCROLL_STATE_DRAGGING: {
@@ -269,8 +298,8 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
     private String mFilterText;
 
     /** Enables horizontal swipe between Fragments. */
-    private ViewPager mViewPager;
-    private final PageChangeListener mPageChangeListener = new PageChangeListener();
+    public CustomViewPager mViewPager;
+    public final PageChangeListener mPageChangeListener = new PageChangeListener();
     private DialpadFragment mDialpadFragment;
     private CallLogFragment mCallLogFragment;
     private PhoneFavoriteFragment mPhoneFavoriteFragment;
@@ -356,7 +385,7 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
      * True when this Activity is in its search UI (with a {@link SearchView} and
      * {@link PhoneNumberPickerFragment}).
      */
-    private boolean mInSearchUi;
+    public boolean mInSearchUi;
     private SearchView mSearchView;
 
     private final OnClickListener mFilterOptionClickListener = new OnClickListener() {
@@ -493,7 +522,7 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
 
         findViewById(R.id.dialtacts_frame).addOnLayoutChangeListener(mFirstLayoutListener);
 
-        mViewPager = (ViewPager) findViewById(R.id.pager);
+        mViewPager = (CustomViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(new ViewPagerAdapter(getFragmentManager()));
         mViewPager.setOnPageChangeListener(mPageChangeListener);
         mViewPager.setOffscreenPageLimit(2);
@@ -545,6 +574,10 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
                 && icicle == null) {
             setupFilterText(intent);
         }
+
+        final IntentFilter intentFilter = new IntentFilter(
+                TelephonyIntents.ACTION_SIM_STATE_CHANGED);
+        registerReceiver(mReceiver, intentFilter);
     }
 
     @Override
@@ -572,12 +605,23 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
         for (int i = 0; i < TAB_INDEX_COUNT; i++) {
             sendFragmentVisibilityChange(i, i == currentPosition);
         }
+        if(ACTION_SEARCH.equals(this.getIntent().getAction())){
+            Intent intent = new Intent(this, CallDetailActivity.class);
+            String id = this.getIntent().getData().getQueryParameter("id");
+            intent.putExtra(CallDetailActivity.EXTRA_CALL_LOG_IDS, new long[]{Long.decode(id)});
+            startActivity(intent);
+            finish();
+        }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mContactListFilterController.removeListener(mContactListFilterListener);
+
+        if (mContactListFilterController != null) {
+            mContactListFilterController.removeListener(mContactListFilterListener);
+        }
+        unregisterReceiver(mReceiver);
     }
 
     @Override
@@ -662,6 +706,69 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
         getActionBar().setCustomView(searchViewLayout,
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
     }
+
+    public boolean canShowDialpadCling() {
+        if (!SystemProperties.getBoolean("persist.env.phone.smartdialer", true)) {
+            return false;
+        }
+        if (DialpadFragment.phoneIsInUse()) {
+            return false;
+        }
+        if (!MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
+            return false;
+        }
+
+        int phoneCount = MSimTelephonyManager.getDefault().getPhoneCount();
+        for (int i = 0; i < phoneCount; i++) {
+            if (!isValidSimState(i))
+                return false;
+        }
+        return true;
+    }
+
+    public void dismissDialpadCling(View v) {
+        DialpadCling DialpadCling = (DialpadCling) findViewById(R.id.dialpad_cling);
+        dismissCling(DialpadCling, DialpadCling.DIALPAD_CLING_DISMISSED_KEY,
+                SmartDialpadFragment.DISMISS_CLING_DURATION);
+    }
+
+    public void dismissCling(final DialpadCling DialpadCling, final String flag, int duration) {
+        if (DialpadCling != null) {
+            ObjectAnimator anim = ObjectAnimator.ofFloat(DialpadCling, "alpha", 0f);
+            anim.setDuration(duration);
+            anim.addListener(new AnimatorListenerAdapter() {
+                public void onAnimationEnd(Animator animation) {
+                    DialpadCling.setVisibility(View.GONE);
+                    DialpadCling.cleanup();
+                    // We should update the shared preferences on a background
+                    // thread
+                    new Thread("dismissClingThread") {
+                        public void run() {
+                            SharedPreferences.Editor editor = mPrefs.edit();
+                            editor.putBoolean(flag, true);
+                            editor.commit();
+                        }
+                    }.start();
+                };
+            });
+            anim.start();
+        }
+    }
+
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (TelephonyIntents.ACTION_SIM_STATE_CHANGED.equals(action) ||
+                    Intent.ACTION_AIRPLANE_MODE_CHANGED.equals(action)) {
+                final int currentPosition = mPageChangeListener.getCurrentPosition();
+                if (currentPosition == TAB_INDEX_DIALER && !mDialpadClingShowed
+                        && canShowDialpadCling() && null != mDialpadFragment) {
+                    ((SmartDialpadFragment)mDialpadFragment).showFirstRunDialpadCling();
+                }
+            }
+        }
+    };
 
     @Override
     public void onAttachFragment(Fragment fragment) {
@@ -1240,7 +1347,7 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
      *
      * @param visible True when visible.
      */
-    private void updateFakeMenuButtonsVisibility(boolean visible) {
+    public void updateFakeMenuButtonsVisibility(boolean visible) {
         // Note: Landscape mode does not have the fake menu and search buttons.
         if (DEBUG) {
             Log.d(TAG, "updateFakeMenuButtonVisibility(" + visible + ")");
@@ -1272,6 +1379,63 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
         }
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         return intent;
+    }
+
+    /**
+     * Returns true if the sim state is valid.
+     *
+     * @param slotId
+     * @return
+     */
+    public static boolean isValidSimState(int slotId) {
+        int simState = MSimTelephonyManager.getDefault().getSimState(slotId);
+        if (TelephonyManager.SIM_STATE_ABSENT == simState
+                || TelephonyManager.SIM_STATE_UNKNOWN == simState) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * @return the SIM name for the special subscription.
+     */
+    public static String getMultiSimName(Context context, int subscription) {
+        if (context == null) {
+            // If the context is null, return null.
+            return null;
+        }
+
+        String name = Settings.System.getString(context.getContentResolver(),
+                Settings.System.MULTI_SIM_NAME[subscription]);
+        if (TextUtils.isEmpty(name)) {
+            return context.getString(R.string.slot_name) + " " + (subscription + 1);
+        }
+        return name;
+    }
+
+    /**
+     * @return the SIM icon for the special subscription.
+     */
+    public static Drawable getMultiSimIcon(Context context, int subscription) {
+        if (context == null) {
+            // If the context is null, return 0 as no resource found.
+            return null;
+        }
+
+        TypedArray icons = context.getResources().obtainTypedArray(
+                com.android.internal.R.array.sim_icons);
+        String simIconIndex = Settings.System.getString(context.getContentResolver(),
+                Settings.System.PREFERRED_SIM_ICON_INDEX);
+        if (TextUtils.isEmpty(simIconIndex)) {
+            return icons.getDrawable(subscription);
+        } else {
+            String[] indexs = simIconIndex.split(",");
+            if (subscription >= indexs.length) {
+                return null;
+            }
+            return icons.getDrawable(Integer.parseInt(indexs[subscription]));
+        }
     }
 
     @Override

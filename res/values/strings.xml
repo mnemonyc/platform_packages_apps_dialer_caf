@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ Copyright (C) 2012 The Android Open Source Project
+  ~ Copyright (C) 2013 The Linux Foundation. All Rights Reserved.
   ~
+  ~ Not a Contribution.
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
   ~ You may obtain a copy of the License at
@@ -50,6 +52,12 @@
 
     <!-- Menu item used to copy a number from the call log to the dialer so it can be edited before calling it -->
     <string name="recentCalls_editNumberBeforeCall">Edit number before call</string>
+
+    <!-- Menu item used to initiate videocall from dialer -->
+    <string name="videocall">Video call</string>
+
+    <!-- Menu item used to initiate videocall settings from dialer -->
+    <string name="videocall_settings">Video call settings</string>
 
     <!-- Menu item used to add a number from the call log to contacts -->
     <string name="recentCalls_addToContact">Add to contacts</string>
@@ -136,6 +144,9 @@
 
     <!-- The header to show that call log is only showing missed calls. [CHAR LIMIT=40] -->
     <string name="call_log_missed_header">Missed calls only</string>
+
+    <string name="call_duration_active">Active duration:</string>
+    <string name="call_duration_call_out">Call duration:</string>
 
     <!--  Voicemail status message shown at the top of call log to notify the user that no new
     voicemails are currently available. This can happen when both notification as well as data
@@ -310,6 +321,9 @@
 
     <!-- Menu item to copy something [CHAR_LIMIT=10] -->
     <string name="menu_copy">Copy</string>
+    <string name="non_phone_add_to_contacts">Add to contacts</string>
+    <!-- The header to show all call log. [CHAR LIMIT=40] -->
+    <string name="call_log_all_calls_header">All calls</string>
 
     <!-- Menu item used to show only outgoing in the call log. [CHAR LIMIT=30] -->
     <string name="menu_show_outgoing_only">Show outgoing only</string>
@@ -341,6 +355,11 @@
 
     <!-- Toast for call detail screen when couldn't read the requested details -->
     <string name="toast_call_detail_error">Couldn\'t read details for the requested call.</string>
+
+    <!-- Toast displayed when assign speed dial number failed. [CHAR LIMIT=NONE] -->
+    <string name="assignSpeedDialFailToast">
+        The number has already been assigned to a speed dial key, please select another number.
+    </string>
 
     <!-- Item label: jump to the in-call DTMF dialpad.
          (Part of a list of options shown in the dialer when another call
@@ -454,6 +473,8 @@
     <!-- Menu item used to call a contact, containing the number of the contact to call -->
     <string name="menu_callNumber">Call <xliff:g id="number">%s</xliff:g></string>
 
+    <!-- Menu item used to show no contact prompted-->
+    <string name="menu_noContact">No designated contact</string>
     <!-- String used to display calls from unknown numbers in the call log -->
     <string name="unknown">Unknown</string>
 
@@ -491,6 +512,7 @@
     <!-- Dialog message which is shown when the user tries to check voicemail
          while the system is in airplane mode. The user cannot access to
          voicemail service in Airplane mode. [CHAR LIMI=NONE] -->
+    <string name="calllog_search_hint">"Search rencent calls"</string>
     <string name="dialog_voicemail_airplane_mode_message">To call voicemail, first turn off Airplane mode.</string>
 
     <!-- Message that appears in the favorites tab of the Phone app when the contact list has not fully loaded yet (below the favorite and frequent contacts) [CHAR LIMIT=20] -->
@@ -513,6 +535,12 @@
     <string name="meid">MEID</string>
 
     <!-- Dialog text displayed when loading a phone number from the SIM card for speed dial -->
+    <string name="description_target_slot1">Slot1</string>
+    <string name="description_target_slot2">Slot2</string>
+    <string name="btn_ok">Ok</string>
+    <string name="description_direction_left">"Slide left for <xliff:g id="target_description" example="slot1">%s</xliff:g>.</string>
+    <string name="description_direction_right">Slide right for <xliff:g id="target_description" example="slot2">%s</xliff:g>.</string>
+    <string name="dialpad_cling_multi_sim_call">Slide dial button to call via slot1 or slot2.</string>
     <string name="simContacts_emptyLoading">Loading from SIM card\u2026</string>
 
     <!-- Dialog title displayed when loading a phone number from the SIM card for speed dial -->
@@ -524,4 +552,22 @@
     <string name="dial_conference">Dial conference</string>
     <string name="to_hint">1111:to;sip:abby@example.com:bcc;sip:bill@example.com:cc;</string>
     <string name="device_id">Device Identifier</string>
+
+    <!-- The slot common name -->
+    <string name="slot_name">SIM</string>
+
+    <!-- To match the DSDS/DSDA, add the filter for call log. -->
+    <string name="call_log_show_all_slots">All SIMs</string>
+
+	<string name="description_videocall">Video call <xliff:g id="name">%1$s</xliff:g></string>
+	<!-- String describing the text for a  Video call number in quick contact.
+
+        Note: AccessibilityServices use this attribute to announce what the view represents.
+              This is especially valuable for views without textual representation like ImageView.
+    -->
+    <string name="description_dial_vt">Dial vt <xliff:g id="name">%1$s</xliff:g></string>
+    <!-- Toast displayed when assign speed dial number failed. [CHAR LIMIT=NONE] -->
+    <string name="assignSpeedDialFailToast">
+        The number has already been assigned to a speed dial key, please select another number.
+    </string>
 </resources>

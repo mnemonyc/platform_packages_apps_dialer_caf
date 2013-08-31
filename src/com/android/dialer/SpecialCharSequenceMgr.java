@@ -66,6 +66,7 @@ public class SpecialCharSequenceMgr {
 
     private static final String MMI_IMEI_DISPLAY = "*#06#";
     private static final String MMI_REGULATORY_INFO_DISPLAY = "*#07#";
+    private static final String PRL_VERSION_DISPLAY = "*#0000#";
 
     /**
      * Remembers the previous {@link QueryHandler} and cancel the operation when needed, to
@@ -102,7 +103,8 @@ public class SpecialCharSequenceMgr {
         //get rid of the separators so that the string gets parsed correctly
         String dialString = PhoneNumberUtils.stripSeparators(input);
 
-        if (handleIMEIDisplay(context, dialString, useSystemWindow)
+        if (handlePRLVersion(context, dialString)
+                || handleIMEIDisplay(context, dialString, useSystemWindow)
                 || handleRegulatoryInfoDisplay(context, dialString)
                 || handlePinEntry(context, dialString)
                 || handleAdnEntry(context, dialString, textField)
@@ -110,6 +112,20 @@ public class SpecialCharSequenceMgr {
             return true;
         }
 
+        return false;
+    }
+
+    static private boolean handlePRLVersion(Context context, String input) {
+        if (input.equals(PRL_VERSION_DISPLAY)) {
+            try {
+                Intent intent = new Intent("android.intent.action.ENGINEER_MODE_DEVICEINFO");
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(intent);
+                return true;
+            } catch (ActivityNotFoundException e) {
+                Log.d(TAG, "no activity to handle showing device info");
+            }
+        }
         return false;
     }
 
@@ -480,6 +496,7 @@ public class SpecialCharSequenceMgr {
             // get the EditText to update or see if the request was cancelled.
             EditText text = sc.getTextField();
 
+            Context context = sc.progressDialog.getContext();
             // if the textview is valid, and the cursor is valid and postionable
             // on the Nth number, then we update the text field and display a
             // toast indicating the caller name.
@@ -491,10 +508,13 @@ public class SpecialCharSequenceMgr {
                 text.getText().replace(0, 0, number);
 
                 // display the name as a toast
-                Context context = sc.progressDialog.getContext();
                 name = context.getString(R.string.menu_callNumber, name);
                 Toast.makeText(context, name, Toast.LENGTH_SHORT)
                     .show();
+            } else {
+                 // display no designated contact as a toast
+                 Toast.makeText(context, R.string.menu_noContact,
+                         Toast.LENGTH_SHORT).show();
             }
         }
 

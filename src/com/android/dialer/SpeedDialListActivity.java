@@ -53,6 +53,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 public class SpeedDialListActivity extends ListActivity implements OnItemClickListener,
                        OnCreateContextMenuListener {
@@ -125,20 +126,18 @@ public class SpeedDialListActivity extends ListActivity implements OnItemClickLi
         for (int i = 1; i < SPEED_ITEMS; i++) {
             // if there is no speed dial number for number key, show "not set", or lookup in contacts
             // according to number, if exist, show contact name, else show number.
-            if (!mSpeedDialUtils.nameIsValid(mContactDataName[i-1], mContactDataNumber[i-1])) {
-                // can not find contact name in db, maybe it is deleted
+            String mName = mSpeedDialUtils.getValidName(mContactDataNumber[i-1]);
+            if (null == mName) {
+                // can not find contact number in db, maybe it is deleted
                 mContactDataNumber[i-1] = "";
                 mContactDataName[i-1] = "";
                 mSpeedDialUtils.storeContactDataNumber(i-1, "");
                 mSpeedDialUtils.storeContactDataName(i-1, "");
-            }
-            if ("".equals(mContactDataNumber[i-1])) {
                 mSpeedListItems[i] = getString(R.string.speed_item, String.valueOf(i+1),
                         getString(R.string.not_set));
-            } else if ("".equals(mContactDataName[i-1])){
-                mSpeedListItems[i] = getString(R.string.speed_item, String.valueOf(i+1),
-                        mContactDataNumber[i-1]);
             } else {
+                mContactDataName[i-1] = mName;
+                mSpeedDialUtils.storeContactDataName(i-1, mName);
                 mSpeedListItems[i] = getString(R.string.speed_item, String.valueOf(i+1),
                         mContactDataName[i-1]);
             }
@@ -153,7 +152,7 @@ public class SpeedDialListActivity extends ListActivity implements OnItemClickLi
             if (MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
                 //if multi sim enable, should let user select which sim to be set.
                 intent.setClassName("com.android.settings",
-                "com.android.settings.multisimsettings.MultiSimSettingTab");
+                "com.android.settings.multisimsettings.MultiSimSettings");
                 intent.putExtra("PACKAGE", "com.android.phone");
                 intent.putExtra("TARGET_CLASS", "com.android.phone.MSimCallFeaturesSubSetting");
             }
@@ -220,8 +219,9 @@ public class SpeedDialListActivity extends ListActivity implements OnItemClickLi
                     c = getContentResolver().query(uriRet, null, null, null, null);
                     if (null != c && 0 != c.getCount()) {
                         c.moveToFirst();
-                        mContactDataNumber[numId] = c.getString(
+                        String number = c.getString(
                                 c.getColumnIndexOrThrow(Data.DATA1));
+                        String name = "";
                         int rawContactId = c.getInt(c.getColumnIndexOrThrow("raw_contact_id"));
                         String where = "_id = " + rawContactId;
                         c = getContentResolver().query(
@@ -229,8 +229,16 @@ public class SpeedDialListActivity extends ListActivity implements OnItemClickLi
                                         new String[]{"display_name"}, where, null, null);
                         if (null != c && 0 != c.getCount()) {
                             c.moveToFirst();
-                            mContactDataName[numId] = c.getString(
+                            name = c.getString(
                                     c.getColumnIndexOrThrow("display_name"));
+                            if (!okToSet(number)) {
+                                Toast.makeText(this, R.string.assignSpeedDialFailToast,
+                                        Toast.LENGTH_LONG).show();
+                                return ;
+                            } else {
+                                mContactDataName[numId] = name;
+                                mContactDataNumber[numId] = number;
+                            }
                         }
                     } else {
                         mContactDataNumber[numId] = "";
@@ -248,6 +256,16 @@ public class SpeedDialListActivity extends ListActivity implements OnItemClickLi
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private boolean okToSet(String number) {
+        boolean isCheckOk = true;
+        for (String phoneNumber: mContactDataNumber) {
+            if (number.equals(phoneNumber)) {
+                isCheckOk = false;
+            }
+        }
+        return isCheckOk;
     }
 
     @Override

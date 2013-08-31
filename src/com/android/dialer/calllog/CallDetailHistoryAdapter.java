@@ -17,14 +17,18 @@
 package com.android.dialer.calllog;
 
 import android.content.Context;
+import android.os.SystemProperties;
 import android.provider.CallLog.Calls;
+import android.telephony.MSimTelephonyManager;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.android.dialer.DialtactsActivity;
 import com.android.dialer.PhoneCallDetails;
 import com.android.dialer.R;
 
@@ -36,6 +40,8 @@ public class CallDetailHistoryAdapter extends BaseAdapter {
     private static final int VIEW_TYPE_HEADER = 0;
     /** Each history item shows the detail of a call. */
     private static final int VIEW_TYPE_HISTORY_ITEM = 1;
+
+    private static final String PROPERTY = "persist.env.phone.activetime";
 
     private final Context mContext;
     private final LayoutInflater mLayoutInflater;
@@ -137,6 +143,7 @@ public class CallDetailHistoryAdapter extends BaseAdapter {
         CallTypeIconsView callTypeIconView =
                 (CallTypeIconsView) result.findViewById(R.id.call_type_icon);
         TextView callTypeTextView = (TextView) result.findViewById(R.id.call_type_text);
+        ImageView subIconView = (ImageView) result.findViewById(R.id.sub_icon);
         TextView dateView = (TextView) result.findViewById(R.id.date);
         TextView durationView = (TextView) result.findViewById(R.id.duration);
 
@@ -144,23 +151,33 @@ public class CallDetailHistoryAdapter extends BaseAdapter {
         callTypeIconView.clear();
         callTypeIconView.add(callType);
         callTypeTextView.setText(mCallTypeHelper.getCallTypeText(callType));
+        // Set the sub icon.
+        if (MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
+            subIconView.setVisibility(View.VISIBLE);
+            subIconView.setImageDrawable(
+                    DialtactsActivity.getMultiSimIcon(mContext, details.subscription));
+        } else {
+            // Not enable, set the view as gone.
+            subIconView.setVisibility(View.GONE);
+        }
         // Set the date.
         CharSequence dateValue = DateUtils.formatDateRange(mContext, details.date, details.date,
                 DateUtils.FORMAT_SHOW_TIME | DateUtils.FORMAT_SHOW_DATE |
                 DateUtils.FORMAT_SHOW_WEEKDAY | DateUtils.FORMAT_SHOW_YEAR);
         dateView.setText(dateValue);
         // Set the duration
-        if (callType == Calls.MISSED_TYPE || callType == Calls.VOICEMAIL_TYPE) {
+        if (SystemProperties.getBoolean("persist.env.phone.noduration", false)
+                || callType == Calls.MISSED_TYPE || callType == Calls.VOICEMAIL_TYPE) {
             durationView.setVisibility(View.GONE);
         } else {
             durationView.setVisibility(View.VISIBLE);
-            durationView.setText(formatDuration(details.duration));
+            durationView.setText(formatDuration(details.duration, details.durationType));
         }
 
         return result;
     }
 
-    private String formatDuration(long elapsedSeconds) {
+    private String formatDuration(long elapsedSeconds, int durationType) {
         long minutes = 0;
         long seconds = 0;
 
@@ -170,6 +187,22 @@ public class CallDetailHistoryAdapter extends BaseAdapter {
         }
         seconds = elapsedSeconds;
 
-        return mContext.getString(R.string.callDetailsDurationFormat, minutes, seconds);
+        String timeStr = mContext.getString(
+                R.string.callDetailsDurationFormat, minutes, seconds);
+        boolean property = SystemProperties.getBoolean(PROPERTY, false);
+        if (property) {
+            switch (durationType) {
+                case Calls.DURATION_TYPE_ACTIVE:
+                    return mContext.getString(R.string.call_duration_active)
+                            + timeStr;
+                case Calls.DURATION_TYPE_CALLOUT:
+                    return mContext.getString(R.string.call_duration_call_out)
+                            + timeStr;
+                default:
+                    return timeStr;
+            }
+        } else {
+            return timeStr;
+        }
     }
 }
