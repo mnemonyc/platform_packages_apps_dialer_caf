@@ -1315,6 +1315,8 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
     private Fragment getFragmentAt(int position) {
         switch (position) {
             case TAB_INDEX_DIALER:
+                // would not show Search button in Dialer tab.
+                mSearchButton.setVisibility(View.GONE);
                 return mDialpadFragment;
             case TAB_INDEX_CALL_LOG:
                 return mCallLogFragment;
@@ -1354,7 +1356,8 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
         }
 
         if (mSearchButton != null) {
-            if (visible) {
+            // would not show Search button in Dialer tab.
+            if (visible && mPageChangeListener.getCurrentPosition() != TAB_INDEX_DIALER) {
                 mSearchButton.setVisibility(View.VISIBLE);
             } else {
                 mSearchButton.setVisibility(View.INVISIBLE);

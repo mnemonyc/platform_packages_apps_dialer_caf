@@ -32,6 +32,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.provider.CallLog.Calls;
 import android.provider.VoicemailContract.Status;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.android.common.io.MoreCloseables;
@@ -46,7 +47,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.GuardedBy;
 
 /** Handles asynchronous queries to the call log. */
-/*package*/ class CallLogQueryHandler extends NoNullCursorAsyncQueryHandler {
+public class CallLogQueryHandler extends NoNullCursorAsyncQueryHandler {
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
     private static final String TAG = "CallLogQueryHandler";
@@ -196,6 +197,20 @@ import javax.annotation.concurrent.GuardedBy;
         // We need to check for NULL explicitly otherwise entries with where READ is NULL
         // may not match either the query or its negation.
         // We consider the calls that are not yet consumed (i.e. IS_READ = 0) as "new".
+        fetchCalls(token, requestId, isNew, callType, sub, null);
+    }
+
+    public void fetchCalls(String filter) {
+        cancelFetch();
+        int requestId = newCallsRequest();
+        fetchCalls(QUERY_NEW_CALLS_TOKEN, requestId, true, CallLogQueryHandler.CALL_TYPE_ALL,
+                CallLogQueryHandler.CALL_SUB_ALL, filter);
+        fetchCalls(QUERY_OLD_CALLS_TOKEN, requestId, false, CallLogQueryHandler.CALL_TYPE_ALL,
+                CallLogQueryHandler.CALL_SUB_ALL, filter);
+    }
+
+    private void fetchCalls(int token, int requestId, boolean isNew, int callType, int sub,
+            String filter) {
         String selection = String.format("%s IS NOT NULL AND %s = 0 AND %s > ?",
                 Calls.IS_READ, Calls.IS_READ, Calls.DATE);
         List<String> selectionArgs = Lists.newArrayList(
@@ -230,6 +245,9 @@ import javax.annotation.concurrent.GuardedBy;
         Uri uri = Calls.CONTENT_URI_WITH_VOICEMAIL.buildUpon()
                 .appendQueryParameter(Calls.LIMIT_PARAM_KEY, Integer.toString(NUM_LOGS_TO_DISPLAY))
                 .build();
+        if (!TextUtils.isEmpty(filter)) {
+             selection += " AND (" + Calls.NUMBER + " LIKE '%" + filter + "%')";
+        }
         startQuery(token, requestId, uri,
                 CallLogQuery._PROJECTION, selection, selectionArgs.toArray(EMPTY_STRING_ARRAY),
                 Calls.DEFAULT_SORT_ORDER);
