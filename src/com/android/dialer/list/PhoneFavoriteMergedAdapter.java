@@ -237,6 +237,7 @@ public class PhoneFavoriteMergedAdapter extends BaseAdapter implements SectionIn
                 final int localPosition = position - contactTileAdapterCount - 1;
                 final ContactListItemView itemView = (ContactListItemView)
                         mContactEntryListAdapter.getView(localPosition, convertView, null);
+                itemView.setSecondaryActionViewContainer();
                 itemView.setPadding(mItemPaddingLeft, itemView.getPaddingTop(),
                         mItemPaddingRight, itemView.getPaddingBottom());
                 itemView.setSelectionBoundsHorizontalMargin(mItemPaddingLeft, mItemPaddingRight);

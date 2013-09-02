@@ -72,6 +72,7 @@ import android.widget.TextView;
 import com.android.contacts.common.CallUtil;
 import com.android.contacts.common.ContactPhotoManager;
 import com.android.contacts.common.GeoUtil;
+import com.android.contacts.common.MoreContactUtils;
 import com.android.contacts.common.list.ContactListItemView;
 import com.android.contacts.common.list.ContactListItemView.PhotoPosition;
 import com.android.contacts.common.model.account.SimAccountType;
@@ -926,6 +927,8 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
                 }
             }
 
+            view.setSecondaryActionViewContainer();
+
             long photoId = 0;
             if (!cursor.isNull(QUERY_PHOTO_ID)) {
                 photoId = cursor.getLong(QUERY_PHOTO_ID);
@@ -933,7 +936,7 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
 
             QuickContactBadge photo = view.getQuickContact();
             photo.assignContactFromPhone(cursor.getString(QUERY_NUMBER), true);
-            ContactPhotoManager.getInstance(mContext).loadThumbnail(photo, photoId, false);
+            ContactPhotoManager.getInstance(mContext).loadThumbnail(photo, photoId, true);
             view.setPresence(null);
 
         }
@@ -1073,46 +1076,11 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
 
         int phoneCount = MSimTelephonyManager.getDefault().getPhoneCount();
         for (int i = 0; i < phoneCount; i++) {
-            if (!DialtactsActivity.isValidSimState(i))
+            if (!MoreContactUtils.isMultiSimEnable(i)) {
                 return false;
-        }
-        return true;
-    }
-
-    public void dialWidgetSwitched(int subscription) {
-        if (isDigitsEmpty()) { // No number entered.
-            handleDialButtonClickWithEmptyDigits();
-        } else {
-            final String number = mDigits.getText().toString();
-
-            // "persist.radio.otaspdial" is a temporary hack needed for one
-            // carrier's automated
-            // test equipment.
-            // TODO: clean it up.
-            if (number != null
-                    && !TextUtils.isEmpty(mProhibitedPhoneNumberRegexp)
-                    && number.matches(mProhibitedPhoneNumberRegexp)
-                    && (SystemProperties.getInt("persist.radio.otaspdial", 0) != 1)) {
-                Log.i(TAG, "The phone number is prohibited explicitly by a rule.");
-                if (getActivity() != null) {
-                    DialogFragment dialogFragment = ErrorDialogFragment.newInstance(
-                            R.string.dialog_phone_call_prohibited_message);
-                    dialogFragment.show(getFragmentManager(), "phone_prohibited_dialog");
-                }
-
-                // Clear the digits just in case.
-                mDigits.getText().clear();
-            } else {
-                final Intent intent = CallUtil.getCallIntent(number,
-                        (getActivity() instanceof DialtactsActivity ?
-                                ((DialtactsActivity) getActivity()).getCallOrigin()
-                                : null));
-                intent.putExtra("dial_widget_switched", subscription);
-                startActivity(intent);
-                mClearDigitsOnStop = true;
-                getActivity().finish();
             }
         }
+        return true;
     }
 
     public void transferCoordinates() {
