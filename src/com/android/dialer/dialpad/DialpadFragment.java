@@ -794,6 +794,8 @@ public class DialpadFragment extends Fragment
         final MenuItem addToContactMenuItem = menu.findItem(R.id.menu_add_contacts);
         final MenuItem videocallMenuItem = menu.findItem(R.id.menu_videocall);
         final MenuItem videocallSettingsMenuItem = menu.findItem(R.id.menu_videocall_settings);
+        final MenuItem twoSecPauseMenuItem = menu.findItem(R.id.menu_2s_pause);
+        final MenuItem waitMenuItem = menu.findItem(R.id.menu_add_wait);
         // Check if all the menu items are inflated correctly. As a shortcut, we assume all menu
         // items are ready if the first item is non-null.
         if (callSettingsMenuItem == null) {
@@ -821,6 +823,8 @@ public class DialpadFragment extends Fragment
         if (dialpadChooserVisible() || isDigitsEmpty()) {
             addToContactMenuItem.setVisible(false);
             videocallMenuItem.setVisible(false);
+            twoSecPauseMenuItem.setVisible(false);
+            waitMenuItem.setVisible(false);
         } else {
             final CharSequence digits = mDigits.getText();
 
