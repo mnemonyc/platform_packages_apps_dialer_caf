@@ -603,7 +603,7 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
         }
         updateFakeMenuButtonsVisibility(currentPosition == TAB_INDEX_DIALER && !mInSearchUi);
         for (int i = 0; i < TAB_INDEX_COUNT; i++) {
-            sendFragmentVisibilityChange(i, i == currentPosition);
+            sendFragmentVisibilityChange(i, i == currentPosition && !mInSearchUi);
         }
         if(ACTION_SEARCH.equals(this.getIntent().getAction())){
             Intent intent = new Intent(this, CallDetailActivity.class);
