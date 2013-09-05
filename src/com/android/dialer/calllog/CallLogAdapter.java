@@ -49,7 +49,7 @@ import java.util.LinkedList;
 /**
  * Adapter class to fill in data for the Call Log.
  */
-/*package*/ class CallLogAdapter extends GroupingListAdapter
+public class CallLogAdapter extends GroupingListAdapter
         implements ViewTreeObserver.OnPreDrawListener, CallLogGroupBuilder.GroupCreator {
     /** Interface used to initiate a refresh of the content. */
     public interface CallFetcher {
@@ -230,7 +230,7 @@ import java.util.LinkedList;
         }
     };
 
-    CallLogAdapter(Context context, CallFetcher callFetcher,
+    public CallLogAdapter(Context context, CallFetcher callFetcher,
             ContactInfoHelper contactInfoHelper) {
         super(context);
 
@@ -622,7 +622,11 @@ import java.util.LinkedList;
         final boolean isNew = c.getInt(CallLogQuery.IS_READ) == 0;
         // New items also use the highlighted version of the text.
         final boolean isHighlighted = isNew;
-        mCallLogViewsHelper.setPhoneCallDetails(views, details, isHighlighted);
+        if (TextUtils.isEmpty(mFilterString)) {
+            mCallLogViewsHelper.setPhoneCallDetails(views, details, isHighlighted);
+        } else {
+            mCallLogViewsHelper.setPhoneCallDetails(views, details, isHighlighted, mFilterString);
+        }
         if (lookupUri == null) {
             setDefaultPhoto(views, photoId, info.formattedNumber);
         } else {
@@ -825,5 +829,12 @@ import java.util.LinkedList;
             number = matchingNumber;
         }
         return number;
+    }
+
+    private String mFilterString;
+
+    public void changeCursor(Cursor cursor, String filter) {
+        super.changeCursor(cursor);
+        mFilterString = filter;
     }
 }

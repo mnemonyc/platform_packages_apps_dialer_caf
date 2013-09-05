@@ -154,7 +154,7 @@ public class DialpadFragment extends Fragment
      */
     private int mDialpadPressCount;
 
-    private View mDialButtonContainer;
+    protected View mDialButtonContainer;
     protected View mDialButton;
     private ImageButton mDialConferenceButton;
     private ListView mDialpadChooser;
@@ -268,6 +268,46 @@ public class DialpadFragment extends Fragment
 
     private static final String PREF_DIGITS_FILLED_BY_INTENT = "pref_digits_filled_by_intent";
 
+    private float mDefaultTextSize_sp;
+    private String beforeTextString = "";
+
+    private float px2Sp(float px) {
+        DisplayMetrics displayMetrics = getActivity().getResources().getDisplayMetrics();
+        return px / displayMetrics.scaledDensity;
+    }
+
+    private void refreshDigitTextSize(Editable input) {
+        // the digit text size would not be refresh when text not change or
+        // digits' width is zero.
+        if (mDigits.getWidth() <= 0 || beforeTextString.equals(input.toString()))
+            return;
+
+        float newSize_sp = mDefaultTextSize_sp;
+        final float inputTextLength_sp = new EditText(getActivity()).getPaint().measureText(
+                input.toString());
+        final float oneCharLength_sp = new EditText(getActivity()).getPaint().measureText("0");
+
+        final float digitsWidth_px = mDigits.getWidth();
+        final float digitsWidth_sp = px2Sp(digitsWidth_px);
+
+        // when text's length is longer than digits' width, the text size should
+        // be decrease.
+        if (inputTextLength_sp > digitsWidth_sp) {
+            newSize_sp = mDefaultTextSize_sp
+                    - ((inputTextLength_sp - digitsWidth_sp) / oneCharLength_sp) * 2;
+        }
+
+        if (newSize_sp > mDefaultTextSize_sp) {
+            newSize_sp = mDefaultTextSize_sp;
+        }
+        if (newSize_sp < mDefaultTextSize_sp / 2.0) {
+            newSize_sp = (float) (mDefaultTextSize_sp / 2.0);
+        }
+
+        mDigits.setTextSize(newSize_sp);
+        beforeTextString = input.toString();
+    }
+
     /**
      * Return an Intent for launching voicemail screen.
      */
@@ -314,6 +354,8 @@ public class DialpadFragment extends Fragment
 
         updateDialAndDeleteButtonEnabledState();
         loadSmartDialEntries();
+
+        refreshDigitTextSize(input);
     }
 
     @Override
@@ -351,12 +393,14 @@ public class DialpadFragment extends Fragment
 
         mDigitsContainer = fragmentView.findViewById(R.id.digits_container);
         mDigits = (EditText) fragmentView.findViewById(R.id.digits);
+        mDigits.setSingleLine();
         mDigits.setKeyListener(UnicodeDialerKeyListener.INSTANCE);
         mDigits.setOnClickListener(this);
         mDigits.setOnKeyListener(this);
         mDigits.setOnLongClickListener(this);
         mDigits.addTextChangedListener(this);
         PhoneNumberFormatter.setPhoneNumberFormattingTextWatcher(getActivity(), mDigits);
+        mDefaultTextSize_sp = px2Sp(mDigits.getTextSize());
 
         mRecipients = (EditText) fragmentView.findViewById(R.id.recipients);
         if (null != mRecipients) {
@@ -717,6 +761,13 @@ public class DialpadFragment extends Fragment
         stopWatch.lap("bes");
 
         stopWatch.stopAndLog(TAG, 50);
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                refreshDigitTextSize(mDigits.getText());
+            }
+        }, 100/* Delay 100ms for UI refresh */);
     }
 
     @Override
@@ -794,6 +845,8 @@ public class DialpadFragment extends Fragment
         final MenuItem addToContactMenuItem = menu.findItem(R.id.menu_add_contacts);
         final MenuItem videocallMenuItem = menu.findItem(R.id.menu_videocall);
         final MenuItem videocallSettingsMenuItem = menu.findItem(R.id.menu_videocall_settings);
+        final MenuItem twoSecPauseMenuItem = menu.findItem(R.id.menu_2s_pause);
+        final MenuItem waitMenuItem = menu.findItem(R.id.menu_add_wait);
         // Check if all the menu items are inflated correctly. As a shortcut, we assume all menu
         // items are ready if the first item is non-null.
         if (callSettingsMenuItem == null) {
@@ -821,6 +874,8 @@ public class DialpadFragment extends Fragment
         if (dialpadChooserVisible() || isDigitsEmpty()) {
             addToContactMenuItem.setVisible(false);
             videocallMenuItem.setVisible(false);
+            twoSecPauseMenuItem.setVisible(false);
+            waitMenuItem.setVisible(false);
         } else {
             final CharSequence digits = mDigits.getText();
 
