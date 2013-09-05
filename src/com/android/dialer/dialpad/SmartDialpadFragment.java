@@ -23,42 +23,38 @@ package com.android.dialer.dialpad;
 import android.app.DialogFragment;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.database.CharArrayBuffer;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.media.ToneGenerator;
 import android.net.Uri;
 import android.net.Uri.Builder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemProperties;
-import android.provider.CallLog.Calls;
-import android.provider.ContactsContract.Contacts;
-import android.provider.ContactsContract.Data;
-import android.provider.ContactsContract.RawContacts;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
+import android.provider.ContactsContract.Data;
+import android.provider.ContactsContract.RawContacts;
 import android.provider.Settings;
 import android.telephony.MSimTelephonyManager;
 import android.telephony.PhoneNumberUtils;
 import android.text.Editable;
 import android.text.Spannable;
-import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.style.BackgroundColorSpan;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
@@ -68,25 +64,27 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.CursorAdapter;
 import android.widget.Filter;
-import android.widget.ImageView;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.QuickContactBadge;
-import android.widget.SectionIndexer;
 import android.widget.TextView;
 
-import com.android.contacts.common.ContactPhotoManager;
 import com.android.contacts.common.CallUtil;
-import com.android.dialer.DialpadCling;
-import com.android.dialer.DialtactsActivity;
-import com.android.dialer.dialpad.DialpadFragment.ErrorDialogFragment;
-import com.android.dialer.dialpad.HanziToPinyin.Token;
+import com.android.contacts.common.ContactPhotoManager;
+import com.android.contacts.common.GeoUtil;
 import com.android.contacts.common.list.ContactListItemView;
 import com.android.contacts.common.list.ContactListItemView.PhotoPosition;
 import com.android.contacts.common.model.account.SimAccountType;
-import com.android.dialer.widget.multiwaveview.GlowPadView;
+import com.android.dialer.DialpadCling;
+import com.android.dialer.DialtactsActivity;
 import com.android.dialer.R;
+import com.android.dialer.calllog.CallLogAdapter;
+import com.android.dialer.calllog.CallLogQueryHandler;
+import com.android.dialer.calllog.ContactInfoHelper;
+import com.android.dialer.dialpad.HanziToPinyin.Token;
+import com.android.dialer.widget.multiwaveview.GlowPadView;
+import com.android.internal.telephony.CallerInfo;
 import com.android.internal.telephony.MSimConstants;
-import static com.android.internal.telephony.MSimConstants.SUBSCRIPTION_KEY;
 
 import java.text.Collator;
 import java.util.ArrayList;
@@ -96,8 +94,8 @@ import java.util.Locale;
 /**
  * Fragment that displays a twelve-key phone dialpad.
  */
-public class SmartDialpadFragment extends DialpadFragment
-        implements View.OnClickListener, TextWatcher {
+public class SmartDialpadFragment extends DialpadFragment implements View.OnClickListener,
+        TextWatcher, CallLogQueryHandler.Listener, CallLogAdapter.CallFetcher {
     private static final String TAG = SmartDialpadFragment.class.getSimpleName();
 
     private static final String[] CONTACTS_SUMMARY_FILTER_NUMBER_PROJECTION = new String[] {
@@ -106,6 +104,7 @@ public class SmartDialpadFragment extends DialpadFragment
             ("display_name"),
             ("photo_id"),
             ("lookup"),
+            ("data_id"),
     };
     private static final int AIRPLANE_MODE_ON_VALUE = 1;
     private static final int AIRPLANE_MODE_OFF_VALUE = 0;
@@ -115,12 +114,14 @@ public class SmartDialpadFragment extends DialpadFragment
     private static final int QUERY_DISPLAY_NAME = 2;
     private static final int QUERY_PHOTO_ID = 3;
     private static final int QUERY_LOOKUP_KEY = 4;
+    private static final int QUERY_DATA_ID = 5;
     private static final Uri CONTENT_SMART_DIALER_FILTER_URI =
             Uri.withAppendedPath(ContactsContract.AUTHORITY_URI, "smart_dialer_filter");
     private Handler mHandler = new Handler();
     private Animation showAction;
     private Animation hideAction;
     private ContactItemListAdapter mAdapter;
+    private CallLogAdapter mCallLogAdapter;
     private Cursor mCursor;
     private View mListoutside;
     private View mCountButton;
@@ -128,7 +129,12 @@ public class SmartDialpadFragment extends DialpadFragment
     private View mAddContact;
     private TextView mAddContactText;
     private TextView mCountView;
+
+    private View mListTextView;
     private ListView mList;
+
+    private View mCallLogListTextView;
+    private ListView mCallLogListView;
 
     private GlowPadView mDialWidget;
     public GlowPadViewMethods glowPadViewMethods;
@@ -278,11 +284,14 @@ public class SmartDialpadFragment extends DialpadFragment
             return;
         }
 
+        setCallLogQueryFilter();
         if (isDigitsEmpty()) {
             mAddContact.setVisibility(View.INVISIBLE);
         }
         setQueryFilter();
     }
+
+    private CallLogQueryHandler mCallLogQueryHandler;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -290,6 +299,7 @@ public class SmartDialpadFragment extends DialpadFragment
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_AIRPLANE_MODE_CHANGED);
         getActivity().registerReceiver(mAirplaneStateReceiver, filter);
+        mCallLogQueryHandler = new CallLogQueryHandler(getActivity().getContentResolver(), this);
     }
 
     @Override
@@ -302,6 +312,8 @@ public class SmartDialpadFragment extends DialpadFragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedState) {
         View fragmentView = super.onCreateView(inflater, container, savedState);
 
+        mListTextView = fragmentView.findViewById(R.id.textview_contacts);
+
         mList = (ListView) fragmentView.findViewById(R.id.listview);
         mList.setOnItemClickListener(new OnItemClickListener() {
             @Override
@@ -309,6 +321,17 @@ public class SmartDialpadFragment extends DialpadFragment
                 onListItemClick(mList, view, position, id);
             }
         });
+
+        mCallLogListTextView = fragmentView.findViewById(R.id.textview_callLog);
+
+        mCallLogListView = (ListView)fragmentView.findViewById(R.id.callloglistview);
+        mCallLogListView.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                onListItemClick(mCallLogListView, view, position, id);
+            }
+        });
+
         mListoutside = fragmentView.findViewById(R.id.listoutside);
         mCountButton = fragmentView.findViewById(R.id.filterbutton);
         mCountButton.setOnClickListener(this);
@@ -344,6 +367,7 @@ public class SmartDialpadFragment extends DialpadFragment
         mAddContact.setVisibility(View.INVISIBLE);
         if (!phoneIsInUse()) {
             setupListView();
+            setCallLogQueryFilter();
             setQueryFilter();
             hideDialPadShowList(false);
         }
@@ -352,6 +376,11 @@ public class SmartDialpadFragment extends DialpadFragment
     @Override
     public void onPause() {
         super.onPause();
+
+        if (mCallLogAdapter != null) {
+            mCallLogAdapter.changeCursor(null, null);
+            setCallLogListViewHeight(mCallLogListView);
+        }
 
         if (mAdapter != null) {
             mAdapter.changeCursor(null);
@@ -424,22 +453,51 @@ public class SmartDialpadFragment extends DialpadFragment
         }
     }
 
+    private void setCallLogQueryFilter() {
+        if (mCallLogAdapter != null) {
+            String filterString = getTextFilter();
+            if (TextUtils.isEmpty(filterString)) {
+                mCallLogAdapter.changeCursor(null, null);
+                setCallLogListViewHeight(mCallLogListView);
+            } else {
+                mCallLogQueryHandler.fetchCalls(filterString);
+            }
+        }
+    }
+
     private void hideDialPadShowList(boolean isHide) {
         if (isHide) {
             mDialpad.startAnimation(hideAction);
             mDialpad.setVisibility(View.GONE);
             mCountButton.setVisibility(View.GONE);
+            mDialButtonContainer.setVisibility(View.GONE);
+            if (mCallLogAdapter != null && mCallLogAdapter.getCount() > 0 ) {
+                mCallLogListTextView.setVisibility(View.VISIBLE);
+            } else {
+                mCallLogListTextView.setVisibility(View.GONE);
+            }
+            if (mCursor != null && !mCursor.isClosed() && mCursor.getCount() > 0) {
+                mListTextView.setVisibility(View.VISIBLE);
+            } else {
+                mListTextView.setVisibility(View.GONE);
+            }
+
             mCancel.setVisibility(View.VISIBLE);
             mCancel.setText(android.R.string.cancel);
         } else {
+            mDialButtonContainer.setVisibility(View.VISIBLE);
             if (!mDialpad.isShown()) {
                 mDialpad.startAnimation(showAction);
                 mDialpad.setVisibility(View.VISIBLE);
             }
-            if (mCursor != null && !mCursor.isClosed() && mCursor.getCount() > 0) {
+            if ((mCursor != null && !mCursor.isClosed() && mCursor.getCount() > 0)
+                    || (mCallLogAdapter.getCount() > 0)) {
                 mCountButton.setVisibility(View.VISIBLE);
-                mCountView.setText(mCursor.getCount() + "");
+                mCountView.setText(mCursor.getCount() + mCallLogAdapter.getCount() + "");
                 mCountView.invalidate();
+
+                mCallLogListTextView.setVisibility(View.GONE);
+                mListTextView.setVisibility(View.GONE);
             }
             mCancel.setVisibility(View.GONE);
             listScrollTop();
@@ -489,6 +547,16 @@ public class SmartDialpadFragment extends DialpadFragment
     }
 
     private void listScrollTop() {
+        if (mCallLogListView != null) {
+            mCallLogListView.post(new Runnable() {
+                public void run() {
+                    if (isResumed() && mCallLogListView != null) {
+                        mCallLogListView.setSelection(0);
+                    }
+                }
+            });
+        }
+
         if (mList != null) {
             mList.post(new Runnable() {
                 public void run() {
@@ -501,9 +569,37 @@ public class SmartDialpadFragment extends DialpadFragment
     }
 
     private void setupListView() {
+        setupCallLogListView();
         final ListView list = mList;
         mAdapter = new ContactItemListAdapter(getActivity());
         mList.setAdapter(mAdapter);
+        list.setOnCreateContextMenuListener(this);
+        list.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+                if (mDialpad.getVisibility() == View.VISIBLE
+                        && AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL == scrollState) {
+                    hideDialPadShowList(true);
+                } else if (mDialpad.getVisibility() == View.VISIBLE
+                        && AbsListView.OnScrollListener.SCROLL_STATE_IDLE == scrollState) {
+                    list.setSelection(0);
+                }
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem,
+                    int visibleItemCount, int totalItemCount) {
+            }
+        });
+        list.setSaveEnabled(false);
+    }
+
+    private void setupCallLogListView() {
+        final ListView list = mCallLogListView;
+        String currentCountryIso = GeoUtil.getCurrentCountryIso(getActivity());
+        mCallLogAdapter = new CallLogAdapter(getActivity(), this,
+                new ContactInfoHelper(getActivity(), currentCountryIso));
+        mCallLogListView.setAdapter(mCallLogAdapter);
         list.setOnCreateContextMenuListener(this);
         list.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
@@ -794,6 +890,42 @@ public class SmartDialpadFragment extends DialpadFragment
 
             final long contactId = cursor.getLong(QUERY_CONTACT_ID);
             final String lookupKey = cursor.getString(QUERY_LOOKUP_KEY);
+
+            String numType = "";
+            final long dataId = cursor.getInt(QUERY_DATA_ID);
+
+            Cursor dataCursor = context.getContentResolver().query(
+                    ContentUris.withAppendedId(Data.CONTENT_URI, dataId), new String[] {
+                            Phone.TYPE, Phone.LABEL
+                    }, null, null, null);
+
+            if (dataCursor != null && dataCursor.getCount()>0 && dataCursor.moveToFirst()){
+                int type = dataCursor.getInt(dataCursor.getColumnIndex(Phone.TYPE));
+                if (type != Phone.TYPE_CUSTOM){
+                    numType = getResources().getString(Phone.getTypeLabelResource(type));
+                } else {
+                    numType = dataCursor.getString(dataCursor.getColumnIndex(Phone.LABEL));
+                }
+                dataCursor.close();
+            }
+
+            if (!TextUtils.isEmpty(numType)){
+                view.setLabel("(" + numType + ")");
+            }
+
+            // get the location of that phone number
+            if (!TextUtils.isEmpty(cursor.getString(QUERY_NUMBER))) {
+                String locationStr = "";
+                CallerInfo ci = new CallerInfo();
+                ci.updateGeoDescription(mContext, cursor.getString(QUERY_NUMBER));
+                locationStr = ci.geoDescription;
+                if (TextUtils.isEmpty(locationStr)) {
+                    view.setLocation(getString(R.string.call_log_empty_gecode));
+                } else {
+                    view.setLocation(locationStr);
+                }
+            }
+
             long photoId = 0;
             if (!cursor.isNull(QUERY_PHOTO_ID)) {
                 photoId = cursor.getLong(QUERY_PHOTO_ID);
@@ -831,24 +963,44 @@ public class SmartDialpadFragment extends DialpadFragment
             }
             if (isDigitsEmpty()) {
                 mCountButton.setVisibility(View.GONE);
+
+                mListTextView.setVisibility(View.GONE);
                 mList.setVisibility(View.GONE);
+
+                mCallLogListTextView.setVisibility(View.GONE);
+                mCallLogListView.setVisibility(View.GONE);
+
                 hideDialPadShowList(false);
-            } else if (cursor != null && cursor.moveToFirst()) {
+            } else if ((cursor != null && cursor.moveToFirst())
+                    || mCallLogAdapter.getCount() > 0) {
                 mCountButton.setVisibility(View.VISIBLE);
                 mList.setVisibility(View.VISIBLE);
+                mCallLogListView.setVisibility(View.VISIBLE);
             } else {
                 mCountButton.setVisibility(View.GONE);
+                mListTextView.setVisibility(View.GONE);
                 mList.setVisibility(View.GONE);
+                mCallLogListTextView.setVisibility(View.GONE);
+                mCallLogListView.setVisibility(View.GONE);
                 hideDialPadShowList(false);
                 mAddContact.setVisibility(View.VISIBLE);
             }
-            if (mDialpad.isShown() && !isDigitsEmpty() && cursor != null && cursor.getCount() > 0) {
+            if ((mDialpad.isShown() && !isDigitsEmpty() && cursor != null && cursor.getCount() > 0)
+                    || (mDialpad.isShown() && mCallLogAdapter.getCount() > 0)) {
                 mCountButton.setVisibility(View.VISIBLE);
-                mCountView.setText(cursor.getCount() + "");
-                mCountView.invalidate();
+                final int contactCount = cursor.getCount();
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mCountView.setText(contactCount + mCallLogAdapter.getCount() + "");
+                        mCountView.invalidate();
+                    }
+                }, 100);// wait 100ms for mCallLogAdapter
             } else {
                 mCountButton.setVisibility(View.GONE);
             }
+
+            setCallLogListViewHeight(mCallLogListView);
             super.changeCursor(cursor);
         }
     }
@@ -953,7 +1105,8 @@ public class SmartDialpadFragment extends DialpadFragment
             } else {
                 final Intent intent = CallUtil.getCallIntent(number,
                         (getActivity() instanceof DialtactsActivity ?
-                                ((DialtactsActivity) getActivity()).getCallOrigin() : null));
+                                ((DialtactsActivity) getActivity()).getCallOrigin()
+                                : null));
                 intent.putExtra("dial_widget_switched", subscription);
                 startActivity(intent);
                 mClearDigitsOnStop = true;
@@ -1040,5 +1193,73 @@ public class SmartDialpadFragment extends DialpadFragment
             DialtactsActivity.mDialpadClingShowed = true;
         }
         return mDialpadCling;
+    }
+
+    @Override
+    public void onVoicemailStatusFetched(Cursor statusCursor) {
+        // do nothing here
+    }
+
+    @Override
+    public void onCallsFetched(Cursor combinedCursor) {
+        if (getActivity() == null || getActivity().isFinishing()) {
+            return;
+        }
+        mCallLogAdapter.changeCursor(combinedCursor, getTextFilter());
+        setCallLogListViewHeight(mCallLogListView);
+    }
+
+    @Override
+    public void fetchCalls() {
+        // do nothing here
+    }
+
+    private static final int MAX_ITEM_COUNT = 2;
+
+    private void setCallLogListViewHeight(ListView listView) {
+        ListAdapter listAdapter = listView.getAdapter();
+        if (listAdapter == null) {
+            return;
+        }
+
+        int count = listAdapter.getCount();
+        if (mCursor != null && !mCursor.isClosed() && mCursor.getCount() > 0) {
+            if (count > 1) {
+                View listItem = listAdapter.getView(0, null, listView);
+                listItem.measure(0, 0);
+                int listItemHeight = listItem.getMeasuredHeight();
+                ViewGroup.LayoutParams params = listView.getLayoutParams();
+                params.height = listItemHeight * MAX_ITEM_COUNT + listView.getDividerHeight()
+                        + listItemHeight / 3;
+                listView.setLayoutParams(params);
+            } else if (count == 1) {
+                View listItem = listAdapter.getView(0, null, listView);
+                listItem.measure(0, 0);
+                int listItemHeight = listItem.getMeasuredHeight();
+                ViewGroup.LayoutParams params = listView.getLayoutParams();
+                params.height = listItemHeight * count + listView.getDividerHeight();
+                listView.setLayoutParams(params);
+            } else {
+                ViewGroup.LayoutParams params = listView.getLayoutParams();
+                params.height = 0;
+                listView.setLayoutParams(params);
+            }
+        } else {
+            ViewGroup.LayoutParams params = listView.getLayoutParams();
+            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            listView.setLayoutParams(params);
+        }
+        if (!mDialpad.isShown()) {
+            if (count <= 0) {
+                mCallLogListTextView.setVisibility(View.GONE);
+            } else {
+                mCallLogListTextView.setVisibility(View.VISIBLE);
+            }
+            if (mCursor != null && !mCursor.isClosed() && mCursor.getCount() > 0) {
+                mListTextView.setVisibility(View.VISIBLE);
+            } else {
+                mListTextView.setVisibility(View.GONE);
+            }
+        }
     }
 }

@@ -88,7 +88,7 @@
             android:footerDividersEnabled="true" />
 
         <!-- Keypad section -->
-        <include layout="@layout/dialpad" />
+        <include layout="@layout/smartdialer" />
         <View
         android:id="@+id/dialpadStub"
         android:layout_width="match_parent"

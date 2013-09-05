@@ -151,8 +151,7 @@ public class SpeedDialListActivity extends ListActivity implements OnItemClickLi
             Intent intent = new Intent(ACTION_ADD_VOICEMAIL);
             if (MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
                 //if multi sim enable, should let user select which sim to be set.
-                intent.setClassName("com.android.settings",
-                "com.android.settings.multisimsettings.MultiSimSettings");
+                intent.setClassName("com.android.phone", "com.android.phone.SelectSubscription");
                 intent.putExtra("PACKAGE", "com.android.phone");
                 intent.putExtra("TARGET_CLASS", "com.android.phone.MSimCallFeaturesSubSetting");
             }

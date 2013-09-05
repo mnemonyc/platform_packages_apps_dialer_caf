@@ -22,10 +22,13 @@ import android.graphics.Typeface;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.telephony.MSimTelephonyManager;
 import android.telephony.PhoneNumberUtils;
+import android.text.Spannable;
 import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
+import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.view.View;
@@ -68,6 +71,13 @@ public class PhoneCallDetailsHelper {
     /** Fills the call details views with content. */
     public void setPhoneCallDetails(PhoneCallDetailsViews views, PhoneCallDetails details,
             boolean isHighlighted) {
+        // Display the icon for the last call sub.
+        setPhoneCallDetails(views, details, isHighlighted, null);
+    }
+
+    /** Fills the call details views with content. */
+    public void setPhoneCallDetails(PhoneCallDetailsViews views, PhoneCallDetails details,
+            boolean isHighlighted, String filter) {
         // Display the icon for the last call sub.
         if (MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
             views.subIconView.setVisibility(View.VISIBLE);
@@ -114,11 +124,26 @@ public class PhoneCallDetailsHelper {
                     details.numberLabel);
         }
 
-        final CharSequence nameText;
+        CharSequence nameText;
         final CharSequence numberText;
         final CharSequence labelText;
-        final CharSequence displayNumber =
-            mPhoneNumberHelper.getDisplayNumber(details.number, details.formattedNumber);
+        CharSequence displayNumber = mPhoneNumberHelper.getDisplayNumber(details.number,
+                details.formattedNumber);
+
+        CharSequence locationText;
+
+        String phoneNum = (String) details.number;
+        if (!TextUtils.isEmpty(filter) && phoneNum.contains(filter)) {
+            int start, end;
+            start = phoneNum.indexOf(filter);
+            end = start + filter.length();
+            int[] offset = getStartEnd((String) displayNumber, start, end);
+            SpannableStringBuilder style = new SpannableStringBuilder(displayNumber);
+            style.setSpan(new BackgroundColorSpan(0xFF33B5E5), offset[0], offset[1],
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            displayNumber = style;
+        }
+
         if (TextUtils.isEmpty(details.name)) {
             nameText = displayNumber;
             if (TextUtils.isEmpty(details.geocode)
@@ -132,16 +157,97 @@ public class PhoneCallDetailsHelper {
             views.nameView.setTextDirection(View.TEXT_DIRECTION_LTR);
         } else {
             nameText = details.name;
+            String nameNum = getNameNumber((String)details.name);
+            if (!TextUtils.isEmpty(filter) && nameNum.contains(filter)) {
+                int start,end;
+                start = nameNum.indexOf(filter);
+                end = start + filter.length();
+                int[] offset = getStartEnd(((String)details.name).toLowerCase(), start, end);
+                SpannableStringBuilder style = new SpannableStringBuilder(details.name);
+                style.setSpan(new BackgroundColorSpan(0xFF33B5E5), offset[0], offset[1],
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                nameText = style;
+            }
+
             numberText = displayNumber;
-            labelText = numberFormattedLabel;
+            labelText = "(" + numberFormattedLabel + ")";
             // We have a real phone number as "numberView" so make it always LTR
             views.numberView.setTextDirection(View.TEXT_DIRECTION_LTR);
+            if (TextUtils.isEmpty(details.geocode)
+                    || mPhoneNumberHelper.isVoicemailNumber(details.number)) {
+                locationText = mResources.getString(R.string.call_log_empty_gecode);
+            } else {
+                locationText = details.geocode;
+            }
+            views.locationView.setText(locationText);
         }
 
         views.nameView.setText(nameText);
         views.numberView.setText(numberText);
         views.labelView.setText(labelText);
         views.labelView.setVisibility(TextUtils.isEmpty(labelText) ? View.GONE : View.VISIBLE);
+    }
+
+    private String getNumberFromChar(char c) {
+        if (c >= 'a' && c <= 'c') {
+            return "2";
+        } else if (c >= 'd' && c <= 'f') {
+            return "3";
+        } else if (c >= 'g' && c <= 'i') {
+            return "4";
+        } else if (c >= 'j' && c <= 'l') {
+            return "5";
+        } else if (c >= 'm' && c <= 'o') {
+            return "6";
+        } else if (c >= 'p' && c <= 's') {
+            return "7";
+        } else if (c >= 't' && c <= 'v') {
+            return "8";
+        } else if (c >= 'w' && c <= 'z') {
+            return "9";
+        } else if ('0' <= c && c <= '9') {
+            return "" + c;
+        } else {
+            return "";
+        }
+    }
+
+    private String getNameNumber(String name) {
+        String number = "";
+        String nameLow = name.toLowerCase();
+        for (int i = 0; i < nameLow.length(); i++) {
+            char c = nameLow.charAt(i);
+            number = number + getNumberFromChar(c);
+        }
+        return number;
+    }
+
+    /**
+     * re-calculate start & end according to the String we are about to show
+     */
+    private int[] getStartEnd(String s, int start, int end) {
+        int[] offset = new int[2];
+
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (!(c >= '0' && c <= '9' || c == '+' || c >= 'a' && c <= 'z')) {
+                if (i <= start) {
+                    start++;
+                    end++;
+                } else if (i > start && i <= end) {
+                    end++;
+                }
+            }
+        }
+        if (start > s.length()) {
+            start = s.length();
+        }
+        if (end > s.length()) {
+            end = s.length();
+        }
+        offset[0] = start;
+        offset[1] = end;
+        return offset;
     }
 
     /** Sets the text of the header view for the details page of a phone call. */
