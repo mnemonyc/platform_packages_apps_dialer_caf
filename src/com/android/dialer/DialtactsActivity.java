@@ -73,12 +73,17 @@ import android.widget.Toast;
 
 import com.android.contacts.common.CallUtil;
 import com.android.contacts.common.activity.TransactionSafeActivity;
+import com.android.contacts.common.interactions.ImportExportDialogFragment;
+import com.android.contacts.common.interactions.ImportExportDialogFragment.ExportToSimThread;
 import com.android.contacts.common.list.ContactListFilterController;
 import com.android.contacts.common.list.ContactListFilterController.ContactListFilterListener;
 import com.android.contacts.common.list.ContactListItemView;
 import com.android.contacts.common.list.OnPhoneNumberPickerActionListener;
 import com.android.contacts.common.list.PhoneNumberPickerFragment;
+import com.android.contacts.common.SimContactsConstants;
 import com.android.contacts.common.util.AccountFilterUtil;
+import com.android.contacts.common.vcard.ExportVCardActivity;
+import com.android.contacts.common.vcard.VCardCommonArguments;
 import com.android.dialer.calllog.CallLogFragment;
 import com.android.dialer.calllog.MSimCallLogFragment;
 import com.android.dialer.CustomViewPager;
@@ -91,6 +96,9 @@ import com.android.dialer.util.OrientationUtil;
 import com.android.internal.telephony.ITelephony;
 import com.android.internal.telephony.TelephonyIntents;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Set;
 /**
  * The dialer activity that has one tab with the virtual 12key
  * dialer, a tab with recent calls in it, a tab with the contacts and
@@ -127,6 +135,7 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
 
     private static final int TAB_INDEX_COUNT = 3;
 
+    private static final int SUBACTIVITY_EXPORT_CONTACTS = 100;
     public SharedPreferences mPrefs;
 
     /** Last manually selected tab index */
@@ -136,6 +145,18 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
 
     private static final int SUBACTIVITY_ACCOUNT_FILTER = 1;
     public static boolean mDialpadClingShowed = false;
+    private ArrayList<String[]> mContactList;
+    private ExportToSimThread mExportThread = null;
+    private final BroadcastReceiver mExportToSimCompleteListener = new BroadcastReceiver (){
+        public void onReceive(Context context, Intent intent){
+            String action = intent.getAction();
+
+            if (action.equals(SimContactsConstants.INTENT_EXPORT_COMPLETE)){
+                ImportExportDialogFragment.destroyExportToSimThread();
+                mExportThread = null;
+            }
+        }
+    };
 
     public class ViewPagerAdapter extends FragmentPagerAdapter {
         public ViewPagerAdapter(FragmentManager fm) {
@@ -577,7 +598,10 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
 
         final IntentFilter intentFilter = new IntentFilter(
                 TelephonyIntents.ACTION_SIM_STATE_CHANGED);
+        final IntentFilter exportCompleteFilter = new IntentFilter(SimContactsConstants
+                .INTENT_EXPORT_COMPLETE);
         registerReceiver(mReceiver, intentFilter);
+        registerReceiver(mExportToSimCompleteListener, exportCompleteFilter);
     }
 
     @Override
@@ -625,6 +649,7 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
             mContactListFilterController.removeListener(mContactListFilterListener);
         }
         unregisterReceiver(mReceiver);
+        unregisterReceiver(mExportToSimCompleteListener);
     }
 
     @Override
@@ -1455,6 +1480,57 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
                         mContactListFilterController, resultCode, data);
             }
             break;
+            case ImportExportDialogFragment.SUBACTIVITY_MULTI_PICK_CONTACT:
+                if (resultCode == RESULT_OK) {
+                    mContactList = new ArrayList<String[]>();
+                    Bundle b = data.getExtras();
+                    Bundle choiceSet = b.getBundle("result");
+                    Set<String> set = choiceSet.keySet();
+                    Iterator<String> i = set.iterator();
+                    while (i.hasNext()) {
+                        String contactInfo[] = choiceSet.getStringArray(i.next());
+                        mContactList.add(contactInfo);
+                    }
+                    Log.d(TAG, "return " + mContactList.size() + " contacts");
+                    if (!mContactList.isEmpty()) {
+                        if (!ImportExportDialogFragment.isExportingToSIM()) {
+                            ImportExportDialogFragment.destroyExportToSimThread();
+                            mExportThread =
+                                new ImportExportDialogFragment().createExportToSimThread(
+                                ImportExportDialogFragment.ExportToSimThread.TYPE_SELECT,
+                                ImportExportDialogFragment.mExportSub,mContactList,
+                                DialtactsActivity.this);
+                            mExportThread.start();
+                        }
+                        else {
+                            Log.d(TAG, "ImportExportDialogFragment.SUBACTIVITY_MULTI_PICK_CONTACT");
+                        }
+                    } else {
+                    }
+                }
+                break;
+            case SUBACTIVITY_EXPORT_CONTACTS:
+                if (resultCode == RESULT_OK) {
+                    Bundle result = data.getExtras().getBundle("result");
+                    Set<String> keySet = result.keySet();
+                    Iterator<String> it = keySet.iterator();
+                    StringBuilder selExportBuilder = new StringBuilder();
+                    while (it.hasNext()) {
+                        String id = it.next();
+                        if (0 != selExportBuilder.length()) {
+                            selExportBuilder.append(",");
+                        }
+                        selExportBuilder.append(id);
+                    }
+                    selExportBuilder.insert(0, "_id IN (");
+                    selExportBuilder.append(")");
+                    Intent exportIntent = new Intent(this, ExportVCardActivity.class);
+                    exportIntent.putExtra("SelExport", selExportBuilder.toString());
+                    exportIntent.putExtra(VCardCommonArguments.ARG_CALLING_ACTIVITY,
+                            DialtactsActivity.class.getName());
+                    this.startActivity(exportIntent);
+                }
+                break;
         }
     }
 }
