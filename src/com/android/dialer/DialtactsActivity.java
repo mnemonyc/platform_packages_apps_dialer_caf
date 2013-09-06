@@ -607,7 +607,10 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
         }
         if(ACTION_SEARCH.equals(this.getIntent().getAction())){
             Intent intent = new Intent(this, CallDetailActivity.class);
-            String id = this.getIntent().getData().getQueryParameter("id");
+            String id = "0";
+            if (this.getIntent().getData() != null) {
+                id = this.getIntent().getData().getQueryParameter("id");
+            }
             intent.putExtra(CallDetailActivity.EXTRA_CALL_LOG_IDS, new long[]{Long.decode(id)});
             startActivity(intent);
             finish();
