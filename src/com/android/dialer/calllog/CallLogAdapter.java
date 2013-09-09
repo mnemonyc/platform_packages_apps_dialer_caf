@@ -202,6 +202,15 @@ public class CallLogAdapter extends GroupingListAdapter
         }
     };
 
+    private final View.OnLongClickListener mPrimaryActionLongClickListener
+            = new View.OnLongClickListener() {
+        @Override
+        public boolean onLongClick(View v) {
+            // Override this method to show context menu
+            return false;
+        }
+    };
+
     @Override
     public boolean onPreDraw() {
         // We only wanted to listen for the first draw (and this is it).
@@ -493,6 +502,7 @@ public class CallLogAdapter extends GroupingListAdapter
         CallLogListItemViews views = CallLogListItemViews.fromView(view);
         views.primaryActionView.setOnClickListener(mPrimaryActionListener);
         views.secondaryActionView.setOnClickListener(mSecondaryActionListener);
+        views.primaryActionView.setOnLongClickListener(mPrimaryActionLongClickListener);
         view.setTag(views);
     }
 
