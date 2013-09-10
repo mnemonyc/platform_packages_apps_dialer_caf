@@ -75,6 +75,7 @@ import com.android.contacts.common.GeoUtil;
 import com.android.contacts.common.list.ContactListItemView;
 import com.android.contacts.common.list.ContactListItemView.PhotoPosition;
 import com.android.contacts.common.model.account.SimAccountType;
+import com.android.contacts.common.MoreContactUtils;
 import com.android.dialer.DialpadCling;
 import com.android.dialer.DialtactsActivity;
 import com.android.dialer.R;
@@ -641,6 +642,13 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
             builder.appendQueryParameter(
                    RawContacts.ACCOUNT_TYPE, SimAccountType.ACCOUNT_TYPE)
                            .appendQueryParameter(WITHOUT_SIM_FLAG, "true");
+        } else {
+            // Do not show contacts in disabled SIM card
+            String disabledSimFilter = MoreContactUtils.getDisabledSimFilter();
+            if (!TextUtils.isEmpty(disabledSimFilter)) {
+                builder.appendQueryParameter(RawContacts.ACCOUNT_NAME, disabledSimFilter);
+                builder.appendQueryParameter(WITHOUT_SIM_FLAG, "true");
+            }
         }
         mCursor = resolver.query(builder.build(), CONTACTS_SUMMARY_FILTER_NUMBER_PROJECTION, null,
                 null, null);
