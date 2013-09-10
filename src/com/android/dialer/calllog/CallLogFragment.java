@@ -28,6 +28,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.RemoteException;
 import android.os.ServiceManager;
+import android.os.SystemProperties;
 import android.provider.CallLog;
 import android.provider.CallLog.Calls;
 import android.provider.ContactsContract;
@@ -548,6 +549,20 @@ public class CallLogFragment extends ListFragment
         }
     }
 
+    public boolean isVTSupported() {
+        return SystemProperties.getBoolean("persist.radio.csvt.enabled"
+            /* TelephonyProperties.PROPERTY_CSVT_ENABLED*/, false);
+    }
+
+    /** Send broadcast to let VideoCall app cancel the missed vtcall notifications. */
+    private void removeMissedVTCallNotifications() {
+        if (isVTSupported()) {
+            Intent intent = new Intent("com.borqs.videocall.action.clearMissedVTCall");
+            intent.putExtra("update_calllog", false);
+            getActivity().sendBroadcast(intent);
+        }
+    }
+
     /** Removes the missed call notifications. */
     private void removeMissedCallNotifications() {
         try {
@@ -586,6 +601,7 @@ public class CallLogFragment extends ListFragment
             if (!onEntry) {
                 mCallLogQueryHandler.markMissedCallsAsRead();
             }
+            removeMissedVTCallNotifications();
             removeMissedCallNotifications();
             updateVoicemailNotifications();
         }
