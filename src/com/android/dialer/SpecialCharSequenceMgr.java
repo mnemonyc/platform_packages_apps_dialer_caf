@@ -67,6 +67,7 @@ public class SpecialCharSequenceMgr {
     private static final String MMI_IMEI_DISPLAY = "*#06#";
     private static final String MMI_REGULATORY_INFO_DISPLAY = "*#07#";
     private static final String PRL_VERSION_DISPLAY = "*#0000#";
+    private static final String PRL_MODEM_TEST_DISPLAY = "*#1234#";
 
     /**
      * Remembers the previous {@link QueryHandler} and cancel the operation when needed, to
@@ -104,6 +105,7 @@ public class SpecialCharSequenceMgr {
         String dialString = PhoneNumberUtils.stripSeparators(input);
 
         if (handlePRLVersion(context, dialString)
+                || handleModemTestDisplay(context, dialString)
                 || handleIMEIDisplay(context, dialString, useSystemWindow)
                 || handleRegulatoryInfoDisplay(context, dialString)
                 || handlePinEntry(context, dialString)
@@ -124,6 +126,20 @@ public class SpecialCharSequenceMgr {
                 return true;
             } catch (ActivityNotFoundException e) {
                 Log.d(TAG, "no activity to handle showing device info");
+            }
+        }
+        return false;
+    }
+
+    static private boolean handleModemTestDisplay(Context context, String input) {
+        if (input.equals(PRL_MODEM_TEST_DISPLAY)) {
+            try {
+                Intent intent = new Intent("android.intent.action.ENGINEER_MODE_MODEMTEST");
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(intent);
+                return true;
+            } catch (ActivityNotFoundException e) {
+                Log.d(TAG, "no activity to handle showing modem test app.");
             }
         }
         return false;
