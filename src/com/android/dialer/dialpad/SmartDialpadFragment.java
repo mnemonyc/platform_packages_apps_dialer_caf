@@ -83,6 +83,7 @@ import com.android.dialer.dialpad.HanziToPinyin.Token;
 import com.android.contacts.common.list.ContactListItemView;
 import com.android.contacts.common.list.ContactListItemView.PhotoPosition;
 import com.android.contacts.common.model.account.SimAccountType;
+import com.android.contacts.common.MoreContactUtils;
 import com.android.dialer.widget.multiwaveview.GlowPadView;
 import com.android.dialer.R;
 import com.android.internal.telephony.MSimConstants;
@@ -545,6 +546,13 @@ public class SmartDialpadFragment extends DialpadFragment
             builder.appendQueryParameter(
                    RawContacts.ACCOUNT_TYPE, SimAccountType.ACCOUNT_TYPE)
                            .appendQueryParameter(WITHOUT_SIM_FLAG, "true");
+        } else {
+            // Do not show contacts in disabled SIM card
+            String disabledSimFilter = MoreContactUtils.getDisabledSimFilter();
+            if (!TextUtils.isEmpty(disabledSimFilter)) {
+                builder.appendQueryParameter(RawContacts.ACCOUNT_NAME, disabledSimFilter);
+                builder.appendQueryParameter(WITHOUT_SIM_FLAG, "true");
+            }
         }
         mCursor = resolver.query(builder.build(), CONTACTS_SUMMARY_FILTER_NUMBER_PROJECTION, null,
                 null, null);
