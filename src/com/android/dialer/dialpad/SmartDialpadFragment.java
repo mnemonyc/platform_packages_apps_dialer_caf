@@ -29,6 +29,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.database.CharArrayBuffer;
+import android.database.ContentObserver;
 import android.database.Cursor;
 import android.media.ToneGenerator;
 import android.net.Uri;
@@ -293,6 +294,23 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
 
     private CallLogQueryHandler mCallLogQueryHandler;
 
+    private final ContentObserver mContactsObserver = new CustomContentObserver();
+
+    private class CustomContentObserver extends ContentObserver {
+        public CustomContentObserver() {
+            super(mHandler);
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            if (!phoneIsInUse()) {
+                setupListView();
+                setCallLogQueryFilter();
+                setQueryFilter();
+            }
+        }
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -300,12 +318,15 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
         filter.addAction(Intent.ACTION_AIRPLANE_MODE_CHANGED);
         getActivity().registerReceiver(mAirplaneStateReceiver, filter);
         mCallLogQueryHandler = new CallLogQueryHandler(getActivity().getContentResolver(), this);
+        getActivity().getContentResolver().registerContentObserver(
+                ContactsContract.Contacts.CONTENT_URI, true, mContactsObserver);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         getActivity().unregisterReceiver(mAirplaneStateReceiver);
+        getActivity().getContentResolver().unregisterContentObserver(mContactsObserver);
     }
 
     @Override
