@@ -25,22 +25,21 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.CallLog.Calls;
 import android.provider.ContactsContract.PhoneLookup;
-import android.telephony.MSimTelephonyManager;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.widget.TextView;
 
 import com.android.common.widget.GroupingListAdapter;
 import com.android.contacts.common.ContactPhotoManager;
+import com.android.contacts.common.MoreContactUtils;
 import com.android.contacts.common.util.UriUtils;
-import com.android.dialer.DialtactsActivity;
 import com.android.dialer.PhoneCallDetails;
 import com.android.dialer.PhoneCallDetailsHelper;
 import com.android.dialer.R;
 import com.android.dialer.util.ExpirableCache;
+import com.android.internal.telephony.MSimConstants;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 
@@ -501,7 +500,12 @@ public class CallLogAdapter extends GroupingListAdapter
         // Get the views to bind to.
         CallLogListItemViews views = CallLogListItemViews.fromView(view);
         views.primaryActionView.setOnClickListener(mPrimaryActionListener);
-        views.secondaryActionView.setOnClickListener(mSecondaryActionListener);
+        if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB1)) {
+            views.callButtonSub1.setOnClickListener(mSecondaryActionListener);
+        }
+        if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB2)) {
+            views.callButtonSub2.setOnClickListener(mSecondaryActionListener);
+        }
         views.primaryActionView.setOnLongClickListener(mPrimaryActionLongClickListener);
         view.setTag(views);
     }
@@ -552,25 +556,38 @@ public class CallLogAdapter extends GroupingListAdapter
         if (callType == Calls.VOICEMAIL_TYPE) {
             String voicemailUri = c.getString(CallLogQuery.VOICEMAIL_URI);
             final long rowId = c.getLong(CallLogQuery.ID);
-            views.secondaryActionView.setTag(
-                    IntentProvider
-                            .getPlayVoicemailIntentProvider(rowId, voicemailUri, subscription));
+
+            views.callButtonSub1.setTag(IntentProvider.getPlayVoicemailIntentProvider(rowId,
+                    voicemailUri, MSimConstants.SUB1));
+            views.callButtonSub2.setTag(IntentProvider.getPlayVoicemailIntentProvider(rowId,
+                    voicemailUri, MSimConstants.SUB2));
+            MoreContactUtils.controlCallIconDisplay(mContext, views.layoutSub1,
+                    views.callButtonSub1, views.callIconSub1, views.layoutSub2,
+                    views.callButtonSub2, views.callIconSub2,
+                    views.dividerView_sub1, views.dividerView,
+                    subscription);
+
             // For voicemail, needn't show the call sub icon, set it as gone.
-            views.subIconView.setVisibility(View.GONE);
+            views.callIconSub1.setVisibility(View.GONE);
+            views.callIconSub2.setVisibility(View.GONE);
+
         } else if (!TextUtils.isEmpty(number)) {
             // Store away the number so we can call it directly if you click on the call icon.
-            views.secondaryActionView.setTag(
-                    IntentProvider.getReturnCallIntentProvider(number, subscription));
-            if (MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
-                views.subIconView.setVisibility(View.VISIBLE);
-                views.subIconView.setImageDrawable(
-                        DialtactsActivity.getMultiSimIcon(mContext, subscription));
-            } else {
-                views.subIconView.setVisibility(View.GONE);
-            }
+            views.callButtonSub1.setImageResource(R.drawable.ic_ab_dialer_holo_dark);
+            views.callButtonSub1.setTag(IntentProvider.getReturnCallIntentProvider(number,
+                    MSimConstants.SUB1));
+            views.callButtonSub2.setImageResource(R.drawable.ic_ab_dialer_holo_dark);
+            views.callButtonSub2.setTag(IntentProvider.getReturnCallIntentProvider(number,
+                    MSimConstants.SUB2));
+            MoreContactUtils.controlCallIconDisplay(mContext, views.layoutSub1,
+                    views.callButtonSub1, views.callIconSub1, views.layoutSub2,
+                    views.callButtonSub2, views.callIconSub2,
+                    views.dividerView_sub1, views.dividerView,
+                    subscription);
         } else {
             // No action enabled.
-            views.secondaryActionView.setTag(null);
+            views.callButtonSub1.setTag(null);
+            views.callButtonSub2.setTag(null);
         }
 
         // Lookup contacts with this number

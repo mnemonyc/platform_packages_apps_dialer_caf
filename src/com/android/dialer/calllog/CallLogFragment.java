@@ -144,6 +144,7 @@ public class CallLogFragment extends ListFragment
 
     // Default to all calls.
     protected int mCallTypeFilter = CallLogQueryHandler.CALL_TYPE_ALL;
+    private static int mBeforeEnabledSimCount = 0;
 
     @Override
     public void onCreate(Bundle state) {
@@ -416,6 +417,11 @@ public class CallLogFragment extends ListFragment
     @Override
     public void onResume() {
         super.onResume();
+        int enabledSimCount = MoreContactUtils.getEnabledSimCount();
+        if (enabledSimCount != mBeforeEnabledSimCount) {
+            mRefreshDataRequired = true;
+            mBeforeEnabledSimCount = enabledSimCount;
+        }
         refreshData();
     }
 

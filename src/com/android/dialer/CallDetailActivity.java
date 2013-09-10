@@ -52,10 +52,11 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.contacts.common.ContactPhotoManager;
 import com.android.contacts.common.CallUtil;
 import com.android.contacts.common.ClipboardUtils;
+import com.android.contacts.common.ContactPhotoManager;
 import com.android.contacts.common.GeoUtil;
+import com.android.contacts.common.MoreContactUtils;
 import com.android.dialer.BackScrollManager.ScrollableHeader;
 import com.android.dialer.calllog.CallDetailHistoryAdapter;
 import com.android.dialer.calllog.CallLogQuery;
@@ -249,6 +250,26 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
         @Override
         public void onClick(View view) {
             startActivity(((ViewEntry) view.getTag()).thirdIntent);
+        }
+    };
+
+    private final View.OnClickListener mFourthActionListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            if (finishPhoneNumerSelectedActionModeIfShown()) {
+                return;
+            }
+            startActivity(((ViewEntry) view.getTag()).mSlot1Intent);
+        }
+    };
+
+    private final View.OnClickListener mFifthActionListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            if (finishPhoneNumerSelectedActionModeIfShown()) {
+                return;
+            }
+            startActivity(((ViewEntry) view.getTag()).mSlot2Intent);
         }
     };
 
@@ -543,6 +564,9 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
                                     intent,
                                     getString(R.string.description_call, nameOrNumber));
 
+                    entry.setSlot1Intent(CallUtil.getSlotIntent(mNumber, MSimConstants.SUB1));
+                    entry.setSlot2Intent(CallUtil.getSlotIntent(mNumber, MSimConstants.SUB2));
+
                     // Only show a label if the number is shown and it is not a SIP address.
                     if (!TextUtils.isEmpty(firstDetails.name)
                             && !TextUtils.isEmpty(firstDetails.number)
@@ -710,6 +734,8 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
         public Intent thirdIntent = null;
         /** The description for accessibility of the third action. */
         public String thirdDescription = null;
+        public Intent mSlot1Intent = null;
+        public Intent mSlot2Intent = null;
 
         public ViewEntry(String text, Intent intent, String description) {
             this.text = text;
@@ -728,6 +754,14 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
             thirdIntent = intent;
             thirdDescription = description;
         }
+
+        public void setSlot1Intent(Intent intent) {
+            mSlot1Intent = intent;
+        }
+
+        public void setSlot2Intent(Intent intent) {
+            mSlot2Intent = intent;
+        }
     }
 
     /** Disables the call button area, e.g., for private numbers. */
@@ -745,10 +779,22 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
         TextView text = (TextView) convertView.findViewById(R.id.call_and_sms_text);
         ImageView icon_third = (ImageView) convertView.findViewById(R.id.videocall);
         View divider_third = convertView.findViewById(R.id.videocall_and_sms_divider);
+        View layoutSub1 = convertView.findViewById(R.id.layout_sub1);
+        ImageButton callButtonSub1 = (ImageButton) convertView.findViewById(R.id.call_button_sub1);
+        ImageView callIconSub1 = (ImageView) convertView.findViewById(R.id.call_icon_sub1);
+        View secondaryActionDivider = convertView.findViewById(R.id.divider_sub2);
+        secondaryActionDivider.setBackground(divider_third.getBackground());
+        View layoutSub2 = convertView.findViewById(R.id.layout_sub2);
+        ImageButton callButtonSub2 = (ImageButton) convertView.findViewById(R.id.call_button_sub2);
+        ImageView callIconSub2 = (ImageView) convertView.findViewById(R.id.call_icon_sub2);
 
         View mainAction = convertView.findViewById(R.id.call_and_sms_main_action);
-        mainAction.setOnClickListener(mPrimaryActionListener);
-        mainAction.setTag(entry);
+        if (MoreContactUtils.getButtonStyle() == MoreContactUtils.DEFAULT_STYLE) {
+            mainAction.setOnClickListener(mPrimaryActionListener);
+            mainAction.setTag(entry);
+        } else {
+            mainAction.setOnClickListener(null);
+        }
         mainAction.setContentDescription(entry.primaryDescription);
         mainAction.setOnLongClickListener(mPrimaryLongClickListener);
 
@@ -777,6 +823,22 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
         }
 
         text.setText(entry.text);
+
+        Context context = this.getApplicationContext();
+        callButtonSub1.setImageResource(R.drawable.ic_ab_dialer_holo_dark);
+        callButtonSub1.setTag(entry);
+        if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB1)) {
+            callButtonSub1.setOnClickListener(mFourthActionListener);
+        }
+
+        callButtonSub2.setImageResource(R.drawable.ic_ab_dialer_holo_dark);
+        callButtonSub2.setTag(entry);
+        if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB2)) {
+            callButtonSub2.setOnClickListener(mFifthActionListener);
+        }
+
+        MoreContactUtils.controlCallIconDisplay(context, layoutSub1, callButtonSub1, callIconSub1,
+                layoutSub2, callButtonSub2, callIconSub2, secondaryActionDivider);
 
         TextView label = (TextView) convertView.findViewById(R.id.call_and_sms_label);
         if (TextUtils.isEmpty(entry.label)) {

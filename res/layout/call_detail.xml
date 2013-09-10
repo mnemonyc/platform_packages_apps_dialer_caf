@@ -180,6 +180,8 @@
                     />
                 </LinearLayout>
 
+        <include layout="@layout/secondary_action"/>
+
                 <View android:id="@+id/call_and_sms_divider"
                     android:layout_width="1px"
                     android:layout_height="32dip"
