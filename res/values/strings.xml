@@ -553,9 +553,6 @@
     <string name="to_hint">1111:to;sip:abby@example.com:bcc;sip:bill@example.com:cc;</string>
     <string name="device_id">Device Identifier</string>
 
-    <!-- The slot common name -->
-    <string name="slot_name">SIM</string>
-
     <!-- To match the DSDS/DSDA, add the filter for call log. -->
     <string name="call_log_show_all_slots">All SIMs</string>
 

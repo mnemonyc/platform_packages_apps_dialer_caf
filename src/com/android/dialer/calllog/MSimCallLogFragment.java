@@ -41,12 +41,9 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.android.dialer.DialtactsActivity;
+import com.android.contacts.common.MoreContactUtils;
 import com.android.dialer.R;
 import com.android.dialer.voicemail.VoicemailStatusHelperImpl;
-import com.google.common.annotations.VisibleForTesting;
-
-import java.util.List;
 
 /**
  * Displays a list of call log entries.
@@ -239,8 +236,8 @@ public class MSimCallLogFragment extends CallLogFragment {
         filterSub[0] = new SpinnerContent(CallLogQueryHandler.CALL_SUB_ALL,
                 getString(R.string.call_log_show_all_slots));
         for (int i = 0; i < count; i++) {
-            filterSub[i + 1] = new SpinnerContent(i,
-                    DialtactsActivity.getMultiSimName(getActivity(), i));
+            filterSub[i + 1] = new SpinnerContent(i, MoreContactUtils.getMultiSimAliasesName(
+                    getActivity(), i));
         }
         return filterSub;
     }

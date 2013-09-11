@@ -29,6 +29,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Directory;
+import android.provider.Settings.SettingNotFoundException;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -47,6 +48,7 @@ import android.widget.TextView;
 
 import com.android.contacts.common.ContactPhotoManager;
 import com.android.contacts.common.ContactTileLoaderFactory;
+import com.android.contacts.common.MoreContactUtils;
 import com.android.contacts.common.dialog.ClearFrequentsDialog;
 import com.android.contacts.common.list.ContactListFilter;
 import com.android.contacts.common.list.ContactListFilterController;
@@ -269,6 +271,9 @@ public class PhoneFavoriteFragment extends Fragment implements OnItemClickListen
     private final ScrollListener mScrollListener = new ScrollListener();
 
     private boolean mOptionsMenuHasFrequents;
+    private static int mBeforeEnabledSimCount = 0;
+    private static int mBeforeVoiceCallSub = -1;
+    private static int mBeforeVoicePrompt = -1;
 
     @Override
     public void onAttach(Activity activity) {
@@ -326,6 +331,36 @@ public class PhoneFavoriteFragment extends Fragment implements OnItemClickListen
             }
         }
         setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        int voiceCallSub = -1;
+        int voicePrompt = -1;
+        try {
+            voiceCallSub = Settings.Global.getInt(getActivity().getContentResolver(),
+                    Settings.Global.MULTI_SIM_VOICE_CALL_SUBSCRIPTION);
+        } catch (SettingNotFoundException e) {
+            voiceCallSub = -1;
+        }
+        try {
+            voicePrompt = Settings.Global.getInt(getActivity().getContentResolver(),
+                    Settings.Global.MULTI_SIM_VOICE_PROMPT);
+        } catch (SettingNotFoundException e) {
+            voicePrompt = -1;
+        }
+        int enabledSimCount = MoreContactUtils.getEnabledSimCount();
+        if (mListView != null && mAdapter != null &&
+                (enabledSimCount != mBeforeEnabledSimCount
+                        || voiceCallSub != mBeforeVoiceCallSub
+                        || voicePrompt != mBeforeVoicePrompt)) {
+            mBeforeEnabledSimCount = enabledSimCount;
+            mBeforeVoiceCallSub = voiceCallSub;
+            mBeforeVoicePrompt = voicePrompt;
+            mListView.setAdapter(mAdapter);
+        }
+
     }
 
     @Override
