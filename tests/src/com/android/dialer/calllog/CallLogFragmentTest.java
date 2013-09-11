@@ -170,7 +170,7 @@ public class CallLogFragmentTest extends ActivityInstrumentationTestCase2<Fragme
         insert(CallerInfo.PRIVATE_NUMBER, NOW, 0, Calls.INCOMING_TYPE);
         View view = mAdapter.newGroupView(getActivity(), mParentView);
         mAdapter.bindGroupView(view, getActivity(), mCursor, 3, false);
-        assertNotNull(view.findViewById(R.id.secondary_action_icon));
+        assertNotNull(view.findViewById(R.id.call_icon_sub1));
     }
 
     @MediumTest
@@ -179,7 +179,7 @@ public class CallLogFragmentTest extends ActivityInstrumentationTestCase2<Fragme
         insert(CallerInfo.PRIVATE_NUMBER, NOW, 0, Calls.INCOMING_TYPE);
         View view = mAdapter.newStandAloneView(getActivity(), mParentView);
         mAdapter.bindStandAloneView(view, getActivity(), mCursor);
-        assertNotNull(view.findViewById(R.id.secondary_action_icon));
+        assertNotNull(view.findViewById(R.id.call_icon_sub1));
     }
 
     @MediumTest
@@ -188,7 +188,7 @@ public class CallLogFragmentTest extends ActivityInstrumentationTestCase2<Fragme
         insert(CallerInfo.PRIVATE_NUMBER, NOW, 0, Calls.INCOMING_TYPE);
         View view = mAdapter.newChildView(getActivity(), mParentView);
         mAdapter.bindChildView(view, getActivity(), mCursor);
-        assertNotNull(view.findViewById(R.id.secondary_action_icon));
+        assertNotNull(view.findViewById(R.id.call_icon_sub1));
     }
 
     @MediumTest
@@ -312,7 +312,7 @@ public class CallLogFragmentTest extends ActivityInstrumentationTestCase2<Fragme
         mAdapter.bindStandAloneView(view, getActivity(), mCursor);
 
         CallLogListItemViews views = (CallLogListItemViews) view.getTag();
-        IntentProvider intentProvider = (IntentProvider) views.secondaryActionView.getTag();
+        IntentProvider intentProvider = (IntentProvider) views.callButtonSub1.getTag();
         Intent intent = intentProvider.getIntent(mActivity);
         // Starts a call.
         assertEquals(Intent.ACTION_CALL_PRIVILEGED, intent.getAction());
@@ -328,7 +328,7 @@ public class CallLogFragmentTest extends ActivityInstrumentationTestCase2<Fragme
         mAdapter.bindStandAloneView(view, getActivity(), mCursor);
 
         CallLogListItemViews views = (CallLogListItemViews) view.getTag();
-        IntentProvider intentProvider = (IntentProvider) views.secondaryActionView.getTag();
+        IntentProvider intentProvider = (IntentProvider) views.callButtonSub1.getTag();
         Intent intent = intentProvider.getIntent(mActivity);
         // Starts the call detail activity.
         assertEquals(new ComponentName(mActivity, CallDetailActivity.class),
@@ -366,9 +366,9 @@ public class CallLogFragmentTest extends ActivityInstrumentationTestCase2<Fragme
             String number = getPhoneNumberForListEntry(i);
             if (CallerInfo.PRIVATE_NUMBER.equals(number) ||
                 CallerInfo.UNKNOWN_NUMBER.equals(number)) {
-                assertFalse(View.VISIBLE == mItem.secondaryActionView.getVisibility());
+                assertFalse(View.VISIBLE == mItem.callButtonSub1.getVisibility());
             } else {
-                assertEquals(View.VISIBLE, mItem.secondaryActionView.getVisibility());
+                assertEquals(View.VISIBLE, mItem.callButtonSub1.getVisibility());
             }
         }
     }

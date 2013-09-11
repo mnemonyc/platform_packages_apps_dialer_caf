@@ -68,4 +68,8 @@
     <dimen name="smartdial_suggestions_extra_padding">2dp</dimen>
     <dimen name="smartdial_confidence_hint_text_size">27dp</dimen>
 
+    <!-- Dimensions for dsds divider -->
+    <dimen name="dsds_vertical_divider_vertical_margin">0dip</dimen>
+    <dimen name="dsds_vertical_divider_width">1px</dimen>
+    <dimen name="dsds_vertical_divider_height">32dip</dimen>
 </resources>

@@ -72,6 +72,7 @@ import android.widget.SearchView.OnQueryTextListener;
 import android.widget.Toast;
 
 import com.android.contacts.common.CallUtil;
+import com.android.contacts.common.MoreContactUtils;
 import com.android.contacts.common.activity.TransactionSafeActivity;
 import com.android.contacts.common.interactions.ImportExportDialogFragment;
 import com.android.contacts.common.interactions.ImportExportDialogFragment.ExportToSimThread;
@@ -748,8 +749,9 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
 
         int phoneCount = MSimTelephonyManager.getDefault().getPhoneCount();
         for (int i = 0; i < phoneCount; i++) {
-            if (!isValidSimState(i))
+            if (!MoreContactUtils.isMultiSimEnable(i)) {
                 return false;
+            }
         }
         return true;
     }

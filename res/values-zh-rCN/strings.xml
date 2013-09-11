@@ -156,7 +156,6 @@
     <string name="description_direction_right">"向右滑动以<xliff:g id="TARGET_DESCRIPTION">%s</xliff:g>。"</string>
     <string name="dialpad_cling_multi_sim_call">滑动拨号按钮以选择卡1或卡2进行通话。</string>
     <string name="device_id">设备标识符</string>
-    <string name="slot_name">"卡"</string>
     <string name="call_log_show_all_slots">"所有卡"</string>
     <string name="assignSpeedDialFailToast">此号码已分配了快速拨号键，请选择其它号码。</string>
     <string name="calllog_search_hint">"搜索通话记录"</string>
