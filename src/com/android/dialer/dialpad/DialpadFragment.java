@@ -500,7 +500,7 @@ public class DialpadFragment extends Fragment
     }
 
     private void setDialButtonVisibility(Resources r) {
-        if (MoreContactUtils.getButtonStyle() == MoreContactUtils.DEFAULT_STYLE) {
+        if (!MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
             if (r.getBoolean(R.bool.config_show_onscreen_dial_button)) {
                 mDialButton.setOnClickListener(this);
                 mDialButton.setOnLongClickListener(this);
@@ -510,38 +510,51 @@ public class DialpadFragment extends Fragment
             }
             mDialButtonSub.setVisibility(View.GONE);
         } else {
-            final Context context = getActivity();
+            if (MoreContactUtils.getButtonStyle() == MoreContactUtils.TWO_BUTTON_STYLE) {
+                final Context context = getActivity();
 
-            mDialButton.setVisibility(View.GONE);
+                mDialButton.setVisibility(View.GONE);
 
-            if (r.getBoolean(R.bool.config_show_onscreen_dial_button)) {
-                mDialButton1.setOnClickListener(this);
-                mDialButton1.setOnLongClickListener(this);
-                ((ImageView) mCallActionSubIcon1)
-                        .setImageDrawable(MoreContactUtils.getMultiSimIcon(context,
-                                MoreContactUtils.CONTACTSCOMMON_ICON, MSimConstants.SUB1));
-                mDialButton2.setOnClickListener(this);
-                mDialButton2.setOnLongClickListener(this);
-                ((ImageView) mCallActionSubIcon2)
-                        .setImageDrawable(MoreContactUtils.getMultiSimIcon(context,
-                                MoreContactUtils.CONTACTSCOMMON_ICON, MSimConstants.SUB2));
+                if (r.getBoolean(R.bool.config_show_onscreen_dial_button)) {
+                    mDialButton1.setOnClickListener(this);
+                    mDialButton1.setOnLongClickListener(this);
+                    ((ImageView) mCallActionSubIcon1)
+                            .setImageDrawable(MoreContactUtils.getMultiSimIcon(context,
+                                    MoreContactUtils.CONTACTSCOMMON_ICON, MSimConstants.SUB1));
+                    mDialButton2.setOnClickListener(this);
+                    mDialButton2.setOnLongClickListener(this);
+                    ((ImageView) mCallActionSubIcon2)
+                            .setImageDrawable(MoreContactUtils.getMultiSimIcon(context,
+                                    MoreContactUtils.CONTACTSCOMMON_ICON, MSimConstants.SUB2));
+                }
+
+                if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB1)) {
+                    mDialButtonSub1.setVisibility(View.VISIBLE);
+                } else {
+                    mDialButtonSub1.setVisibility(View.GONE);
+                }
+
+                if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB2)) {
+                    mDialButtonSub2.setVisibility(View.VISIBLE);
+                } else {
+                    mDialButtonSub2.setVisibility(View.GONE);
+                }
+
+                if (mDialButtonSub1.getVisibility() == View.GONE
+                        && mDialButtonSub2.getVisibility() == View.GONE) {
+                    mDialButton.setVisibility(View.VISIBLE);
+                    mDialButtonSub.setVisibility(View.GONE);
+                }
             }
-
-            if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB1)) {
-                mDialButtonSub1.setVisibility(View.VISIBLE);
-            } else {
-                mDialButtonSub1.setVisibility(View.GONE);
-            }
-
-            if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB2)) {
-                mDialButtonSub2.setVisibility(View.VISIBLE);
-            } else {
-                mDialButtonSub2.setVisibility(View.GONE);
-            }
-
-            if (mDialButtonSub1.getVisibility() == View.GONE
-                    && mDialButtonSub2.getVisibility() == View.GONE) {
-                mDialButton.setVisibility(View.VISIBLE);
+            else if (MoreContactUtils.getButtonStyle() == MoreContactUtils.DEFAULT_STYLE) {
+                if (r.getBoolean(R.bool.config_show_onscreen_dial_button)) {
+                    mDialButton.setOnClickListener(this);
+                    mDialButton.setOnLongClickListener(this);
+                } else {
+                    mDialButton.setVisibility(View.GONE); // It's VISIBLE by
+                                                          // default
+                    mDialButton = null;
+                }
                 mDialButtonSub.setVisibility(View.GONE);
             }
         }
