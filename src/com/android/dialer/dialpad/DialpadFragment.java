@@ -969,12 +969,13 @@ public class DialpadFragment extends Fragment
                 ipCallBySlot2MenuItem.setVisible(false);
             }
             final CharSequence digits = mDigits.getText();
+            final boolean isSipNumber = PhoneNumberUtils.isUriNumber(digits.toString());
 
             // Put the current digits string into an intent
             addToContactMenuItem.setIntent(getAddToContactIntent(digits));
             addToContactMenuItem.setVisible(true);
 
-            if (isVTSupported()) {
+            if (isVTSupported() && !isSipNumber) {
                 videocallMenuItem.setVisible(true);
             } else {
                 videocallMenuItem.setVisible(false);
