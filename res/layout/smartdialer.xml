@@ -67,7 +67,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             android:id="@+id/textview_callLog"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" >
+            android:orientation="vertical"
+            android:visibility="gone" >
 
             <TextView
                 android:layout_width="match_parent"
@@ -103,7 +104,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:layout_below="@id/callloglistview"
-            android:layout_alignParentLeft="true" >
+            android:layout_alignParentLeft="true"
+            android:visibility="gone" >
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
