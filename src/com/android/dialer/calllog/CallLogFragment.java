@@ -422,6 +422,8 @@ public class CallLogFragment extends ListFragment
             mRefreshDataRequired = true;
             mBeforeEnabledSimCount = enabledSimCount;
         }
+        // Refresh call log data when enter the call log
+        mRefreshDataRequired = true;
         refreshData();
     }
 
