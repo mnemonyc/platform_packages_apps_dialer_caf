@@ -26,6 +26,7 @@ import android.app.ActionBar.LayoutParams;
 import android.app.ActionBar.Tab;
 import android.app.ActionBar.TabListener;
 import android.app.Activity;
+import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -74,6 +75,7 @@ import android.widget.Toast;
 import com.android.contacts.common.CallUtil;
 import com.android.contacts.common.MoreContactUtils;
 import com.android.contacts.common.activity.TransactionSafeActivity;
+import com.android.contacts.common.editor.SelectAccountDialogFragment;
 import com.android.contacts.common.interactions.ImportExportDialogFragment;
 import com.android.contacts.common.interactions.ImportExportDialogFragment.ExportToSimThread;
 import com.android.contacts.common.list.ContactListFilterController;
@@ -847,10 +849,21 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
         }
     }
 
+    private void dismissDialog(String tag) {
+
+        Fragment dialogFragment = getFragmentManager().findFragmentByTag(tag);
+        if (dialogFragment != null) {
+            if (dialogFragment instanceof DialogFragment) {
+                ((DialogFragment)dialogFragment).dismiss();
+            }
+        }
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
 
+        dismissDialog(SelectAccountDialogFragment.TAG);
         mPrefs.edit().putInt(PREF_LAST_MANUALLY_SELECTED_TAB, mLastManuallySelectedFragment)
                 .apply();
     }
