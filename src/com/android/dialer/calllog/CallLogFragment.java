@@ -703,6 +703,13 @@ public class CallLogFragment extends ListFragment
         }
     }
 
+    /** Send broadcast to let VideoCall app cancel the missed vtcall notifications. */
+    private void removeMissedVTCallNotifications() {
+        Intent intent = new Intent("com.borqs.videocall.action.clearMissedVTCall");
+        intent.putExtra("update_calllog", false);
+        getActivity().sendBroadcast(intent);
+    }
+
     /** Removes the missed call notifications. */
     private void removeMissedCallNotifications() {
         try {
@@ -741,6 +748,7 @@ public class CallLogFragment extends ListFragment
             if (!onEntry) {
                 mCallLogQueryHandler.markMissedCallsAsRead();
             }
+            removeMissedVTCallNotifications();
             removeMissedCallNotifications();
             updateVoicemailNotifications();
         }
