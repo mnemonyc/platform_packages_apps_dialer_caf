@@ -38,6 +38,7 @@ import android.provider.ContactsContract.Contacts;
 import android.provider.VoicemailContract.Voicemails;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
+import android.telephony.MSimTelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.ActionMode;
@@ -789,7 +790,8 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
         ImageView callIconSub2 = (ImageView) convertView.findViewById(R.id.call_icon_sub2);
 
         View mainAction = convertView.findViewById(R.id.call_and_sms_main_action);
-        if (MoreContactUtils.getButtonStyle() == MoreContactUtils.DEFAULT_STYLE) {
+        if (!MSimTelephonyManager.getDefault().isMultiSimEnabled()
+                || MoreContactUtils.getButtonStyle() == MoreContactUtils.DEFAULT_STYLE) {
             mainAction.setOnClickListener(mPrimaryActionListener);
             mainAction.setTag(entry);
         } else {
