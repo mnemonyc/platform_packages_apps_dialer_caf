@@ -1160,10 +1160,8 @@ public class DialpadFragment extends Fragment
                 return;
             }
             case R.id.dialButton: {
-                if (MoreContactUtils.getButtonStyle() == MoreContactUtils.DEFAULT_STYLE) {
-                    mHaptic.vibrate();
-                    dialButtonPressed();
-                }
+                mHaptic.vibrate();
+                dialButtonPressed();
                 return;
             }
             case R.id.dialButton1:
