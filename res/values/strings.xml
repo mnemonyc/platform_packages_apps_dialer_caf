@@ -567,4 +567,5 @@
     <string name="assignSpeedDialFailToast">
         The number has already been assigned to a speed dial key, please select another number.
     </string>
+    <string name="dialog_speed_dial_airplane_mode_message" >"To call Speed dial, first turn off Airplane mode."</string>
 </resources>
