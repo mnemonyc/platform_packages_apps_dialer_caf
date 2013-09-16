@@ -730,6 +730,12 @@ public class DialpadFragment extends Fragment
         // Long-pressing zero button will enter '+' instead.
         fragmentView.findViewById(R.id.zero).setOnLongClickListener(this);
 
+        // Long-pressing star button will enter ','(pause) instead.
+        fragmentView.findViewById(R.id.star).setOnLongClickListener(this);
+
+        // Long-pressing pound button will enter ';'(wait) instead.
+        fragmentView.findViewById(R.id.pound).setOnLongClickListener(this);
+
     }
 
     @Override
@@ -1293,6 +1299,28 @@ public class DialpadFragment extends Fragment
                     return true;
                 } else {
                     return false;
+                }
+            }
+            case R.id.star: {
+                if (mDigits.length() > 1) {
+                    // Remove tentative input ('*') done by onTouch().
+                    removePreviousDigitIfPossible();
+                    keyPressed(KeyEvent.KEYCODE_COMMA);
+                    stopTone();
+                    if (mDialpadPressCount > 0) mDialpadPressCount--;
+
+                    return true;
+                }
+            }
+            case R.id.pound: {
+                if (mDigits.length() > 1) {
+                    // Remove tentative input ('#') done by onTouch().
+                    removePreviousDigitIfPossible();
+                    keyPressed(KeyEvent.KEYCODE_SEMICOLON);
+                    stopTone();
+                    if (mDialpadPressCount > 0) mDialpadPressCount--;
+
+                    return true;
                 }
             }
         }
