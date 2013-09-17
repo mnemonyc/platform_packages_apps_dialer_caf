@@ -59,10 +59,14 @@ public class SpeedDialUtils {
     public static final int INFO_NUMBER = 0;
     public static final int INFO_NAME = 1;
 
+    public static final String ACCOUNT_TYPE_SIM = "com.android.sim";
+
     private static final String[] numKeys = new String[] {"num2_key","num3_key","num4_key",
         "num5_key","num6_key","num7_key","num8_key","num9_key"};
     private static final String[] nameKeys = new String[] {"name2_key","name3_key","name4_key",
         "name5_key","name6_key","name7_key","name8_key","name9_key"};
+    private static final String[] simKeys = new String[] {"sim2_key","sim3_key","sim4_key",
+        "sim5_key","sim6_key","sim7_key","sim8_key","sim9_key"};
     private SharedPreferences mPref;
 
     private Context mContext;
@@ -122,6 +126,22 @@ public class SpeedDialUtils {
      */
     public String getContactDataName(int numId) {
         return mPref.getString(nameKeys[numId], "");
+    }
+
+    /*
+     * set sim key to share preference
+     */
+    public void storeContactSimKey(int numId, boolean isSimAccount) {
+        SharedPreferences.Editor editor = mPref.edit();
+        editor.putBoolean(simKeys[numId], isSimAccount);
+        editor.commit();
+    }
+
+    /*
+     * get sim key from share preference
+     */
+    public boolean getContactSimKey(int numId) {
+        return mPref.getBoolean(simKeys[numId], false);
     }
 
     /*
@@ -216,5 +236,56 @@ public class SpeedDialUtils {
             }
         }
         return mContactDataName;
+    }
+
+    public boolean isSimAccontByNumber(String contactNumber) {
+        boolean isSimAccount = false;
+        if ("".equals(contactNumber)) {
+            return false;
+        }
+        Cursor rawCursor = null;
+        Cursor dataCursor = null;
+        try {
+            dataCursor = mContext.getContentResolver().query(
+                    ContactsContract.Data.CONTENT_URI, null,
+                    Data.DATA1 + " = ? AND " + Data.MIMETYPE + " = '"
+                    + ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE + "'",
+                    new String[] {contactNumber}, null);
+            if (null == dataCursor || 0 == dataCursor.getCount()) {
+                return false;
+            }
+            while (dataCursor.moveToNext()) {
+                int rawContactId = dataCursor.getInt(
+                        dataCursor.getColumnIndexOrThrow(Data.RAW_CONTACT_ID));
+                rawCursor = mContext.getContentResolver().query(
+                        RawContacts.CONTENT_URI, null,
+                        RawContacts._ID + " = ? AND deleted = ?",
+                        new String[] { String.valueOf(rawContactId), String.valueOf(0) },
+                        null);
+                if (null == rawCursor || 0 == rawCursor.getCount()) {
+                    return false;
+                } else {
+                    if (rawCursor.moveToFirst()) {
+                        String accountType = rawCursor.getString(rawCursor
+                                .getColumnIndexOrThrow("account_type"));
+                        isSimAccount = isSimAccount(accountType);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // exception happens
+        } finally {
+            if (null != dataCursor) {
+                dataCursor.close();
+            }
+            if (null != rawCursor) {
+                rawCursor.close();
+            }
+        }
+        return isSimAccount;
+    }
+
+    public boolean isSimAccount(String accountType) {
+        return ACCOUNT_TYPE_SIM.equals(accountType);
     }
 }

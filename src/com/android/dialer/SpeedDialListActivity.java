@@ -43,6 +43,7 @@ import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts.Data;
 import android.provider.ContactsContract.RawContacts;
 import android.telephony.MSimTelephonyManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -68,6 +69,8 @@ public class SpeedDialListActivity extends ListActivity implements OnItemClickLi
     private static String[] mContactDataNumber = new String[PREF_NUM];
     //save the speed dial name
     private static String[] mContactDataName = new String[PREF_NUM];
+    //save the speed dial sim key
+    private static Boolean[] mContactSimKey = new Boolean[PREF_NUM];
     //save the speed list item content, include 1 voice mail and 2-9 speed number
     private static String[] mSpeedListItems = new String[SPEED_ITEMS];
 
@@ -95,6 +98,7 @@ public class SpeedDialListActivity extends ListActivity implements OnItemClickLi
         for (int i = 0; i < PREF_NUM; i++) {
             mContactDataNumber[i] = mSpeedDialUtils.getContactDataNumber(i);
             mContactDataName[i] = mSpeedDialUtils.getContactDataName(i);
+            mContactSimKey[i] = mSpeedDialUtils.getContactSimKey(i);
         }
 
         ListView listview = getListView();
@@ -126,21 +130,31 @@ public class SpeedDialListActivity extends ListActivity implements OnItemClickLi
         for (int i = 1; i < SPEED_ITEMS; i++) {
             // if there is no speed dial number for number key, show "not set", or lookup in contacts
             // according to number, if exist, show contact name, else show number.
-            String mName = mSpeedDialUtils.getValidName(mContactDataNumber[i-1]);
-            if (null == mName) {
-                // can not find contact number in db, maybe it is deleted
-                mContactDataNumber[i-1] = "";
-                mContactDataName[i-1] = "";
-                mSpeedDialUtils.storeContactDataNumber(i-1, "");
-                mSpeedDialUtils.storeContactDataName(i-1, "");
-                mSpeedListItems[i] = getString(R.string.speed_item, String.valueOf(i+1),
+            if (TextUtils.isEmpty(mContactDataNumber[i - 1])) {
+                mContactDataName[i - 1] = "";
+                mContactSimKey[i - 1] = false;
+
+                mSpeedListItems[i] = getString(R.string.speed_item, String.valueOf(i + 1),
                         getString(R.string.not_set));
             } else {
-                mContactDataName[i-1] = mName;
-                mSpeedDialUtils.storeContactDataName(i-1, mName);
-                mSpeedListItems[i] = getString(R.string.speed_item, String.valueOf(i+1),
-                        mContactDataName[i-1]);
+                mContactDataName[i - 1] = mSpeedDialUtils.getValidName(mContactDataNumber[i - 1]);
+                if (TextUtils.isEmpty(mContactDataName[i - 1])) {
+                    mContactDataName[i - 1] = "";
+                    mContactSimKey[i - 1] = false;
+
+                    mSpeedListItems[i] = getString(R.string.speed_item, String.valueOf(i + 1),
+                            mContactDataNumber[i - 1]);
+                } else {
+                    mContactSimKey[i - 1] = mSpeedDialUtils
+                            .isSimAccontByNumber(mContactDataNumber[i - 1]);
+
+                    mSpeedListItems[i] = getString(R.string.speed_item, String.valueOf(i + 1),
+                            mContactDataName[i - 1]);
+                }
             }
+            mSpeedDialUtils.storeContactDataNumber(i - 1, mContactDataNumber[i - 1]);
+            mSpeedDialUtils.storeContactDataName(i - 1, mContactDataName[i - 1]);
+            mSpeedDialUtils.storeContactSimKey(i - 1, mContactSimKey[i - 1]);
         }
     }
 
@@ -221,15 +235,16 @@ public class SpeedDialListActivity extends ListActivity implements OnItemClickLi
                         String number = c.getString(
                                 c.getColumnIndexOrThrow(Data.DATA1));
                         String name = "";
+                        String accountType = null;
                         int rawContactId = c.getInt(c.getColumnIndexOrThrow("raw_contact_id"));
                         String where = "_id = " + rawContactId;
-                        c = getContentResolver().query(
-                                RawContacts.CONTENT_URI,
-                                        new String[]{"display_name"}, where, null, null);
+                        c = getContentResolver().query(RawContacts.CONTENT_URI, new String[] {
+                                "display_name", "account_type"
+                        }, where, null, null);
                         if (null != c && 0 != c.getCount()) {
                             c.moveToFirst();
-                            name = c.getString(
-                                    c.getColumnIndexOrThrow("display_name"));
+                            name = c.getString(c.getColumnIndexOrThrow("display_name"));
+                            accountType = c.getString(c.getColumnIndexOrThrow("account_type"));
                             if (!okToSet(number)) {
                                 Toast.makeText(this, R.string.assignSpeedDialFailToast,
                                         Toast.LENGTH_LONG).show();
@@ -237,6 +252,7 @@ public class SpeedDialListActivity extends ListActivity implements OnItemClickLi
                             } else {
                                 mContactDataName[numId] = name;
                                 mContactDataNumber[numId] = number;
+                                mContactSimKey[numId] = mSpeedDialUtils.isSimAccount(accountType);
                             }
                         }
                     } else {
@@ -252,6 +268,7 @@ public class SpeedDialListActivity extends ListActivity implements OnItemClickLi
                 }
                 mSpeedDialUtils.storeContactDataNumber(numId, mContactDataNumber[numId]);
                 mSpeedDialUtils.storeContactDataName(numId,mContactDataName[numId]);
+                mSpeedDialUtils.storeContactSimKey(numId, mContactSimKey[numId]);
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -305,6 +322,7 @@ public class SpeedDialListActivity extends ListActivity implements OnItemClickLi
                 getString(R.string.not_set));
             mSpeedDialUtils.storeContactDataNumber(pos-1, "");
             mSpeedDialUtils.storeContactDataName(pos-1, "");
+            mSpeedDialUtils.storeContactSimKey(pos - 1, false);
             //update listview item
             setListAdapter(new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,
                mSpeedListItems));
