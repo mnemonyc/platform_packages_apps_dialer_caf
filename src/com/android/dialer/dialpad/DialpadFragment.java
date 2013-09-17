@@ -730,6 +730,12 @@ public class DialpadFragment extends Fragment
         // Long-pressing zero button will enter '+' instead.
         fragmentView.findViewById(R.id.zero).setOnLongClickListener(this);
 
+        // Long-pressing star button will enter ','(pause) instead.
+        fragmentView.findViewById(R.id.star).setOnLongClickListener(this);
+
+        // Long-pressing pound button will enter ';'(wait) instead.
+        fragmentView.findViewById(R.id.pound).setOnLongClickListener(this);
+
     }
 
     @Override
@@ -1274,7 +1280,17 @@ public class DialpadFragment extends Fragment
             case R.id.nine:
                 if ((mDigits.length() == 1)) {
                     removePreviousDigitIfPossible();
-                    callSpeedNumber(id);
+                    final boolean isAirplaneModeOn =
+                            Settings.System.getInt(getActivity().getContentResolver(),
+                                    Settings.System.AIRPLANE_MODE_ON, 0) != 0;
+                    if (isAirplaneModeOn) {
+                        DialogFragment dialogFragment = ErrorDialogFragment.newInstance(
+                                R.string.dialog_speed_dial_airplane_mode_message);
+                        dialogFragment.show(getFragmentManager(),
+                                "speed_dial_request_during_airplane_mode");
+                    } else {
+                        callSpeedNumber(id);
+                    }
                     return true;
                 }
                 return false;
@@ -1293,6 +1309,28 @@ public class DialpadFragment extends Fragment
                     return true;
                 } else {
                     return false;
+                }
+            }
+            case R.id.star: {
+                if (mDigits.length() > 1) {
+                    // Remove tentative input ('*') done by onTouch().
+                    removePreviousDigitIfPossible();
+                    keyPressed(KeyEvent.KEYCODE_COMMA);
+                    stopTone();
+                    if (mDialpadPressCount > 0) mDialpadPressCount--;
+
+                    return true;
+                }
+            }
+            case R.id.pound: {
+                if (mDigits.length() > 1) {
+                    // Remove tentative input ('#') done by onTouch().
+                    removePreviousDigitIfPossible();
+                    keyPressed(KeyEvent.KEYCODE_SEMICOLON);
+                    stopTone();
+                    if (mDialpadPressCount > 0) mDialpadPressCount--;
+
+                    return true;
                 }
             }
         }
@@ -2232,8 +2270,7 @@ public class DialpadFragment extends Fragment
         }
         speedNumber = speedDialUtils.getContactDataNumber(numId);
         speedName = speedDialUtils.getContactDataName(numId);
-        if (speedNumber == null || speedNumber.length() == 0
-                || speedDialUtils.getValidName(speedNumber) == null) {
+        if (speedNumber == null || speedNumber.length() == 0) {
             showNoSpeedNumberDialog(numId);
         } else {
             Intent intent = new Intent(Intent.ACTION_CALL_PRIVILEGED);
