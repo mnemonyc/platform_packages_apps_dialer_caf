@@ -1359,7 +1359,9 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
         switch (position) {
             case TAB_INDEX_DIALER:
                 // would not show Search button in Dialer tab.
-                mSearchButton.setVisibility(View.GONE);
+                if (mSearchButton != null) {
+                    mSearchButton.setVisibility(View.GONE);
+                }
                 return mDialpadFragment;
             case TAB_INDEX_CALL_LOG:
                 return mCallLogFragment;
