@@ -84,6 +84,8 @@ import java.util.List;
 public class CallDetailActivity extends Activity implements ProximitySensorAware {
     private static final String TAG = "CallDetail";
 
+    private static final boolean MOVE_VTCALL_BTN_TO_OPTIONSMENU = true;
+
     private static final char LEFT_TO_RIGHT_EMBEDDING = '\u202A';
     private static final char POP_DIRECTIONAL_FORMATTING = '\u202C';
 
@@ -143,6 +145,8 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
     private boolean mHasTrashOption;
     /** Whether we should show "remove from call log" in the options menu. */
     private boolean mHasRemoveFromCallLogOption;
+    /** Whether we should show "Video Call" in the options menu. */
+    private boolean mHasVideoCallOption;
 
     private ProximitySensorManager mProximitySensorManager;
     private final ProximitySensorListener mProximitySensorListener = new ProximitySensorListener();
@@ -584,15 +588,19 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
                                 new Intent(Intent.ACTION_SENDTO,
                                            Uri.fromParts("sms", mNumber, null)),
                                 getString(R.string.description_send_text_message, nameOrNumber));
-               }
+                    }
                     // The third action allows to invoke videocall to the number that placed the
                     // call.
-                        if (canPlaceCallsTo && isVTSupported() && !isSipNumber) {
+                    final boolean canVTCall = canPlaceCallsTo && isVTSupported() && !isSipNumber;
+                    if (!MOVE_VTCALL_BTN_TO_OPTIONSMENU && canVTCall) {
                             entry.setThirdAction(
                                     R.drawable.ic_contact_quick_contact_call_video_holo_dark,
                                     getVTCallIntent(mNumber),
                                     getString(R.string.description_videocall,
                                             nameOrNumber));
+                            mHasVideoCallOption = false;
+                    } else {
+                        mHasVideoCallOption = canVTCall;
                     }
 
                     configureCallButton(entry);
@@ -904,6 +912,7 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
     public boolean onPrepareOptionsMenu(Menu menu) {
         // This action deletes all elements in the group from the call log.
         // We don't have this action for voicemails, because you can just use the trash button.
+        menu.findItem(R.id.menu_video_call).setVisible(mHasVideoCallOption);
         menu.findItem(R.id.menu_remove_from_call_log).setVisible(mHasRemoveFromCallLogOption);
         menu.findItem(R.id.menu_edit_number_before_call).setVisible(mHasEditNumberBeforeCallOption);
         menu.findItem(R.id.menu_trash).setVisible(mHasTrashOption);
@@ -922,6 +931,10 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
             default:
                 throw new IllegalArgumentException();
         }
+    }
+
+    public void onMenuVTCall(MenuItem menuItem) {
+        startActivity(getVTCallIntent(mNumber));
     }
 
     public void onMenuRemoveFromCallLog(MenuItem menuItem) {

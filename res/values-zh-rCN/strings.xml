@@ -26,6 +26,7 @@
     <string name="menu_sendTextMessage" msgid="6937343460284499306">"发送短信"</string>
     <string name="recentCalls_callNumber" msgid="1756372533999226126">"呼叫<xliff:g id="NAME">%s</xliff:g>"</string>
     <string name="recentCalls_editNumberBeforeCall" msgid="7756171675833267857">"呼叫之前编辑号码"</string>
+    <string name="videocall">"可视电话"</string>
     <string name="recentCalls_addToContact" msgid="1429899535546487008">"添加到“联系人”"</string>
     <string name="recentCalls_removeFromRecentList" msgid="401662244636511330">"从通话记录中删除"</string>
     <string name="recentCalls_deleteAll" msgid="6352364392762163704">"清除通话记录"</string>
