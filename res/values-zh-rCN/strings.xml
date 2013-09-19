@@ -161,4 +161,5 @@
     <string name="assignSpeedDialFailToast">此号码已分配了快速拨号键，请选择其它号码。</string>
     <string name="calllog_search_hint">"搜索通话记录"</string>
     <string name="dialog_speed_dial_airplane_mode_message" >"要呼叫快速拨号，请先关闭飞行模式。"</string>
+    <string name="load_contacts" >"正在加载联系人, 请稍等\u2026."</string>
 </resources>

@@ -137,4 +137,5 @@
     <string name="simContacts_title" msgid="27341688347689769">"SIM 卡聯絡人"</string>
     <string name="add_contact_not_available" msgid="1419207765446461366">"您必須重新啟用「使用者」應用程式，才能使用這項功能。"</string>
     <string name="dialog_speed_dial_airplane_mode_message" >"要呼叫快速撥號，請先關閉飛行模式。"</string>
+    <string name="load_contacts" >"正在載入聯絡人, 請稍等\u2026."</string>
 </resources>
