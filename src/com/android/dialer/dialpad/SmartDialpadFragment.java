@@ -693,6 +693,8 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
         private CharSequence mUnknownNameText;
         private Cursor mSuggestionsCursor;
         private int mSuggestionsCursorCount;
+        private ContactPhotoManager mContactPhotoManager = ContactPhotoManager
+                .getInstance(mContext);
 
         private int[] getStartEnd(String s, int start, int end) {
             int[] offset = new int[2];
@@ -965,7 +967,7 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
 
             QuickContactBadge photo = view.getQuickContact();
             photo.assignContactFromPhone(cursor.getString(QUERY_NUMBER), true);
-            ContactPhotoManager.getInstance(mContext).loadThumbnail(photo, photoId, true);
+            mContactPhotoManager.loadThumbnail(photo, photoId, true);
             view.setPresence(null);
 
         }
