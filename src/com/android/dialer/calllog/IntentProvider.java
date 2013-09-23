@@ -27,6 +27,7 @@ import android.net.Uri;
 import android.provider.CallLog.Calls;
 
 import com.android.contacts.common.CallUtil;
+import com.android.contacts.common.MoreContactUtils;
 import com.android.dialer.CallDetailActivity;
 import com.android.internal.telephony.MSimConstants;
 
@@ -45,6 +46,7 @@ public abstract class IntentProvider {
             public Intent getIntent(Context context) {
                 Intent intent = CallUtil.getCallIntent(number);
                 intent.putExtra(MSimConstants.SUBSCRIPTION_KEY, subscription);
+                intent.putExtra(MoreContactUtils.DIAL_WIDGET_SWITCHED, subscription);
                 return intent;
             }
         };
