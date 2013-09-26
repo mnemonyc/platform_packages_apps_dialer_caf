@@ -16,8 +16,10 @@
 
 package com.android.dialer.calllog;
 
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
@@ -25,6 +27,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.CallLog.Calls;
 import android.provider.ContactsContract.PhoneLookup;
+import android.telephony.MSimTelephonyManager;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,9 +38,11 @@ import com.android.common.widget.GroupingListAdapter;
 import com.android.contacts.common.ContactPhotoManager;
 import com.android.contacts.common.MoreContactUtils;
 import com.android.contacts.common.util.UriUtils;
+import com.android.dialer.CallDetailActivity;
 import com.android.dialer.PhoneCallDetails;
 import com.android.dialer.PhoneCallDetailsHelper;
 import com.android.dialer.R;
+import com.android.dialer.dialpad.SmartDialpadFragment;
 import com.android.dialer.util.ExpirableCache;
 import com.android.internal.telephony.MSimConstants;
 import com.google.common.annotations.VisibleForTesting;
@@ -96,6 +101,9 @@ public class CallLogAdapter extends GroupingListAdapter
     private final ContactInfoHelper mContactInfoHelper;
     private final CallFetcher mCallFetcher;
     private ViewTreeObserver mViewTreeObserver = null;
+
+    private boolean isFromDialpad = false;
+    private Handler callLogItemClickHandler = null;
 
     /**
      * A cache of the contact details for the phone numbers in the call log.
@@ -186,7 +194,39 @@ public class CallLogAdapter extends GroupingListAdapter
         public void onClick(View view) {
             IntentProvider intentProvider = (IntentProvider) view.getTag();
             if (intentProvider != null) {
-                mContext.startActivity(intentProvider.getIntent(mContext));
+                Intent callIntent = intentProvider.getIntent(mContext);
+                if (isFromDialpad && callLogItemClickHandler != null) {
+                    Uri callUri = null;
+                    Uri uri = callIntent.getData();
+                    if (uri != null) {
+                        // If there is a data on the intent, it takes precedence over the extra.
+                        callUri = uri;
+                    } else {
+                        long[] ids = callIntent.getLongArrayExtra(CallDetailActivity.EXTRA_CALL_LOG_IDS);
+                        callUri = ContentUris.withAppendedId(Calls.CONTENT_URI_WITH_VOICEMAIL, ids[0]);
+                    }
+
+                    Cursor callCursor = mContext.getContentResolver().query(callUri,
+                            new String[] {
+                                Calls.NUMBER
+                            }, null, null, null);
+                    if (callCursor != null && callCursor.moveToFirst()) {
+                        try {
+                            String number = callCursor.getString(0);
+                            Message msg = callLogItemClickHandler.obtainMessage(
+                                    SmartDialpadFragment.CALLLOG_ITEM_CLICKED, number);
+                            // send the phone number to SmartDialpadFragment via
+                            // a Message object.
+                            callLogItemClickHandler.sendMessage(msg);
+                        } finally {
+                            if (callCursor != null) {
+                                callCursor.close();
+                            }
+                        }
+                    }
+                } else {
+                    mContext.startActivity(callIntent);
+                }
             }
         }
     };
@@ -240,6 +280,12 @@ public class CallLogAdapter extends GroupingListAdapter
 
     public CallLogAdapter(Context context, CallFetcher callFetcher,
             ContactInfoHelper contactInfoHelper) {
+        this(context, callFetcher, contactInfoHelper, false, null);
+    }
+
+    public CallLogAdapter(Context context, CallFetcher callFetcher,
+            ContactInfoHelper contactInfoHelper, boolean isFromDialpad,
+            Handler callLogItemClickHandler) {
         super(context);
 
         mContext = context;
@@ -260,6 +306,9 @@ public class CallLogAdapter extends GroupingListAdapter
                 new CallLogListItemHelper(
                         phoneCallDetailsHelper, mPhoneNumberHelper, resources);
         mCallLogGroupBuilder = new CallLogGroupBuilder(this);
+
+        this.isFromDialpad = isFromDialpad;
+        this.callLogItemClickHandler = callLogItemClickHandler;
     }
 
     /**
@@ -544,7 +593,7 @@ public class CallLogAdapter extends GroupingListAdapter
         final long duration = c.getLong(CallLogQuery.DURATION);
         final int callType = c.getInt(CallLogQuery.CALL_TYPE);
         final String countryIso = c.getString(CallLogQuery.COUNTRY_ISO);
-        final int subscription = c.getInt(CallLogQuery.SUBSCRIPTION);
+        int subscription = c.getInt(CallLogQuery.SUBSCRIPTION);
         final int durationType = c.getInt(CallLogQuery.DURATION_TYPE);
 
         final ContactInfo cachedContactInfo = getContactInfoFromCallLog(c);
@@ -552,6 +601,7 @@ public class CallLogAdapter extends GroupingListAdapter
         views.primaryActionView.setTag(
                 IntentProvider.getCallDetailIntentProvider(
                         this, c.getPosition(), c.getLong(CallLogQuery.ID), count, subscription));
+
         // Store away the voicemail information so we can play it directly.
         if (callType == Calls.VOICEMAIL_TYPE) {
             String voicemailUri = c.getString(CallLogQuery.VOICEMAIL_URI);

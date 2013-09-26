@@ -31,6 +31,7 @@ import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Paint;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
 import android.net.Uri;
@@ -294,9 +295,11 @@ public class DialpadFragment extends Fragment
             return;
 
         float newSize_sp = mDefaultTextSize_sp;
-        final float inputTextLength_sp = new EditText(getActivity()).getPaint().measureText(
-                input.toString());
-        final float oneCharLength_sp = new EditText(getActivity()).getPaint().measureText("0");
+
+        Paint paint = new Paint();
+        paint.setTextSize(mDefaultTextSize_sp);
+        final float inputTextLength_sp = paint.measureText(input.toString());
+        final float oneCharLength_sp = paint.measureText("0");
 
         final float digitsWidth_px = mDigits.getWidth();
         final float digitsWidth_sp = px2Sp(digitsWidth_px);
@@ -514,6 +517,7 @@ public class DialpadFragment extends Fragment
                 final Context context = getActivity();
 
                 mDialButton.setVisibility(View.GONE);
+                mDialButtonSub.setVisibility(View.VISIBLE);
 
                 if (r.getBoolean(R.bool.config_show_onscreen_dial_button)) {
                     mDialButton1.setOnClickListener(this);
@@ -545,17 +549,6 @@ public class DialpadFragment extends Fragment
                     mDialButton.setVisibility(View.VISIBLE);
                     mDialButtonSub.setVisibility(View.GONE);
                 }
-            }
-            else if (MoreContactUtils.getButtonStyle() == MoreContactUtils.DEFAULT_STYLE) {
-                if (r.getBoolean(R.bool.config_show_onscreen_dial_button)) {
-                    mDialButton.setOnClickListener(this);
-                    mDialButton.setOnLongClickListener(this);
-                } else {
-                    mDialButton.setVisibility(View.GONE); // It's VISIBLE by
-                                                          // default
-                    mDialButton = null;
-                }
-                mDialButtonSub.setVisibility(View.GONE);
             }
         }
     }
@@ -1166,8 +1159,10 @@ public class DialpadFragment extends Fragment
                 return;
             }
             case R.id.dialButton: {
-                mHaptic.vibrate();
-                dialButtonPressed();
+                if (!MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
+                    mHaptic.vibrate();
+                    dialButtonPressed();
+                }
                 return;
             }
             case R.id.dialButton1:
@@ -2021,7 +2016,7 @@ public class DialpadFragment extends Fragment
      */
     private void updateDialAndDeleteButtonEnabledState() {
         final boolean digitsNotEmpty = !isDigitsEmpty();
-        if (MoreContactUtils.getButtonStyle() == MoreContactUtils.DEFAULT_STYLE) {
+        if (!MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
             enableDialButton(digitsNotEmpty, mDialButton);
         } else {
             enableDialButton(digitsNotEmpty, mDialButton1);
