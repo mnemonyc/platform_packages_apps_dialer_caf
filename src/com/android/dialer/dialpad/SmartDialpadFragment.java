@@ -1040,8 +1040,12 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
                 mHandler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        mCountView.setText(contactCount + mCallLogAdapter.getCount() + "");
-                        mCountView.invalidate();
+                        if (isDigitsEmpty()) {
+                            mCountButton.setVisibility(View.GONE);
+                        } else {
+                            mCountView.setText(contactCount + mCallLogAdapter.getCount() + "");
+                            mCountView.invalidate();
+                        }
                     }
                 }, 100);// wait 100ms for mCallLogAdapter
             } else {
