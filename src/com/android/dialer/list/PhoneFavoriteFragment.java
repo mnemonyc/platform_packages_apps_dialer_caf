@@ -31,6 +31,7 @@ import android.provider.ContactsContract;
 import android.provider.ContactsContract.Directory;
 import android.provider.Settings.SettingNotFoundException;
 import android.provider.Settings;
+import android.telephony.MSimTelephonyManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -378,7 +379,10 @@ public class PhoneFavoriteFragment extends Fragment implements OnItemClickListen
 
         mListView = (ListView) listLayout.findViewById(R.id.contact_tile_list);
         mListView.setItemsCanFocus(true);
-        mListView.setOnItemClickListener(this);
+        if (!MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
+            // only enable in SSSS mode.
+            mListView.setOnItemClickListener(this);
+        }
         mListView.setVerticalScrollBarEnabled(false);
         mListView.setVerticalScrollbarPosition(View.SCROLLBAR_POSITION_RIGHT);
         mListView.setScrollBarStyle(ListView.SCROLLBARS_OUTSIDE_OVERLAY);
