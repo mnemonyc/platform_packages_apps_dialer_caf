@@ -604,6 +604,9 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
     }
 
     private void setupListView() {
+        if (getActivity() == null) {
+            return;
+        }
         setupCallLogListView();
         final ListView list = mList;
         mAdapter = new ContactItemListAdapter(getActivity());
