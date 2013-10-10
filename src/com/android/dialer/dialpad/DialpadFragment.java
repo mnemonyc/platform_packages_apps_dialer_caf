@@ -281,7 +281,6 @@ public class DialpadFragment extends Fragment
 
     private float mDefaultTextSize_sp;
     private String beforeTextString = "";
-    private static int mBeforeEnabledSimCount = 0;
 
     private float px2Sp(float px) {
         DisplayMetrics displayMetrics = getActivity().getResources().getDisplayMetrics();
@@ -531,19 +530,36 @@ public class DialpadFragment extends Fragment
                             .setImageDrawable(MoreContactUtils.getMultiSimIcon(context,
                                     MoreContactUtils.CONTACTSCOMMON_ICON, MSimConstants.SUB2));
                 }
+                if (MSimTelephonyManager.getDefault().getMultiSimConfiguration()
+                        == MSimTelephonyManager.MultiSimVariants.DSDS) {
+                    if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB1)
+                            && (MSimTelephonyManager.getDefault().getCallState(MSimConstants.SUB2)
+                                    == TelephonyManager.CALL_STATE_IDLE)) {
+                       mDialButtonSub1.setVisibility(View.VISIBLE);
+                    } else {
+                        mDialButtonSub1.setVisibility(View.GONE);
+                    }
 
-                if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB1)) {
-                    mDialButtonSub1.setVisibility(View.VISIBLE);
+                    if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB2)
+                            && (MSimTelephonyManager.getDefault().getCallState(MSimConstants.SUB1)
+                                    == TelephonyManager.CALL_STATE_IDLE)) {
+                        mDialButtonSub2.setVisibility(View.VISIBLE);
+                    } else {
+                        mDialButtonSub2.setVisibility(View.GONE);
+                    }
                 } else {
-                    mDialButtonSub1.setVisibility(View.GONE);
-                }
+                    if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB1)) {
+                       mDialButtonSub1.setVisibility(View.VISIBLE);
+                    } else {
+                        mDialButtonSub1.setVisibility(View.GONE);
+                    }
 
-                if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB2)) {
-                    mDialButtonSub2.setVisibility(View.VISIBLE);
-                } else {
-                    mDialButtonSub2.setVisibility(View.GONE);
+                    if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB2)) {
+                        mDialButtonSub2.setVisibility(View.VISIBLE);
+                    } else {
+                        mDialButtonSub2.setVisibility(View.GONE);
+                    }
                 }
-
                 if (mDialButtonSub1.getVisibility() == View.GONE
                         && mDialButtonSub2.getVisibility() == View.GONE) {
                     mDialButton.setVisibility(View.VISIBLE);
@@ -839,11 +855,7 @@ public class DialpadFragment extends Fragment
 
         stopWatch.stopAndLog(TAG, 50);
 
-        int enabledSimCount = MoreContactUtils.getEnabledSimCount();
-        if (enabledSimCount != mBeforeEnabledSimCount) {
-            mBeforeEnabledSimCount = enabledSimCount;
-            setDialButtonVisibility(getResources());
-        }
+        setDialButtonVisibility(getResources());
 
         new Handler().postDelayed(new Runnable() {
             @Override
