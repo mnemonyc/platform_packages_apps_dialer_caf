@@ -1178,9 +1178,8 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
         // prepare the menu items
         filterOptionMenuItem.setVisible(false);
         addContactOptionMenuItem.setVisible(false);
+        searchMenuItem.setVisible(false);
         if (mDuringSwipe || mUserTabClick) {
-            // During horizontal movement, the real ActionBar menu items are shown
-            searchMenuItem.setVisible(true);
             callSettingsMenuItem.setVisible(true);
             // When there is a permanent menu key, there is no overflow icon on the right of
             // the action bar which would force the search menu item (if it is visible) to the
