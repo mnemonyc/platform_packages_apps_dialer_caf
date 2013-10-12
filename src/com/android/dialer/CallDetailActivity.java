@@ -825,10 +825,8 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
             icon_third.setVisibility(View.VISIBLE);
             icon_third.setTag(entry);
             icon_third.setContentDescription(entry.thirdDescription);
-            divider_third.setVisibility(View.VISIBLE);
         } else {
             icon_third.setVisibility(View.GONE);
-            divider_third.setVisibility(View.GONE);
         }
 
         text.setText(entry.text);

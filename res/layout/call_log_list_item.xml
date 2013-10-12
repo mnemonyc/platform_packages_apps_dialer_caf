@@ -96,15 +96,7 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                 >
-                    <ImageView
-                        android:id="@+id/sub_icon"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginRight="@dimen/call_log_icon_margin"
-                        android:layout_marginBottom="@dimen/call_detail_button_spacing"
-                        android:layout_gravity="bottom"
-                        android:visibility="gone"
-                    />
+
                     <TextView
                         android:id="@+id/number"
                         android:layout_width="wrap_content"
@@ -133,6 +125,15 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                 >
+                    <ImageView
+                        android:id="@+id/sub_icon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="@dimen/call_log_icon_margin"
+                        android:layout_marginBottom="@dimen/call_detail_button_spacing"
+                        android:layout_gravity="bottom"
+                        android:visibility="gone"
+                    />
                     <view
                         class="com.android.dialer.calllog.CallTypeIconsView"
                         android:id="@+id/call_type_icons"
@@ -223,8 +224,8 @@
         android:id="@+id/call_log_divider"
         android:layout_width="match_parent"
         android:layout_height="1px"
-        android:layout_marginStart="@dimen/call_log_outer_margin"
-        android:layout_marginEnd="@dimen/call_log_outer_margin"
+        android:layout_marginStart="0dp"
+        android:layout_marginEnd="@dimen/call_log_inner_margin"
         android:background="#55ffffff"
     />
 </view>
