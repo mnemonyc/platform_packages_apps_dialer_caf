@@ -159,6 +159,7 @@ public class DialpadFragment extends Fragment
     protected View mDialButton;
     protected View mDialButtonSub;
 
+    protected View mDialDivider;
     protected View mDialButtonSub1;
     protected View mDialButton1;
     protected View mCallActionSubIcon1;
@@ -447,6 +448,7 @@ public class DialpadFragment extends Fragment
         mDialButton = fragmentView.findViewById(R.id.dialButton);
         mDialButtonSub = fragmentView.findViewById(R.id.dialButton_sub);
 
+        mDialDivider = fragmentView.findViewById(R.id.sub_divider);
         mDialButton1 = fragmentView.findViewById(R.id.dialButton1);
         mDialButtonSub1 = fragmentView.findViewById(R.id.dialButton_sub1);
         mCallActionSubIcon1 = fragmentView.findViewById(R.id.call_action_sub_icon1);
@@ -564,6 +566,17 @@ public class DialpadFragment extends Fragment
                         && mDialButtonSub2.getVisibility() == View.GONE) {
                     mDialButton.setVisibility(View.VISIBLE);
                     mDialButtonSub.setVisibility(View.GONE);
+                }
+                if (mDialButtonContainer != null) {
+                    mDialButtonContainer.setPadding(
+                            0, mDialButtonContainer.getPaddingTop(),
+                            0, mDialButtonContainer.getPaddingBottom());
+                }
+                if (mDialButtonSub1.getVisibility() == View.VISIBLE
+                        && mDialButtonSub2.getVisibility() == View.VISIBLE) {
+                    mDialDivider.setVisibility(View.VISIBLE);
+                } else {
+                    mDialDivider.setVisibility(View.GONE);
                 }
             }
         }
