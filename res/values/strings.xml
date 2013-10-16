@@ -42,6 +42,8 @@
     [CHAR LIMIT=NONE] -->
     <string name="recentCallsIconLabel">Call log</string>
 
+    <string name="callHistoryLabel">Call History</string>
+
     <!-- Menu item used to send an SMS or MMS message to a phone number  -->
     <string name="menu_sendTextMessage">Send text message</string>
 
