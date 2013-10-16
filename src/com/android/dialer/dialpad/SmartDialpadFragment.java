@@ -820,6 +820,9 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
                 String strNameViewcopy = getFullPinYin(strNameView);
                 nameNumcopy = getNameNumber(strNameViewcopy);
             }
+            if (inputNum.startsWith("1") && !nameNum.startsWith("1")) {
+                inputNum = inputNum.replaceFirst("^1+", "");
+            }
             if (nameNum != null && inputNum != null && nameNum.contains(inputNum)) {
                 int start, end;
                 start = nameNum.indexOf(inputNum);
