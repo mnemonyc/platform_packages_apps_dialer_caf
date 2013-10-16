@@ -2231,16 +2231,7 @@ public class DialpadFragment extends Fragment
     }
 
     public static boolean isVTActive() {
-        /*
-         * try { if (MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
-         * IVideoTelephony vtCall =
-         * IVideoTelephony.Stub.asInterface(ServiceManager
-         * .checkService("videophone"));
-         *
-         * if (vtCall != null) { if (!vtCall.isVtIdle()) return true; } } }
-         * catch (RemoteException e) { Log.w(TAG, "isVTActive() failed", e); }
-         */
-        return false;
+        return DialtactsActivity.isCsvtActive();
     }
 
     // Borqs Ext end
