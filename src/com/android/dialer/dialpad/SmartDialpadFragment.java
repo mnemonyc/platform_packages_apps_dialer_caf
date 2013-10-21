@@ -1135,6 +1135,8 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
                 return false;
             }
         }
+        if (MoreContactUtils.getButtonStyle())
+            return false;
         return true;
     }
 
@@ -1198,7 +1200,7 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
     private DialpadCling initCling(int clingId, boolean animate, int delay) {
         if (mDialpadCling != null) {
             mDialpadCling.init(getDialtactsActivity());
-            mDialpadCling.setVisibility(View.VISIBLE);
+            mDialpadCling.setVisibility(View.GONE);
             mDialpadCling.setLayerType(View.LAYER_TYPE_HARDWARE, null);
             mDialpadCling.requestAccessibilityFocus();
             if (animate) {

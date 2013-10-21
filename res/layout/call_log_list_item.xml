@@ -60,7 +60,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:paddingTop="@dimen/call_log_icon_margin"
+                android:paddingTop="@dimen/dsds_vertical_divider_width"
                 android:paddingBottom="@dimen/call_log_icon_margin"
                 android:orientation="vertical"
                 android:gravity="center_vertical"

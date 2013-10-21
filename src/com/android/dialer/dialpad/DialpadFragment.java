@@ -1244,6 +1244,7 @@ public class DialpadFragment extends Fragment
                 // status of disabled button. Until this is fixed,
                 // clear manually the pressed status. b/2133127
                 mDelete.setPressed(false);
+                setDeleteButtonVisibility(false);
                 return true;
             }
             case R.id.one: {
@@ -2048,6 +2049,15 @@ public class DialpadFragment extends Fragment
             enableDialButton(digitsNotEmpty, mDialButton2);
         }
         mDelete.setEnabled(digitsNotEmpty);
+        setDeleteButtonVisibility(digitsNotEmpty);
+    }
+
+    private void setDeleteButtonVisibility(boolean visibility) {
+        if (visibility) {
+            mDelete.setVisibility(View.VISIBLE);
+        } else {
+            mDelete.setVisibility(View.GONE);
+        }
     }
 
     private void enableDialButton(boolean digitsNotEmpty, View mDialButton) {
@@ -2074,6 +2084,7 @@ public class DialpadFragment extends Fragment
             }
         }
         mDelete.setEnabled(digitsNotEmpty);
+        setDeleteButtonVisibility(digitsNotEmpty);
     }
 
     /**
