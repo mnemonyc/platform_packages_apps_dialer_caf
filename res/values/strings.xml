@@ -449,7 +449,7 @@
         Note: AccessibilityServices use this attribute to announce what the view represents.
               This is especially valuable for views without textual representation like ImageView.
     -->
-    <string name="description_call">Call <xliff:g id="name">%1$s</xliff:g></string>
+    <string name="description_call"><xliff:g id="name">%1$s</xliff:g></string>
 
 
     <!-- String describing the button to SMS a number or contact.
@@ -473,7 +473,7 @@
     <string name="call_log_empty_gecode">-</string>
 
     <!-- Menu item used to call a contact, containing the number of the contact to call -->
-    <string name="menu_callNumber">Call <xliff:g id="number">%s</xliff:g></string>
+    <string name="menu_callNumber"><xliff:g id="number">%s</xliff:g></string>
 
     <!-- Menu item used to show no contact prompted-->
     <string name="menu_noContact">No designated contact</string>
