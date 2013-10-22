@@ -66,6 +66,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.CursorAdapter;
 import android.widget.Filter;
+import android.widget.FrameLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.QuickContactBadge;
@@ -353,8 +354,6 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedState) {
         View fragmentView = super.onCreateView(inflater, container, savedState);
 
-        mListTextView = fragmentView.findViewById(R.id.textview_contacts);
-
         mList = (ListView) fragmentView.findViewById(R.id.listview);
         mList.setOnItemClickListener(new OnItemClickListener() {
             @Override
@@ -362,6 +361,12 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
                 onListItemClick(mList, view, position, id);
             }
         });
+        FrameLayout headerContainer = new FrameLayout(inflater.getContext());
+        View headerView = inflater.inflate(R.layout.smartdialerheader, null, false);
+        headerContainer.addView(headerView);
+        mList.addHeaderView(headerContainer, null, false);
+
+        mListTextView = fragmentView.findViewById(R.id.textview_contacts);
 
         mCallLogListTextView = fragmentView.findViewById(R.id.textview_callLog);
 
@@ -572,7 +577,8 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
     }
 
     public void onListItemClick(ListView l, View v, int position, long id) {
-        final Cursor cursor = (Cursor) mAdapter.getItem(position);
+        //because of position include headview, so list item position should minus head view count
+        final Cursor cursor = (Cursor) mAdapter.getItem(position - l.getHeaderViewsCount());
         String phone;
         phone = cursor.getString(QUERY_NUMBER);
 
@@ -977,8 +983,6 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
                 }
             }
 
-            view.setSecondaryActionViewContainer();
-
             long photoId = 0;
             if (!cursor.isNull(QUERY_PHOTO_ID)) {
                 photoId = cursor.getLong(QUERY_PHOTO_ID);
@@ -1252,8 +1256,7 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
                 listItem.measure(0, 0);
                 int listItemHeight = listItem.getMeasuredHeight();
                 ViewGroup.LayoutParams params = listView.getLayoutParams();
-                params.height = listItemHeight * MAX_ITEM_COUNT + listView.getDividerHeight()
-                        + listItemHeight / 3;
+                params.height = listItemHeight * count + listView.getDividerHeight() * (count - 1);
                 listView.setLayoutParams(params);
             } else if (count == 1) {
                 View listItem = listAdapter.getView(0, null, listView);
