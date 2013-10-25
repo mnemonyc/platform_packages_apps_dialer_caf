@@ -847,6 +847,12 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
             if (TelephonyIntents.ACTION_SIM_STATE_CHANGED.equals(action) ||
                     Intent.ACTION_AIRPLANE_MODE_CHANGED.equals(action)) {
                 final int currentPosition = mPageChangeListener.getCurrentPosition();
+                if (null != mDialpadFragment) {
+                    ((SmartDialpadFragment) mDialpadFragment).refreshButton();
+                }
+                if(null != mCallLogFragment) {
+                    mCallLogFragment.refreshButton();
+                }
                 if (currentPosition == TAB_INDEX_DIALER && !mDialpadClingShowed
                         && canShowDialpadCling() && null != mDialpadFragment) {
                     ((SmartDialpadFragment)mDialpadFragment).showFirstRunDialpadCling();
