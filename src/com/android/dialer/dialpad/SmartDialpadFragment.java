@@ -36,6 +36,7 @@ import android.net.Uri;
 import android.net.Uri.Builder;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.os.SystemProperties;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
@@ -306,12 +307,29 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
         @Override
         public void onChange(boolean selfChange) {
             if (!phoneIsInUse()) {
-                setupListView();
                 setCallLogQueryFilter();
                 setQueryFilter();
             }
         }
     }
+
+    public static final int CALLLOG_ITEM_CLICKED = 1;
+
+    // Handle the click events for CallLog items in Dialpad.
+    private Handler mCallLogClickHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case CALLLOG_ITEM_CLICKED:
+                    setDigitsPhoneByString(msg.obj.toString());
+                    mDigits.setSelection(mDigits.length());
+                    break;
+                default:
+                    Log.e(TAG, "Unkown message, message.what " + msg.what);
+                    break;
+            }
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -348,12 +366,6 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
         mCallLogListTextView = fragmentView.findViewById(R.id.textview_callLog);
 
         mCallLogListView = (ListView)fragmentView.findViewById(R.id.callloglistview);
-        mCallLogListView.setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                onListItemClick(mCallLogListView, view, position, id);
-            }
-        });
 
         mListoutside = fragmentView.findViewById(R.id.listoutside);
         mCountButton = fragmentView.findViewById(R.id.filterbutton);
@@ -592,6 +604,9 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
     }
 
     private void setupListView() {
+        if (getActivity() == null) {
+            return;
+        }
         setupCallLogListView();
         final ListView list = mList;
         mAdapter = new ContactItemListAdapter(getActivity());
@@ -621,7 +636,8 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
         final ListView list = mCallLogListView;
         String currentCountryIso = GeoUtil.getCurrentCountryIso(getActivity());
         mCallLogAdapter = new CallLogAdapter(getActivity(), this,
-                new ContactInfoHelper(getActivity(), currentCountryIso));
+                new ContactInfoHelper(getActivity(), currentCountryIso), true,
+                mCallLogClickHandler);
         mCallLogListView.setAdapter(mCallLogAdapter);
         list.setOnCreateContextMenuListener(this);
         list.setOnScrollListener(new AbsListView.OnScrollListener() {
@@ -693,6 +709,8 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
         private CharSequence mUnknownNameText;
         private Cursor mSuggestionsCursor;
         private int mSuggestionsCursorCount;
+        private ContactPhotoManager mContactPhotoManager = ContactPhotoManager
+                .getInstance(mContext);
 
         private int[] getStartEnd(String s, int start, int end) {
             int[] offset = new int[2];
@@ -801,6 +819,9 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
             if (nameNum == null || nameNum.trim().length() == 0) {
                 String strNameViewcopy = getFullPinYin(strNameView);
                 nameNumcopy = getNameNumber(strNameViewcopy);
+            }
+            if (inputNum.startsWith("1") && !nameNum.startsWith("1")) {
+                inputNum = inputNum.replaceFirst("^1+", "");
             }
             if (nameNum != null && inputNum != null && nameNum.contains(inputNum)) {
                 int start, end;
@@ -965,7 +986,7 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
 
             QuickContactBadge photo = view.getQuickContact();
             photo.assignContactFromPhone(cursor.getString(QUERY_NUMBER), true);
-            ContactPhotoManager.getInstance(mContext).loadThumbnail(photo, photoId, true);
+            mContactPhotoManager.loadThumbnail(photo, photoId, true);
             view.setPresence(null);
 
         }
@@ -976,6 +997,7 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
             view.setPhotoPosition(PhotoPosition.LEFT);
             view.setTag(new ContactListItemCache());
             view.setQuickContactEnabled(true);
+            view.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
             return view;
         }
 
@@ -1024,8 +1046,12 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
                 mHandler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        mCountView.setText(contactCount + mCallLogAdapter.getCount() + "");
-                        mCountView.invalidate();
+                        if (isDigitsEmpty()) {
+                            mCountButton.setVisibility(View.GONE);
+                        } else {
+                            mCountView.setText(contactCount + mCallLogAdapter.getCount() + "");
+                            mCountView.invalidate();
+                        }
                     }
                 }, 100);// wait 100ms for mCallLogAdapter
             } else {
@@ -1109,6 +1135,8 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
                 return false;
             }
         }
+        if (MoreContactUtils.getButtonStyle())
+            return false;
         return true;
     }
 
@@ -1172,7 +1200,7 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
     private DialpadCling initCling(int clingId, boolean animate, int delay) {
         if (mDialpadCling != null) {
             mDialpadCling.init(getDialtactsActivity());
-            mDialpadCling.setVisibility(View.VISIBLE);
+            mDialpadCling.setVisibility(View.GONE);
             mDialpadCling.setLayerType(View.LAYER_TYPE_HARDWARE, null);
             mDialpadCling.requestAccessibilityFocus();
             if (animate) {

@@ -76,9 +76,10 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentTop="true"
                 android:background="#141414"
-                android:text="@string/recentCallsIconLabel"
+                android:text="@string/callHistoryLabel"
+                android:textColor="#33b5e5"
                 android:textAllCaps="true"
-                android:textSize="20sp" />
+                android:textSize="14sp" />
 
             <View
                 android:layout_width="match_parent"
@@ -111,7 +112,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                 android:layout_height="wrap_content"
                 android:text="@string/contactsList"
                 android:background="#141414"
-                android:textSize="20sp"
+                android:textColor="#33b5e5"
+                android:textSize="14sp"
                 android:textAllCaps="true" />
             <View
                 android:layout_width="match_parent"
@@ -132,7 +134,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
         <RelativeLayout
             android:id="@+id/filterbutton"
-            android:layout_width="70dip"
+            android:layout_width="100dip"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
@@ -140,12 +142,19 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             android:cacheColorHint="#1d1d1d"
             android:visibility="gone" >
 
+            <View
+                android:layout_width="30dip"
+                android:layout_height="match_parent"
+                android:layout_alignParentLeft="true"
+                android:background="#141414" />
+
             <TextView
                 android:id="@+id/filter_number"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
                 android:paddingTop="15dip"
+                android:paddingLeft="30dip"
                 android:textColor="#FFFFFF"
                 android:textSize="20sp" />
 

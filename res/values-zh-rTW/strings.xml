@@ -24,6 +24,7 @@
     <string name="menu_sendTextMessage" msgid="6937343460284499306">"傳送簡訊"</string>
     <string name="recentCalls_callNumber" msgid="1756372533999226126">"撥電話給<xliff:g id="NAME">%s</xliff:g>"</string>
     <string name="recentCalls_editNumberBeforeCall" msgid="7756171675833267857">"撥打電話前編輯號碼"</string>
+    <string name="videocall">"可視電話"</string>
     <string name="recentCalls_addToContact" msgid="1429899535546487008">"新增至通訊錄"</string>
     <string name="recentCalls_removeFromRecentList" msgid="401662244636511330">"從通話記錄中移除"</string>
     <string name="recentCalls_deleteAll" msgid="6352364392762163704">"清除通話記錄"</string>
@@ -114,11 +115,11 @@
     <string name="description_call_log_voicemail" msgid="4600798771975158948">"語音留言"</string>
     <string name="description_add_contact" msgid="3103414772502485851">"新增聯絡人"</string>
     <string name="description_view_contact" msgid="5205669345700598415">"查看聯絡人<xliff:g id="NAME">%1$s</xliff:g>"</string>
-    <string name="description_call" msgid="3443678121983852666">"撥電話給<xliff:g id="NAME">%1$s</xliff:g>"</string>
+    <string name="description_call" msgid="3443678121983852666">"<xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="description_send_text_message" msgid="7803126439934046891">"傳送簡訊給<xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="description_call_log_unheard_voicemail" msgid="118101684236996786">"未聽取的語音留言"</string>
     <string name="call_log_empty_gecode" msgid="5588904744812100846">"-"</string>
-    <string name="menu_callNumber" msgid="997146291983360266">"撥打 <xliff:g id="NUMBER">%s</xliff:g>"</string>
+    <string name="menu_callNumber" msgid="997146291983360266">"<xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="unknown" msgid="740067747858270469">"不明"</string>
     <string name="voicemail" msgid="3851469869202611441">"語音留言"</string>
     <string name="private_num" msgid="6374339738119166953">"私人號碼"</string>
@@ -136,4 +137,5 @@
     <string name="simContacts_title" msgid="27341688347689769">"SIM 卡聯絡人"</string>
     <string name="add_contact_not_available" msgid="1419207765446461366">"您必須重新啟用「使用者」應用程式，才能使用這項功能。"</string>
     <string name="dialog_speed_dial_airplane_mode_message" >"要呼叫快速撥號，請先關閉飛行模式。"</string>
+    <string name="load_contacts" >"正在載入聯絡人, 請稍等\u2026."</string>
 </resources>

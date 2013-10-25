@@ -44,6 +44,7 @@
     <!-- allow broadcasting secret code intents that reboot the phone -->
     <uses-permission android:name="android.permission.REBOOT" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="org.codeaurora.permission.ACCESS_CSVT_SERVICE" />
 
     <application
         android:label="@string/applicationLabel"
