@@ -640,6 +640,17 @@ public class CallLogAdapter extends GroupingListAdapter
             views.callButtonSub2.setTag(null);
         }
 
+        if(isFromDialpad){
+            views.layoutSub1.setVisibility(View.GONE);
+            views.callButtonSub1.setVisibility(View.GONE);
+            views.callIconSub1.setVisibility(View.GONE);
+            views.layoutSub2.setVisibility(View.GONE);
+            views.callButtonSub2.setVisibility(View.GONE);
+            views.callIconSub2.setVisibility(View.GONE);
+            views.dividerView_sub1.setVisibility(View.GONE);
+            views.dividerView.setVisibility(View.GONE);
+        }
+
         // Lookup contacts with this number
         NumberWithCountryIso numberCountryIso = new NumberWithCountryIso(number, countryIso);
         ExpirableCache.CachedValue<ContactInfo> cachedInfo =
