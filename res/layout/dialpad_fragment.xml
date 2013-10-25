@@ -159,7 +159,7 @@
 
             <RelativeLayout
                 android:id="@+id/dialButton_sub1"
-                android:layout_width="140dip"
+                android:layout_width="100dip"
                 android:layout_height="60dip"
                 android:layout_centerHorizontal="true"
                 android:layout_centerVertical="true"
@@ -177,12 +177,20 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="11dip"
-                    android:layout_marginLeft="75dip"
+                    android:layout_marginLeft="55dip"
                     android:src="@drawable/ic_sim_icon_1" />
             </RelativeLayout>
+            <View
+                android:id="@+id/sub_divider"
+                android:layout_width="1px"
+                android:layout_margin="35dip"
+                android:layout_height="@dimen/call_log_call_action_size"
+                android:background="@drawable/ic_divider_dashed_holo_dark"
+                android:layout_gravity="center_vertical"
+            />
             <RelativeLayout
                 android:id="@+id/dialButton_sub2"
-                android:layout_width="140dip"
+                android:layout_width="100dip"
                 android:layout_height="60dip"
                 android:layout_centerHorizontal="true"
                 android:layout_centerVertical="true"
@@ -200,7 +208,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="11dip"
-                    android:layout_marginLeft="75dip"
+                    android:layout_marginLeft="55dip"
                     android:src="@drawable/ic_sim_icon_2"
                     android:layout_alignParentRight="false" />
             </RelativeLayout>

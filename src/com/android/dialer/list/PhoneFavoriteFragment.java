@@ -31,6 +31,7 @@ import android.provider.ContactsContract;
 import android.provider.ContactsContract.Directory;
 import android.provider.Settings.SettingNotFoundException;
 import android.provider.Settings;
+import android.telephony.MSimTelephonyManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -45,6 +46,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.contacts.common.ContactPhotoManager;
 import com.android.contacts.common.ContactTileLoaderFactory;
@@ -377,7 +379,10 @@ public class PhoneFavoriteFragment extends Fragment implements OnItemClickListen
 
         mListView = (ListView) listLayout.findViewById(R.id.contact_tile_list);
         mListView.setItemsCanFocus(true);
-        mListView.setOnItemClickListener(this);
+        if (!MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
+            // only enable in SSSS mode.
+            mListView.setOnItemClickListener(this);
+        }
         mListView.setVerticalScrollBarEnabled(false);
         mListView.setVerticalScrollbarPosition(View.SCROLLBAR_POSITION_RIGHT);
         mListView.setScrollBarStyle(ListView.SCROLLBARS_OUTSIDE_OVERLAY);
@@ -441,11 +446,17 @@ public class PhoneFavoriteFragment extends Fragment implements OnItemClickListen
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_import_export:
+                if(mAllContactsAdapter.isLoading()){
+                    Toast.makeText(getActivity(), R.string.load_contacts,
+                            Toast.LENGTH_SHORT).show();
+                    return true;
+                }
                 // We hard-code the "contactsAreAvailable" argument because doing it properly would
                 // involve querying a {@link ProviderStatusLoader}, which we don't want to do right
                 // now in Dialtacts for (potential) performance reasons.  Compare with how it is
                 // done in {@link PeopleActivity}.
-                ImportExportDialogFragment.show(getFragmentManager(), true,
+                ImportExportDialogFragment.show(getFragmentManager(),
+                        mAllContactsAdapter.getCount() > 0,
                         DialtactsActivity.class);
                 return true;
             case R.id.menu_accounts:

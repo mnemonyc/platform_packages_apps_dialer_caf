@@ -26,6 +26,7 @@
     <string name="menu_sendTextMessage" msgid="6937343460284499306">"发送短信"</string>
     <string name="recentCalls_callNumber" msgid="1756372533999226126">"呼叫<xliff:g id="NAME">%s</xliff:g>"</string>
     <string name="recentCalls_editNumberBeforeCall" msgid="7756171675833267857">"呼叫之前编辑号码"</string>
+    <string name="videocall">"可视电话"</string>
     <string name="recentCalls_addToContact" msgid="1429899535546487008">"添加到“联系人”"</string>
     <string name="recentCalls_removeFromRecentList" msgid="401662244636511330">"从通话记录中删除"</string>
     <string name="recentCalls_deleteAll" msgid="6352364392762163704">"清除通话记录"</string>
@@ -119,11 +120,11 @@
     <string name="description_call_log_voicemail" msgid="4600798771975158948">"语音邮件"</string>
     <string name="description_add_contact" msgid="3103414772502485851">"添加联系人"</string>
     <string name="description_view_contact" msgid="5205669345700598415">"查看联系人<xliff:g id="NAME">%1$s</xliff:g>"</string>
-    <string name="description_call" msgid="3443678121983852666">"呼叫<xliff:g id="NAME">%1$s</xliff:g>"</string>
+    <string name="description_call" msgid="3443678121983852666">"<xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="description_send_text_message" msgid="7803126439934046891">"向<xliff:g id="NAME">%1$s</xliff:g>发送短信"</string>
     <string name="description_call_log_unheard_voicemail" msgid="118101684236996786">"未收听的语音邮件"</string>
     <string name="call_log_empty_gecode" msgid="5588904744812100846">"-"</string>
-    <string name="menu_callNumber" msgid="997146291983360266">"拨打 <xliff:g id="NUMBER">%s</xliff:g>"</string>
+    <string name="menu_callNumber" msgid="997146291983360266">"<xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="unknown" msgid="740067747858270469">"未知"</string>
     <string name="voicemail" msgid="3851469869202611441">"语音信箱"</string>
     <string name="private_num" msgid="6374339738119166953">"私人号码"</string>
@@ -160,4 +161,5 @@
     <string name="assignSpeedDialFailToast">此号码已分配了快速拨号键，请选择其它号码。</string>
     <string name="calllog_search_hint">"搜索通话记录"</string>
     <string name="dialog_speed_dial_airplane_mode_message" >"要呼叫快速拨号，请先关闭飞行模式。"</string>
+    <string name="load_contacts" >"正在加载联系人, 请稍等\u2026."</string>
 </resources>
