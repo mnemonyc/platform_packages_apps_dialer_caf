@@ -63,72 +63,15 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                 android:textSize="20sp" />
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/textview_callLog"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone" >
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentTop="true"
-                android:background="#141414"
-                android:text="@string/callHistoryLabel"
-                android:textColor="#33b5e5"
-                android:textAllCaps="true"
-                android:textSize="14sp" />
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="#33b5e5" />
-        </LinearLayout>
-
-        <ListView
-             android:id="@+id/callloglistview"
-             android:layout_width="match_parent"
-             android:layout_height="wrap_content"
-             android:layout_below="@id/textview_callLog"
-             android:layout_alignParentLeft="true"
-             android:background="#141414"
-             android:cacheColorHint="#141414"
-             android:fastScrollEnabled="true"
-             android:divider="@null"
-             android:visibility="gone" />
-
-        <LinearLayout
-            android:id="@+id/textview_contacts"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_below="@id/callloglistview"
-            android:layout_alignParentLeft="true"
-            android:visibility="gone" >
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/contactsList"
-                android:background="#141414"
-                android:textColor="#33b5e5"
-                android:textSize="14sp"
-                android:textAllCaps="true" />
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="#33b5e5" />
-        </LinearLayout>
-
         <ListView
             android:id="@+id/listview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/textview_contacts"
             android:layout_alignParentLeft="true"
             android:background="#141414"
             android:cacheColorHint="#141414"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
             android:fastScrollEnabled="true"
             android:visibility="gone" />
 
@@ -138,6 +81,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
+            android:layout_marginRight="10dp"
             android:background="#1d1d1d"
             android:cacheColorHint="#1d1d1d"
             android:visibility="gone" >
