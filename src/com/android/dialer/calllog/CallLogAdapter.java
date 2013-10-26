@@ -850,12 +850,13 @@ public class CallLogAdapter extends GroupingListAdapter
 
     private void setDefaultPhoto(CallLogListItemViews views, long photoId, String phoneNumber) {
         views.quickContactView.assignContactFromPhone(phoneNumber, true);
-        mContactPhotoManager.loadThumbnail(views.quickContactView, photoId, true);
+        mContactPhotoManager.loadThumbnail(views.quickContactView, photoId, null, true);
     }
 
     private void setPhoto(CallLogListItemViews views, long photoId, Uri contactUri) {
         views.quickContactView.assignContactUri(contactUri);
-        mContactPhotoManager.loadThumbnail(views.quickContactView, photoId, true);
+        //Do not show sim contact icon in call log.
+        mContactPhotoManager.loadThumbnail(views.quickContactView, photoId, null, true);
     }
 
     /**
