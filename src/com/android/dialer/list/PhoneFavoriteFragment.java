@@ -18,8 +18,11 @@ package com.android.dialer.list;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.LoaderManager;
+import android.content.BroadcastReceiver;
 import android.content.CursorLoader;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Rect;
@@ -63,6 +66,7 @@ import com.android.contacts.common.util.AccountFilterUtil;
 import com.android.contacts.common.interactions.ImportExportDialogFragment;
 import com.android.dialer.DialtactsActivity;
 import com.android.dialer.R;
+import com.android.internal.telephony.TelephonyIntents;
 
 /**
  * Fragment for Phone UI's favorite screen.
@@ -321,6 +325,14 @@ public class PhoneFavoriteFragment extends Fragment implements OnItemClickListen
         mAllContactsAdapter.setSortOrder(mContactsPrefs.getSortOrder());
     }
 
+    private BroadcastReceiver mSIMStateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context arg0, Intent arg1) {
+            mAllContactsAdapter.notifyDataSetChanged();
+            mContactTileAdapter.notifyDataSetChanged();
+        }
+    };
+
     @Override
     public void onCreate(Bundle savedState) {
         if (DEBUG) Log.d(TAG, "onCreate()");
@@ -332,6 +344,9 @@ public class PhoneFavoriteFragment extends Fragment implements OnItemClickListen
                 mAllContactsAdapter.setFilter(mFilter);
             }
         }
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(TelephonyIntents.ACTION_SIM_STATE_CHANGED);
+        getActivity().registerReceiver(mSIMStateReceiver, filter);
         setHasOptionsMenu(true);
     }
 
@@ -502,6 +517,10 @@ public class PhoneFavoriteFragment extends Fragment implements OnItemClickListen
     public void onStop() {
         super.onStop();
         mContactsPrefs.unregisterChangeListener();
+    }
+
+    public void onDestroy() {
+        getActivity().unregisterReceiver(mSIMStateReceiver);
     }
 
     /**

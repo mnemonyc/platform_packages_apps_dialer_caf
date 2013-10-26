@@ -567,6 +567,14 @@ public class DialpadFragment extends Fragment
                     mDialButton.setVisibility(View.VISIBLE);
                     mDialButtonSub.setVisibility(View.GONE);
                 }
+                if (mDialButtonSub1.getVisibility() == View.VISIBLE
+                        && mDialButtonSub2.getVisibility() == View.VISIBLE) {
+                    mCallActionSubIcon1.setVisibility(View.VISIBLE);
+                    mCallActionSubIcon2.setVisibility(View.VISIBLE);
+                } else {
+                    mCallActionSubIcon1.setVisibility(View.GONE);
+                    mCallActionSubIcon2.setVisibility(View.GONE);
+                }
                 if (mDialButtonContainer != null) {
                     mDialButtonContainer.setPadding(
                             0, mDialButtonContainer.getPaddingTop(),
@@ -580,6 +588,10 @@ public class DialpadFragment extends Fragment
                 }
             }
         }
+    }
+
+    public void refreshButton() {
+        setDialButtonVisibility(getResources());
     }
 
     private boolean isLayoutReady() {
@@ -1522,7 +1534,7 @@ public class DialpadFragment extends Fragment
                 final Intent intent = CallUtil.getCallIntent(number,
                         (getActivity() instanceof DialtactsActivity ?
                                 ((DialtactsActivity) getActivity()).getCallOrigin() : null));
-                intent.putExtra(MoreContactUtils.DIAL_WIDGET_SWITCHED, subscription);
+                intent.putExtra(MSimConstants.SUBSCRIPTION_KEY, subscription);
                 startActivity(intent);
                 mClearDigitsOnStop = true;
                 getActivity().finish();
@@ -2030,7 +2042,6 @@ public class DialpadFragment extends Fragment
             Intent callIntent = new Intent(CallUtil.getCallIntent(getValidDialNumber()));
             callIntent.putExtra(PhoneConstants.IP_CALL, true);
             callIntent.putExtra(MSimConstants.SUBSCRIPTION_KEY, subscription);
-            callIntent.putExtra(MoreContactUtils.DIAL_WIDGET_SWITCHED, subscription);
             startActivity(callIntent);
         } else {
             MoreContactUtils.showNoIPNumberDialog(mContext, subscription);
