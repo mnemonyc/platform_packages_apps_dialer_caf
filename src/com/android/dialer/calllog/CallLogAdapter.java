@@ -640,6 +640,17 @@ public class CallLogAdapter extends GroupingListAdapter
             views.callButtonSub2.setTag(null);
         }
 
+        if(isFromDialpad){
+            views.layoutSub1.setVisibility(View.GONE);
+            views.callButtonSub1.setVisibility(View.GONE);
+            views.callIconSub1.setVisibility(View.GONE);
+            views.layoutSub2.setVisibility(View.GONE);
+            views.callButtonSub2.setVisibility(View.GONE);
+            views.callIconSub2.setVisibility(View.GONE);
+            views.dividerView_sub1.setVisibility(View.GONE);
+            views.dividerView.setVisibility(View.GONE);
+        }
+
         // Lookup contacts with this number
         NumberWithCountryIso numberCountryIso = new NumberWithCountryIso(number, countryIso);
         ExpirableCache.CachedValue<ContactInfo> cachedInfo =
@@ -839,12 +850,13 @@ public class CallLogAdapter extends GroupingListAdapter
 
     private void setDefaultPhoto(CallLogListItemViews views, long photoId, String phoneNumber) {
         views.quickContactView.assignContactFromPhone(phoneNumber, true);
-        mContactPhotoManager.loadThumbnail(views.quickContactView, photoId, true);
+        mContactPhotoManager.loadThumbnail(views.quickContactView, photoId, null, true);
     }
 
     private void setPhoto(CallLogListItemViews views, long photoId, Uri contactUri) {
         views.quickContactView.assignContactUri(contactUri);
-        mContactPhotoManager.loadThumbnail(views.quickContactView, photoId, true);
+        //Do not show sim contact icon in call log.
+        mContactPhotoManager.loadThumbnail(views.quickContactView, photoId, null, true);
     }
 
     /**

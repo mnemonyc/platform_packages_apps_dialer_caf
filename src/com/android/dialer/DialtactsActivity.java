@@ -661,8 +661,16 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
     @Override
     public void onStart() {
         super.onStart();
-        Intent mIntent = new Intent("restore_video_call");
-        sendBroadcast(mIntent);
+
+        sendOrderedBroadcast(new Intent("restore_video_call"), null, new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if ("finish".equals(getResultData())) {
+                    DialtactsActivity.this.finish();
+                }
+            }
+        }, null, Activity.RESULT_OK, null, null);
+
         if (mPhoneFavoriteFragment != null) {
             mPhoneFavoriteFragment.setFilter(mContactListFilterController.getFilter());
         }
@@ -847,6 +855,12 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
             if (TelephonyIntents.ACTION_SIM_STATE_CHANGED.equals(action) ||
                     Intent.ACTION_AIRPLANE_MODE_CHANGED.equals(action)) {
                 final int currentPosition = mPageChangeListener.getCurrentPosition();
+                if (null != mDialpadFragment) {
+                    ((SmartDialpadFragment) mDialpadFragment).refreshButton();
+                }
+                if(null != mCallLogFragment) {
+                    mCallLogFragment.refreshButton();
+                }
                 if (currentPosition == TAB_INDEX_DIALER && !mDialpadClingShowed
                         && canShowDialpadCling() && null != mDialpadFragment) {
                     ((SmartDialpadFragment)mDialpadFragment).showFirstRunDialpadCling();
