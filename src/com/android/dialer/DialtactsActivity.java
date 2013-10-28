@@ -583,6 +583,15 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
     @Override
     public void onStart() {
         super.onStart();
+
+        sendOrderedBroadcast(new Intent("restore_video_call"), null, new BroadcastReceiver() {
+            public void onReceive(Context context, Intent intent) {
+                if ("finish".equals(getResultData())) {
+                    DialtactsActivity.this.finish();
+                }
+            }
+        },null, Activity.RESULT_OK, null, null);
+
         if (mPhoneFavoriteFragment != null) {
             mPhoneFavoriteFragment.setFilter(mContactListFilterController.getFilter());
         }
