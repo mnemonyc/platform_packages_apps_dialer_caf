@@ -35,6 +35,7 @@ import android.provider.ContactsContract.Directory;
 import android.provider.Settings.SettingNotFoundException;
 import android.provider.Settings;
 import android.telephony.MSimTelephonyManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -67,6 +68,8 @@ import com.android.contacts.common.interactions.ImportExportDialogFragment;
 import com.android.dialer.DialtactsActivity;
 import com.android.dialer.R;
 import com.android.internal.telephony.TelephonyIntents;
+
+import java.util.Locale;
 
 /**
  * Fragment for Phone UI's favorite screen.
@@ -399,7 +402,14 @@ public class PhoneFavoriteFragment extends Fragment implements OnItemClickListen
             mListView.setOnItemClickListener(this);
         }
         mListView.setVerticalScrollBarEnabled(false);
-        mListView.setVerticalScrollbarPosition(View.SCROLLBAR_POSITION_RIGHT);
+
+        //Change for RTL.
+        if (TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())
+                == View.LAYOUT_DIRECTION_RTL) {
+            mListView.setVerticalScrollbarPosition(View.SCROLLBAR_POSITION_LEFT);
+        } else {
+            mListView.setVerticalScrollbarPosition(View.SCROLLBAR_POSITION_RIGHT);
+        }
         mListView.setScrollBarStyle(ListView.SCROLLBARS_OUTSIDE_OVERLAY);
 
         // Create the account filter header but keep it hidden until "all" contacts are loaded.
