@@ -520,6 +520,7 @@ public class PhoneFavoriteFragment extends Fragment implements OnItemClickListen
     }
 
     public void onDestroy() {
+        super.onDestroy();
         getActivity().unregisterReceiver(mSIMStateReceiver);
     }
 
