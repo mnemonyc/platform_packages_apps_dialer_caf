@@ -1144,6 +1144,8 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
 
         if (isEmergencyNumber())
             return false;
+        if (!MSimTelephonyManager.getDefault().isMultiSimEnabled())
+            return false;
 
         int phoneCount = MSimTelephonyManager.getDefault().getPhoneCount();
         for (int i = 0; i < phoneCount; i++) {
