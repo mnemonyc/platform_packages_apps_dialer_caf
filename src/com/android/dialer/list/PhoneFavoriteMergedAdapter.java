@@ -19,6 +19,7 @@ package com.android.dialer.list;
 import android.content.Context;
 import android.content.res.Resources;
 import android.database.DataSetObserver;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -29,6 +30,8 @@ import com.android.contacts.common.list.ContactEntryListAdapter;
 import com.android.contacts.common.list.ContactListItemView;
 import com.android.contacts.common.list.ContactTileAdapter;
 import com.android.dialer.R;
+
+import java.util.Locale;
 
 /**
  * An adapter that combines items from {@link com.android.contacts.common.list.ContactTileAdapter} and
@@ -63,8 +66,20 @@ public class PhoneFavoriteMergedAdapter extends BaseAdapter implements SectionIn
             ContactEntryListAdapter contactEntryListAdapter,
             View loadingView) {
         Resources resources = context.getResources();
-        mItemPaddingLeft = resources.getDimensionPixelSize(R.dimen.detail_item_side_margin);
-        mItemPaddingRight = resources.getDimensionPixelSize(R.dimen.list_visible_scrollbar_padding);
+
+        // Change the padding for RTL.
+        if (TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())
+                == View.LAYOUT_DIRECTION_RTL) {
+            mItemPaddingRight =
+                    resources.getDimensionPixelSize(R.dimen.detail_item_side_margin);
+            mItemPaddingLeft=
+                    resources.getDimensionPixelSize(R.dimen.list_visible_scrollbar_padding);
+        } else {
+            mItemPaddingLeft =
+                    resources.getDimensionPixelSize(R.dimen.detail_item_side_margin);
+            mItemPaddingRight =
+                    resources.getDimensionPixelSize(R.dimen.list_visible_scrollbar_padding);
+        }
         mFrequentHeaderPaddingTop = resources.getDimensionPixelSize(
                 R.dimen.contact_browser_list_top_margin);
         mContactTileAdapter = contactTileAdapter;
