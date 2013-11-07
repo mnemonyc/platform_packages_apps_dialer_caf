@@ -365,7 +365,6 @@ public class CallLogFragment extends ListFragment
             Intent callIntent = new Intent(CallUtil.getCallIntent(number));
             callIntent.putExtra(PhoneConstants.IP_CALL, true);
             callIntent.putExtra(MSimConstants.SUBSCRIPTION_KEY, subscription);
-            callIntent.putExtra(MoreContactUtils.DIAL_WIDGET_SWITCHED, subscription);
             startActivity(callIntent);
         } else {
             MoreContactUtils.showNoIPNumberDialog(mContext, subscription);
@@ -704,6 +703,9 @@ public class CallLogFragment extends ListFragment
         }
     }
 
+    public void refreshButton() {
+        mAdapter.notifyDataSetChanged();
+    }
     public boolean isVTSupported() {
         return SystemProperties.getBoolean("persist.radio.csvt.enabled"
             /* TelephonyProperties.PROPERTY_CSVT_ENABLED*/, false);
