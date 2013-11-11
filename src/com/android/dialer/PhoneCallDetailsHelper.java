@@ -154,6 +154,7 @@ public class PhoneCallDetailsHelper {
                 numberText = details.geocode;
             }
             labelText = null;
+            locationText = null;
             // We have a real phone number as "nameView" so make it always LTR
             views.nameView.setTextDirection(View.TEXT_DIRECTION_LTR);
         } else {
@@ -187,6 +188,9 @@ public class PhoneCallDetailsHelper {
         views.numberView.setText(numberText);
         views.labelView.setText(labelText);
         views.labelView.setVisibility(TextUtils.isEmpty(labelText) ? View.GONE : View.VISIBLE);
+        views.locationView.setText(locationText);
+        views.locationView
+                .setVisibility(TextUtils.isEmpty(locationText) ? View.GONE : View.VISIBLE);
     }
 
     private String getNumberFromChar(char c) {
