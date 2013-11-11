@@ -422,6 +422,9 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
     public void onPause() {
         super.onPause();
 
+        if (getActivity().isFinishing())
+            return;
+
         if (mCallLogAdapter != null) {
             mCallLogAdapter.changeCursor(null, null);
             setCallLogListViewHeight(mCallLogListView);
