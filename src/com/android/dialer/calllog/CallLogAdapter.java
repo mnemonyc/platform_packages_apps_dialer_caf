@@ -549,12 +549,8 @@ public class CallLogAdapter extends GroupingListAdapter
         // Get the views to bind to.
         CallLogListItemViews views = CallLogListItemViews.fromView(view);
         views.primaryActionView.setOnClickListener(mPrimaryActionListener);
-        if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB1)) {
-            views.callButtonSub1.setOnClickListener(mSecondaryActionListener);
-        }
-        if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB2)) {
-            views.callButtonSub2.setOnClickListener(mSecondaryActionListener);
-        }
+        views.callButtonSub1.setOnClickListener(mSecondaryActionListener);
+        views.callButtonSub2.setOnClickListener(mSecondaryActionListener);
         views.primaryActionView.setOnLongClickListener(mPrimaryActionLongClickListener);
         view.setTag(views);
     }
