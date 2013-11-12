@@ -835,15 +835,11 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
         Context context = this.getApplicationContext();
         callButtonSub1.setImageResource(R.drawable.ic_ab_dialer_holo_dark);
         callButtonSub1.setTag(entry);
-        if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB1)) {
-            callButtonSub1.setOnClickListener(mFourthActionListener);
-        }
+        callButtonSub1.setOnClickListener(mFourthActionListener);
 
         callButtonSub2.setImageResource(R.drawable.ic_ab_dialer_holo_dark);
         callButtonSub2.setTag(entry);
-        if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB2)) {
-            callButtonSub2.setOnClickListener(mFifthActionListener);
-        }
+        callButtonSub2.setOnClickListener(mFifthActionListener);
 
         MoreContactUtils.controlCallIconDisplay(context, layoutSub1, callButtonSub1, callIconSub1,
                 layoutSub2, callButtonSub2, callIconSub2, secondaryActionDivider);
