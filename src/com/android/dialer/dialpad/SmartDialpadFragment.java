@@ -979,7 +979,7 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
             }
 
             // get the location of that phone number
-            if (!TextUtils.isEmpty(cursor.getString(QUERY_NUMBER))) {
+            /* if (!TextUtils.isEmpty(cursor.getString(QUERY_NUMBER))) {
                 String locationStr = "";
                 CallerInfo ci = new CallerInfo();
                 ci.updateGeoDescription(mContext, cursor.getString(QUERY_NUMBER));
@@ -989,7 +989,7 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
                 } else {
                     view.setLocation(locationStr);
                 }
-            }
+            }*/
 
             long photoId = 0;
             if (!cursor.isNull(QUERY_PHOTO_ID)) {
