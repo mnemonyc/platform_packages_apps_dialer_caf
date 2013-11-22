@@ -21,9 +21,11 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.PhoneLookup;
+import android.provider.ContactsContract.RawContacts;
 import android.telephony.PhoneNumberUtils;
 import android.text.TextUtils;
 
+import com.android.contacts.common.MoreContactUtils;
 import com.android.contacts.common.util.UriUtils;
 
 /**
@@ -105,9 +107,18 @@ public class ContactInfoHelper {
      */
     private ContactInfo lookupContactFromUri(Uri uri) {
         final ContactInfo info;
+        // Do not show contacts from disabled SIM card
+        Uri.Builder builder = uri.buildUpon();
+        String disabledSimFilter = MoreContactUtils.getDisabledSimFilter();
+        if (!TextUtils.isEmpty(disabledSimFilter)) {
+            builder.appendQueryParameter(RawContacts.ACCOUNT_NAME, disabledSimFilter);
+            builder.appendQueryParameter(PhoneQuery
+                    .WITHOUT_SIM_FLAG, "true");
+        }
+
         Cursor phonesCursor =
                 mContext.getContentResolver().query(
-                        uri, PhoneQuery._PROJECTION, null, null, null);
+                        builder.build(), PhoneQuery._PROJECTION, null, null, null);
 
         if (phonesCursor != null) {
             try {

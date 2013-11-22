@@ -36,6 +36,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         android:id="@+id/textview_callLog"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="5dip"
         android:orientation="vertical"
         android:visibility="gone" >
 
@@ -53,6 +54,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
+            android:layout_marginTop="5dip"
             android:background="#33b5e5" />
     </LinearLayout>
 
@@ -74,6 +76,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_below="@id/callloglistview"
+        android:layout_marginTop="10dip"
+        android:layout_marginBottom="5dip"
         android:orientation="vertical"
         android:visibility="gone" >
 
@@ -89,6 +93,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
+            android:layout_marginTop="5dip"
             android:background="#33b5e5" />
     </LinearLayout>
 
