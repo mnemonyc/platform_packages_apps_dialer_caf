@@ -65,6 +65,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
@@ -279,6 +280,7 @@ public class DialpadFragment extends Fragment
     private boolean mFirstLaunch = false;
 
     private static final String PREF_DIGITS_FILLED_BY_INTENT = "pref_digits_filled_by_intent";
+    private static final int DIAL_BUTTON_SUB_WIDTH_SP = 100;
 
     private float mDefaultTextSize_sp;
     private String beforeTextString = "";
@@ -286,6 +288,11 @@ public class DialpadFragment extends Fragment
     private float px2Sp(float px) {
         DisplayMetrics displayMetrics = getActivity().getResources().getDisplayMetrics();
         return px / displayMetrics.scaledDensity;
+    }
+
+    private float sp2Px(float sp) {
+        DisplayMetrics displayMetrics = getActivity().getResources().getDisplayMetrics();
+        return sp * displayMetrics.scaledDensity;
     }
 
     private void refreshDigitTextSize(Editable input) {
@@ -525,12 +532,12 @@ public class DialpadFragment extends Fragment
                     mDialButton1.setOnLongClickListener(this);
                     ((ImageView) mCallActionSubIcon1)
                             .setImageDrawable(MoreContactUtils.getMultiSimIcon(context,
-                                    MoreContactUtils.CONTACTSCOMMON_ICON, MSimConstants.SUB1));
+                                    MoreContactUtils.DIALER_ICON, MSimConstants.SUB1));
                     mDialButton2.setOnClickListener(this);
                     mDialButton2.setOnLongClickListener(this);
                     ((ImageView) mCallActionSubIcon2)
                             .setImageDrawable(MoreContactUtils.getMultiSimIcon(context,
-                                    MoreContactUtils.CONTACTSCOMMON_ICON, MSimConstants.SUB2));
+                                    MoreContactUtils.DIALER_ICON, MSimConstants.SUB2));
                 }
                 if (MSimTelephonyManager.getDefault().getMultiSimConfiguration()
                         == MSimTelephonyManager.MultiSimVariants.DSDS) {
@@ -569,9 +576,23 @@ public class DialpadFragment extends Fragment
                 }
                 if (mDialButtonSub1.getVisibility() == View.VISIBLE
                         && mDialButtonSub2.getVisibility() == View.VISIBLE) {
+                    LayoutParams params1 = mDialButtonSub1.getLayoutParams();
+                    params1.width = (int) sp2Px(DIAL_BUTTON_SUB_WIDTH_SP);
+                    mDialButtonSub1.setLayoutParams(params1);
+                    LayoutParams params2 = mDialButtonSub2.getLayoutParams();
+                    params2.width = (int) sp2Px(DIAL_BUTTON_SUB_WIDTH_SP);
+                    mDialButtonSub2.setLayoutParams(params2);
+
                     mCallActionSubIcon1.setVisibility(View.VISIBLE);
                     mCallActionSubIcon2.setVisibility(View.VISIBLE);
                 } else {
+                    LayoutParams params1 = mDialButtonSub1.getLayoutParams();
+                    params1.width = LayoutParams.MATCH_PARENT;
+                    mDialButtonSub1.setLayoutParams(params1);
+                    LayoutParams params2 = mDialButtonSub2.getLayoutParams();
+                    params2.width = LayoutParams.MATCH_PARENT;
+                    mDialButtonSub2.setLayoutParams(params2);
+
                     mCallActionSubIcon1.setVisibility(View.GONE);
                     mCallActionSubIcon2.setVisibility(View.GONE);
                 }
