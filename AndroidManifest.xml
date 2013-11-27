@@ -49,6 +49,7 @@
      start requests, even if they happen immediately after the user
      presses home. -->
     <uses-permission android:name="android.permission.STOP_APP_SWITCHES" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:name="DialerApplication"
@@ -265,6 +266,17 @@
              the OutgoingCallBroadcaster (for outgoing calls), or as the
              fullScreenIntent of a notification (for incoming calls.) -->
         <activity android:name="com.android.incallui.InCallActivity"
+                  android:theme="@style/Theme.InCallScreen"
+                  android:label="@string/phoneAppLabel"
+                  android:excludeFromRecents="true"
+                  android:launchMode="singleInstance"
+                  android:screenOrientation="nosensor"
+                  android:configChanges="keyboardHidden"
+                  android:exported="false"
+                  android:process="com.android.incallui">
+        </activity>
+
+        <activity android:name="com.android.incallui.MSimInCallActivity"
                   android:theme="@style/Theme.InCallScreen"
                   android:label="@string/phoneAppLabel"
                   android:excludeFromRecents="true"
