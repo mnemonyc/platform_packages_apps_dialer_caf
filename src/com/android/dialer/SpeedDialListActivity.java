@@ -137,7 +137,9 @@ public class SpeedDialListActivity extends ListActivity implements OnItemClickLi
                 mSpeedListItems[i] = getString(R.string.speed_item, String.valueOf(i + 1),
                         getString(R.string.not_set));
             } else {
-                mContactDataName[i - 1] = mSpeedDialUtils.getValidName(mContactDataNumber[i - 1]);
+                String[] validNameAndAccountType = mSpeedDialUtils
+                        .getValidNameAndAccountType(mContactDataNumber[i - 1]);
+                mContactDataName[i - 1] = validNameAndAccountType[SpeedDialUtils.INDEX_NAME];
                 if (TextUtils.isEmpty(mContactDataName[i - 1])) {
                     mContactDataName[i - 1] = "";
                     mContactSimKey[i - 1] = false;
@@ -145,8 +147,8 @@ public class SpeedDialListActivity extends ListActivity implements OnItemClickLi
                     mSpeedListItems[i] = getString(R.string.speed_item, String.valueOf(i + 1),
                             mContactDataNumber[i - 1]);
                 } else {
-                    mContactSimKey[i - 1] = mSpeedDialUtils
-                            .isSimAccontByNumber(mContactDataNumber[i - 1]);
+                    mContactSimKey[i - 1] = mSpeedDialUtils.isSimAccount(
+                            validNameAndAccountType[SpeedDialUtils.INDEX_ACCOUNT_TYPE]);
 
                     mSpeedListItems[i] = getString(R.string.speed_item, String.valueOf(i + 1),
                             mContactDataName[i - 1]);

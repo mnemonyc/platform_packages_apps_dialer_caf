@@ -42,4 +42,6 @@ final class PhoneQuery {
     public static final int PHOTO_ID = 6;
     public static final int LOOKUP_KEY = 7;
     public static final int PHOTO_URI = 8;
+
+    public static final String WITHOUT_SIM_FLAG = "no_sim";
 }
