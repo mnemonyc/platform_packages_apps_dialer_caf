@@ -144,10 +144,14 @@ public class MSimCallLogFragment extends CallLogFragment {
         mFilterSubSpinnerView = (Spinner) view.findViewById(R.id.filter_sub_spinner);
         mFilterStatusSpinnerView = (Spinner) view.findViewById(R.id.filter_status_spinner);
 
+        return view;
+    }
+
+    @Override
+    public void onResume() {
         // Update the filter views.
         updateFilterSpinnierViews();
-
-        return view;
+        super.onResume();
     }
 
     @Override
