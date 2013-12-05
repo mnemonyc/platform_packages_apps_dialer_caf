@@ -533,7 +533,9 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
             mCancel.setVisibility(View.VISIBLE);
             mCancel.setText(android.R.string.cancel);
         } else {
-            mDialButtonContainer.setVisibility(View.VISIBLE);
+            if (!dialpadChooserVisible()) {
+                mDialButtonContainer.setVisibility(View.VISIBLE);
+            }
             if (!mDialpad.isShown()) {
                 mDialpad.startAnimation(showAction);
                 mDialpad.setVisibility(View.VISIBLE);
