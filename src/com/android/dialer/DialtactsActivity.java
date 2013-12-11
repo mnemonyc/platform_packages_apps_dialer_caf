@@ -67,6 +67,7 @@ import com.android.contacts.common.list.OnPhoneNumberPickerActionListener;
 import com.android.dialer.calllog.CallLogActivity;
 import com.android.dialer.database.DialerDatabaseHelper;
 import com.android.dialer.dialpad.DialpadFragment;
+import com.android.dialer.dialpad.SmartDialpadFragment;
 import com.android.dialer.dialpad.SmartDialNameMatcher;
 import com.android.dialer.dialpad.SmartDialPrefix;
 import com.android.dialer.interactions.PhoneNumberInteraction;
@@ -303,7 +304,12 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
 
             final FragmentTransaction ft = getFragmentManager().beginTransaction();
             ft.add(R.id.dialtacts_frame, phoneFavoriteFragment, TAG_FAVORITES_FRAGMENT);
-            ft.add(R.id.dialtacts_container, new DialpadFragment(), TAG_DIALPAD_FRAGMENT);
+            boolean smartdialerEnabled = getResources().getBoolean(R.bool.smartdialer_enabled);
+            if (smartdialerEnabled) {
+                ft.add(R.id.dialtacts_container, new SmartDialpadFragment(), TAG_DIALPAD_FRAGMENT);
+            } else {
+                ft.add(R.id.dialtacts_container, new DialpadFragment(), TAG_DIALPAD_FRAGMENT);
+            }
             ft.commit();
         } else {
             mSearchQuery = savedInstanceState.getString(KEY_SEARCH_QUERY);
