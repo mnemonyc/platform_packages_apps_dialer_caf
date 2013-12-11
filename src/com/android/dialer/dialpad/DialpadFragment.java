@@ -1769,7 +1769,7 @@ public class DialpadFragment extends Fragment
     /**
      * @return true if we're currently showing the "dialpad chooser" UI.
      */
-    private boolean dialpadChooserVisible() {
+    protected boolean dialpadChooserVisible() {
         return mDialpadChooser.getVisibility() == View.VISIBLE;
     }
 
