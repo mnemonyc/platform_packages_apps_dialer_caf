@@ -204,7 +204,7 @@ public class DialpadFragment extends Fragment
      * isn't enclosed by the container.
      */
     private View mDigitsContainer;
-    private EditText mDigits;
+    protected EditText mDigits;
 
     /** Remembers if we need to clear digits field when the screen is completely gone. */
     private boolean mClearDigitsOnStop;
@@ -212,7 +212,7 @@ public class DialpadFragment extends Fragment
     private View mDelete;
     private ToneGenerator mToneGenerator;
     private final Object mToneGeneratorLock = new Object();
-    private View mDialpad;
+    protected View mDialpad;
     private View mSpacer;
 
     /**
@@ -380,6 +380,10 @@ public class DialpadFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedState) {
         final View fragmentView = inflater.inflate(R.layout.dialpad_fragment, container,
                 false);
+        boolean smartdialerEnabled = getResources().getBoolean(R.bool.smartdialer_enabled);
+        if (!smartdialerEnabled) {
+            fragmentView.findViewById(R.id.listlayout).setVisibility(View.GONE);
+        }
         fragmentView.buildLayer();
 
         final ViewTreeObserver vto = fragmentView.getViewTreeObserver();
@@ -1270,7 +1274,7 @@ public class DialpadFragment extends Fragment
     /**
      * Plays the specified tone for TONE_LENGTH_MS milliseconds.
      */
-    private void playTone(int tone) {
+    protected void playTone(int tone) {
         playTone(tone, TONE_LENGTH_MS);
     }
 
@@ -1350,7 +1354,7 @@ public class DialpadFragment extends Fragment
      * @param enabled If true, show the "dialpad chooser" instead
      *                of the regular Dialer UI
      */
-    private void showDialpadChooser(boolean enabled) {
+    protected void showDialpadChooser(boolean enabled) {
         // Check if onCreateView() is already called by checking one of View objects.
         if (!isLayoutReady()) {
             return;
@@ -1741,7 +1745,7 @@ public class DialpadFragment extends Fragment
     /**
      * @return true if the widget with the phone number digits is empty.
      */
-    private boolean isDigitsEmpty() {
+    protected boolean isDigitsEmpty() {
         return mDigits.length() == 0;
     }
 

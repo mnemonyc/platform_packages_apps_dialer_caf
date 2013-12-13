@@ -312,6 +312,7 @@
 
     <!-- Menu item to copy something [CHAR_LIMIT=10] -->
     <string name="menu_copy">Copy</string>
+    <string name="non_phone_add_to_contacts">Add to contacts</string>
 
     <!-- Menu item used to show only outgoing in the call log. [CHAR LIMIT=30] -->
     <string name="menu_show_outgoing_only">Show outgoing only</string>
