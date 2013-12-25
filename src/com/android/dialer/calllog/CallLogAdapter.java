@@ -341,6 +341,7 @@ public class CallLogAdapter extends GroupingListAdapter
         // Restart the request-processing thread after the next draw.
         stopRequestProcessing();
         unregisterPreDrawListener();
+        mContactPhotoManager.clear();
     }
 
     /**
