@@ -29,6 +29,7 @@ import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.telephony.MSimTelephonyManager;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.TypefaceSpan;
@@ -39,13 +40,18 @@ import android.view.MenuItem;
 import com.android.dialer.DialtactsActivity;
 import com.android.dialer.R;
 import com.android.dialer.calllog.CallLogFragment;
+import com.android.dialer.calllog.MSimCallLogFragment;
 
 public class CallLogActivity extends Activity {
 
     private ViewPager mViewPager;
-    private ViewPagerAdapter mViewPagerAdapter;
+    private FragmentPagerAdapter mViewPagerAdapter;
     private CallLogFragment mAllCallsFragment;
     private CallLogFragment mMissedCallsFragment;
+    private MSimCallLogFragment mMSimCallsFragment;
+
+    private static final int TAB_INDEX_MSIM = 0;
+    private static final int TAB_INDEX__MSIM_COUNT = 1;
 
     private static final int TAB_INDEX_ALL = 0;
     private static final int TAB_INDEX_MISSED = 1;
@@ -73,6 +79,27 @@ public class CallLogActivity extends Activity {
         @Override
         public int getCount() {
             return TAB_INDEX_COUNT;
+        }
+    }
+
+    public class MSimViewPagerAdapter extends FragmentPagerAdapter {
+        public MSimViewPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            switch (position) {
+                case TAB_INDEX_MSIM:
+                    mMSimCallsFragment = new MSimCallLogFragment();
+                    return mMSimCallsFragment;
+            }
+            throw new IllegalStateException("No fragment at position " + position);
+        }
+
+        @Override
+        public int getCount() {
+            return TAB_INDEX__MSIM_COUNT;
         }
     }
 
@@ -113,6 +140,10 @@ public class CallLogActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
+            initMSimCallLog();
+            return;
+        }
 
         setContentView(R.layout.call_log_activity);
 
@@ -143,6 +174,22 @@ public class CallLogActivity extends Activity {
         mViewPager.setOffscreenPageLimit(1);
     }
 
+    private void initMSimCallLog() {
+        setContentView(R.layout.msim_call_log_activity);
+
+        final ActionBar actionBar = getActionBar();
+        actionBar.setDisplayShowHomeEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setDisplayShowTitleEnabled(true);
+
+        mViewPager = (ViewPager) findViewById(R.id.call_log_pager);
+        mViewPagerAdapter = new MSimViewPagerAdapter(getFragmentManager());
+
+        mViewPager.setAdapter(mViewPagerAdapter);
+        mViewPager.setOnPageChangeListener(mOnPageChangeListener);
+        mViewPager.setOffscreenPageLimit(1);
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         final MenuInflater inflater = getMenuInflater();
@@ -157,6 +204,10 @@ public class CallLogActivity extends Activity {
         // If onPrepareOptionsMenu is called before fragments loaded. Don't do anything.
         if (mAllCallsFragment != null && itemDeleteAll != null) {
             final CallLogAdapter adapter = mAllCallsFragment.getAdapter();
+            itemDeleteAll.setVisible(adapter != null && !adapter.isEmpty());
+        }
+        if (mMSimCallsFragment != null && itemDeleteAll != null) {
+            final CallLogAdapter adapter = mMSimCallsFragment.getAdapter();
             itemDeleteAll.setVisible(adapter != null && !adapter.isEmpty());
         }
         return true;
