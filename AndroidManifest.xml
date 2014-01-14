@@ -47,6 +47,7 @@
     <uses-permission android:name="org.codeaurora.permission.ACCESS_CSVT_SERVICE" />
 
     <application
+        android:name="com.android.dialer.DialerApplication"
         android:label="@string/applicationLabel"
         android:icon="@mipmap/ic_launcher_phone"
         android:hardwareAccelerated="true"
