@@ -26,6 +26,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.CallLog.Calls;
 import android.provider.ContactsContract.PhoneLookup;
+import android.telephony.MSimTelephonyManager;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,6 +39,7 @@ import android.widget.TextView;
 import com.android.common.widget.GroupingListAdapter;
 import com.android.contacts.common.ContactPhotoManager;
 import com.android.contacts.common.util.UriUtils;
+import com.android.dialer.DialtactsActivity;
 import com.android.dialer.PhoneCallDetails;
 import com.android.dialer.PhoneCallDetailsHelper;
 import com.android.dialer.R;
@@ -265,7 +267,7 @@ public class CallLogAdapter extends GroupingListAdapter
         mContactPhotoManager = ContactPhotoManager.getInstance(mContext);
         mPhoneNumberHelper = new PhoneNumberHelper(resources);
         PhoneCallDetailsHelper phoneCallDetailsHelper = new PhoneCallDetailsHelper(
-                resources, callTypeHelper, new PhoneNumberUtilsWrapper());
+                mContext, callTypeHelper, new PhoneNumberUtilsWrapper());
         mCallLogViewsHelper =
                 new CallLogListItemHelper(
                         phoneCallDetailsHelper, mPhoneNumberHelper, resources);
@@ -533,6 +535,7 @@ public class CallLogAdapter extends GroupingListAdapter
         final long duration = c.getLong(CallLogQuery.DURATION);
         final int callType = c.getInt(CallLogQuery.CALL_TYPE);
         final String countryIso = c.getString(CallLogQuery.COUNTRY_ISO);
+        final int subscription = c.getInt(CallLogQuery.SUBSCRIPTION);
 
         final ContactInfo cachedContactInfo = getContactInfoFromCallLog(c);
 
@@ -540,10 +543,12 @@ public class CallLogAdapter extends GroupingListAdapter
             // Sets the primary action to open call detail page.
             views.primaryActionView.setTag(
                     IntentProvider.getCallDetailIntentProvider(
-                            getCursor(), c.getPosition(), c.getLong(CallLogQuery.ID), count));
+                            getCursor(), c.getPosition(), c.getLong(CallLogQuery.ID), count,
+                            subscription));
         } else if (PhoneNumberUtilsWrapper.canPlaceCallsTo(number, numberPresentation)) {
             // Sets the primary action to call the number.
-            views.primaryActionView.setTag(IntentProvider.getReturnCallIntentProvider(number));
+            views.primaryActionView.setTag(IntentProvider.getReturnCallIntentProvider(number,
+                    subscription));
         } else {
             views.primaryActionView.setTag(null);
         }
@@ -553,11 +558,21 @@ public class CallLogAdapter extends GroupingListAdapter
             String voicemailUri = c.getString(CallLogQuery.VOICEMAIL_URI);
             final long rowId = c.getLong(CallLogQuery.ID);
             views.secondaryActionView.setTag(
-                    IntentProvider.getPlayVoicemailIntentProvider(rowId, voicemailUri));
+                    IntentProvider
+                            .getPlayVoicemailIntentProvider(rowId, voicemailUri, subscription));
+            // For voicemail, needn't show the call sub icon, set it as gone.
+            views.subIconView.setVisibility(View.GONE);
         } else if (!TextUtils.isEmpty(number)) {
             // Store away the number so we can call it directly if you click on the call icon.
             views.secondaryActionView.setTag(
-                    IntentProvider.getReturnCallIntentProvider(number));
+                    IntentProvider.getReturnCallIntentProvider(number, subscription));
+            if (MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
+                views.subIconView.setVisibility(View.VISIBLE);
+                views.subIconView.setImageDrawable(
+                        DialtactsActivity.getMultiSimIcon(mContext, subscription));
+            } else {
+                views.subIconView.setVisibility(View.GONE);
+            }
         } else {
             // No action enabled.
             views.secondaryActionView.setTag(null);
@@ -614,11 +629,11 @@ public class CallLogAdapter extends GroupingListAdapter
         if (TextUtils.isEmpty(name)) {
             details = new PhoneCallDetails(number, numberPresentation,
                     formattedNumber, countryIso, geocode, callTypes, date,
-                    duration);
+                    duration, subscription);
         } else {
             details = new PhoneCallDetails(number, numberPresentation,
                     formattedNumber, countryIso, geocode, callTypes, date,
-                    duration, name, ntype, label, lookupUri, photoUri);
+                    duration, name, ntype, label, lookupUri, photoUri, subscription);
         }
 
         final boolean isNew = c.getInt(CallLogQuery.IS_READ) == 0;

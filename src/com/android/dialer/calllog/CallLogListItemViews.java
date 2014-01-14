@@ -36,17 +36,20 @@ public final class CallLogListItemViews {
     public final View primaryActionView;
     /** The secondary action button on the entry. */
     public final ImageView secondaryActionView;
+    /** The sub icon to mark the call action. */
+    public final ImageView subIconView;
     /** The details of the phone call. */
     public final PhoneCallDetailsViews phoneCallDetailsViews;
     /** The text of the header of a section. */
     public final TextView listHeaderTextView;
 
     private CallLogListItemViews(QuickContactBadge quickContactView, View primaryActionView,
-            ImageView secondaryActionView, PhoneCallDetailsViews phoneCallDetailsViews,
+            ImageView secondaryActionView, ImageView subIconView, PhoneCallDetailsViews phoneCallDetailsViews,
             TextView listHeaderTextView) {
         this.quickContactView = quickContactView;
         this.primaryActionView = primaryActionView;
         this.secondaryActionView = secondaryActionView;
+        this.subIconView = subIconView;
         this.phoneCallDetailsViews = phoneCallDetailsViews;
         this.listHeaderTextView = listHeaderTextView;
     }
@@ -56,6 +59,7 @@ public final class CallLogListItemViews {
                 (QuickContactBadge) view.findViewById(R.id.quick_contact_photo),
                 view.findViewById(R.id.primary_action_view),
                 (ImageView) view.findViewById(R.id.secondary_action_icon),
+                (ImageView) view.findViewById(R.id.call_action_sub_icon),
                 PhoneCallDetailsViews.fromView(view),
                 (TextView) view.findViewById(R.id.call_log_header));
     }
@@ -65,6 +69,7 @@ public final class CallLogListItemViews {
         return new CallLogListItemViews(
                 new QuickContactBadge(context),
                 new View(context),
+                new ImageView(context),
                 new ImageView(context),
                 PhoneCallDetailsViews.createForTest(context),
                 new TextView(context));

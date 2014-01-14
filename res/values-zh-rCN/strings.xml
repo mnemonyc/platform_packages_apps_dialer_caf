@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
   ~ Copyright (C) 2012 The Android Open Source Project
+  ~ Copyright (C) 2013 The Linux Foundation. All Rights Reserved.
   ~
+  ~ Not a Contribution.
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
   ~ You may obtain a copy of the License at
@@ -85,6 +87,7 @@
     <string name="non_phone_add_to_contacts" msgid="6590985286250471169">"添加到联系人"</string>
     <string name="action_menu_dialpad_button" msgid="1425910318049008136">"拨号键盘"</string>
     <string name="menu_copy" msgid="6108677035381940698">"复制"</string>
+    <string name="call_log_all_calls_header">"所有通话"</string>
     <string name="menu_show_outgoing_only" msgid="1965570298133301970">"仅显示外拨电话"</string>
     <string name="menu_show_incoming_only" msgid="7534206815238877417">"仅显示来电"</string>
     <string name="menu_show_missed_only" msgid="154473166059743996">"仅显示未接来电"</string>
@@ -174,5 +177,7 @@
     <string name="dialog_speed_dial_airplane_mode_message" >"要呼叫快速拨号，请先关闭飞行模式。"</string>
     <string name="assignSpeedDialFailToast">此号码已分配了快速拨号键，请选择其它号码。</string>
     <string name="device_id">设备标识符</string>
+    <string name="slot_name">"卡"</string>
+    <string name="call_log_show_all_slots">"所有卡"</string>
     <string name="calllog_search_hint">"搜索通话记录"</string>
 </resources>
