@@ -873,12 +873,12 @@ public class CallLogAdapter extends GroupingListAdapter
 
     private void setPhoto(CallLogListItemViews views, long photoId, Uri contactUri) {
         views.quickContactView.assignContactUri(contactUri);
-        mContactPhotoManager.loadThumbnail(views.quickContactView, photoId, false /* darkTheme */);
+        mContactPhotoManager.loadThumbnail(views.quickContactView, photoId, null, false /* darkTheme */);
     }
 
     private void setPhoto(CallLogListItemViews views, Uri photoUri, Uri contactUri) {
         views.quickContactView.assignContactUri(contactUri);
-        mContactPhotoManager.loadDirectoryPhoto(views.quickContactView, photoUri,
+        mContactPhotoManager.loadDirectoryPhoto(views.quickContactView, photoUri, null,
                 false /* darkTheme */);
     }
 
