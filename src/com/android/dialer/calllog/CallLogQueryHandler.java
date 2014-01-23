@@ -248,6 +248,18 @@ public class CallLogQueryHandler extends NoNullCursorAsyncQueryHandler {
         if (!TextUtils.isEmpty(filter)) {
              selection += " AND (" + Calls.NUMBER + " LIKE '%" + filter + "%')";
         }
+        if (number != "") {
+
+            if (isPartSearch) {
+                selection = String.format("(%s) AND ((%s LIKE ", selection, Calls.NUMBER);
+                selection += ("'%" + number + "%'))");
+                Log.d("TAG", "isPartSearch: " + isPartSearch + " selection: " + selection);
+            } else {
+                selection = String.format("(%s) AND (%s = ?)", selection, Calls.NUMBER);
+                selectionArgs.add(number);
+                Log.d("TAG", "isPartSearch: " + isPartSearch + " selection: " + selection);
+            }
+        }
         startQuery(token, requestId, uri,
                 CallLogQuery._PROJECTION, selection, selectionArgs.toArray(EMPTY_STRING_ARRAY),
                 Calls.DEFAULT_SORT_ORDER);
@@ -411,5 +423,16 @@ public class CallLogQueryHandler extends NoNullCursorAsyncQueryHandler {
          * Called when {@link CallLogQueryHandler#fetchCalls(int)}complete.
          */
         void onCallsFetched(Cursor combinedCursor);
+    }
+
+    private String number = "";
+    private Boolean isPartSearch = false;
+
+    public void setNumber(String number) {
+        this.number = number;
+    }
+
+    public void setPartSearch(Boolean isPartSearch) {
+        this.isPartSearch = isPartSearch;
     }
 }
