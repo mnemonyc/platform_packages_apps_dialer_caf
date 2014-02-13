@@ -21,6 +21,7 @@ import android.provider.CallLog.Calls;
 import android.text.TextUtils;
 import android.view.View;
 
+import com.android.contacts.common.MoreContactUtils;
 import com.android.dialer.PhoneCallDetails;
 import com.android.dialer.PhoneCallDetailsHelper;
 import com.android.dialer.R;
@@ -72,16 +73,18 @@ import com.android.dialer.R;
             configureCallSecondaryAction(views, details);
         } else {
             // No action available.
-            views.secondaryActionView.setVisibility(View.GONE);
+            views.callButtonSub1.setVisibility(View.GONE);
+            views.callButtonSub2.setVisibility(View.GONE);
+            views.dividerView.setVisibility(View.GONE);
         }
     }
 
     /** Sets the secondary action to correspond to the call button. */
     private void configureCallSecondaryAction(CallLogListItemViews views,
             PhoneCallDetails details) {
-        views.secondaryActionView.setVisibility(View.VISIBLE);
-        views.secondaryActionView.setImageResource(R.drawable.ic_phone_dk);
-        views.secondaryActionView.setContentDescription(getCallActionDescription(details));
+        views.callButtonSub1.setVisibility(View.VISIBLE);
+        views.callButtonSub1.setImageResource(R.drawable.ic_ab_dialer_holo_light);
+        views.callButtonSub1.setContentDescription(getCallActionDescription(details));
     }
 
     /** Returns the description used by the call action for this phone call. */
@@ -98,10 +101,11 @@ import com.android.dialer.R;
 
     /** Sets the secondary action to correspond to the play button. */
     private void configurePlaySecondaryAction(CallLogListItemViews views, boolean isHighlighted) {
-        views.secondaryActionView.setVisibility(View.VISIBLE);
-        views.secondaryActionView.setImageResource(
-                isHighlighted ? R.drawable.ic_play_active_holo_dark : R.drawable.ic_play_holo_light);
-        views.secondaryActionView.setContentDescription(
+        views.callButtonSub1.setVisibility(View.VISIBLE);
+        views.callButtonSub1.setImageResource(
+                isHighlighted ? R.drawable.ic_play_active_holo_dark : R.drawable.ic_play_holo_dark);
+        views.callButtonSub1.setContentDescription(
                 mResources.getString(R.string.description_call_log_play_button));
+        views.dividerView.setVisibility(View.VISIBLE);
     }
 }

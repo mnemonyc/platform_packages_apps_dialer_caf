@@ -27,7 +27,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.android.dialer.DialtactsActivity;
+import com.android.contacts.common.MoreContactUtils;
 import com.android.dialer.PhoneCallDetails;
 import com.android.dialer.R;
 
@@ -151,8 +151,8 @@ public class CallDetailHistoryAdapter extends BaseAdapter {
         // Set the sub icon.
         if (MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
             subIconView.setVisibility(View.VISIBLE);
-            subIconView.setImageDrawable(
-                    DialtactsActivity.getMultiSimIcon(mContext, details.subscription));
+            subIconView.setImageDrawable(MoreContactUtils.getMultiSimIcon(mContext,
+                    MoreContactUtils.FRAMEWORK_ICON, details.subscription));
         } else {
             // Not enable, set the view as gone.
             subIconView.setVisibility(View.GONE);

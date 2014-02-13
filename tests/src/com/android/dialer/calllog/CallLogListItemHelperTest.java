@@ -77,7 +77,7 @@ public class CallLogListItemHelperTest extends AndroidTestCase {
     public void testSetPhoneCallDetails() {
         setPhoneCallDetailsWithNumber("12125551234", Calls.PRESENTATION_ALLOWED,
                 "1-212-555-1234");
-        assertEquals(View.VISIBLE, mViews.secondaryActionView.getVisibility());
+        assertEquals(View.VISIBLE, mViews.callButtonSub1.getVisibility());
     }
 
     public void testSetPhoneCallDetailsInFavorites() {
@@ -119,23 +119,23 @@ public class CallLogListItemHelperTest extends AndroidTestCase {
     public void testSetPhoneCallDetails_VoicemailNumber() {
         setPhoneCallDetailsWithNumber(TEST_VOICEMAIL_NUMBER,
                 Calls.PRESENTATION_ALLOWED, TEST_VOICEMAIL_NUMBER);
-        assertEquals(View.VISIBLE, mViews.secondaryActionView.getVisibility());
+        assertEquals(View.VISIBLE, mViews.callButtonSub1.getVisibility());
     }
 
     public void testSetPhoneCallDetails_ReadVoicemail() {
         setPhoneCallDetailsWithTypes(Calls.VOICEMAIL_TYPE);
-        assertEquals(View.VISIBLE, mViews.secondaryActionView.getVisibility());
+        assertEquals(View.VISIBLE, mViews.callButtonSub1.getVisibility());
     }
 
     public void testSetPhoneCallDetails_UnreadVoicemail() {
         setUnreadPhoneCallDetailsWithTypes(Calls.VOICEMAIL_TYPE);
-        assertEquals(View.VISIBLE, mViews.secondaryActionView.getVisibility());
+        assertEquals(View.VISIBLE, mViews.callButtonSub1.getVisibility());
     }
 
     public void testSetPhoneCallDetails_VoicemailFromUnknown() {
         setPhoneCallDetailsWithNumberAndType("", Calls.PRESENTATION_UNKNOWN,
                 "", Calls.VOICEMAIL_TYPE);
-        assertEquals(View.VISIBLE, mViews.secondaryActionView.getVisibility());
+        assertEquals(View.VISIBLE, mViews.callButtonSub1.getVisibility());
     }
 
     public void testSetPhoneCallDetailsInFavorites_VoicemailNumber() {
@@ -146,23 +146,23 @@ public class CallLogListItemHelperTest extends AndroidTestCase {
 
     public void testSetPhoneCallDetailsInFavorites_ReadVoicemail() {
         setPhoneCallDetailsWithTypesInFavorites(Calls.VOICEMAIL_TYPE);
-        assertEquals(View.VISIBLE, mViews.secondaryActionView.getVisibility());
+        assertEquals(View.VISIBLE, mViews.callButtonSub1.getVisibility());
     }
 
     public void testSetPhoneCallDetailsInFavorites_UnreadVoicemail() {
         setUnreadPhoneCallDetailsWithTypesInFavorites(Calls.VOICEMAIL_TYPE);
-        assertEquals(View.VISIBLE, mViews.secondaryActionView.getVisibility());
+        assertEquals(View.VISIBLE, mViews.callButtonSub1.getVisibility());
     }
 
     public void testSetPhoneCallDetailsInFavorites_VoicemailFromUnknown() {
         setPhoneCallDetailsWithNumberAndTypeInFavorites("", Calls.PRESENTATION_UNKNOWN,
                 "", Calls.VOICEMAIL_TYPE);
-        assertEquals(View.VISIBLE, mViews.secondaryActionView.getVisibility());
+        assertEquals(View.VISIBLE, mViews.callButtonSub1.getVisibility());
     }
 
     /** Asserts that the whole call area is gone. */
     private void assertNoCallButton() {
-        assertEquals(View.GONE, mViews.secondaryActionView.getVisibility());
+        assertEquals(View.GONE, mViews.callButtonSub1.getVisibility());
     }
 
     /** Sets the details of a phone call using the specified phone number. */

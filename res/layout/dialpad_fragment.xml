@@ -144,6 +144,72 @@
                 android:background="@drawable/btn_call"
                 android:contentDescription="@string/description_dial_button"
                 android:src="@drawable/ic_dial_action_call" />
+
+            <LinearLayout
+                android:id="@+id/dialButton_sub"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:layout_weight="1"
+                android:gravity="center" >
+
+                <RelativeLayout
+                    android:id="@+id/dialButton_sub1"
+                    android:layout_width="100dip"
+                    android:layout_height="60dip"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    >
+                    <ImageButton
+                        android:id="@+id/dialButton1"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/btn_call"
+                        android:contentDescription="@string/description_dial_button"
+                        android:src="@drawable/ic_dial_action_call"
+                        android:state_enabled="false" />
+                    <ImageView
+                        android:id="@+id/call_action_sub_icon1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="11dip"
+                        android:layout_marginLeft="55dip"
+                        android:src="@drawable/ic_sim_icon_1" />
+                </RelativeLayout>
+                <View
+                    android:id="@+id/sub_divider"
+                    android:layout_width="1px"
+                    android:layout_margin="35dip"
+                    android:layout_height="@dimen/call_log_call_action_size"
+                    android:background="@drawable/ic_divider_dashed_holo_dark"
+                    android:layout_gravity="center_vertical"
+                />
+                <RelativeLayout
+                    android:id="@+id/dialButton_sub2"
+                    android:layout_width="100dip"
+                    android:layout_height="60dip"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    >
+                    <ImageButton
+                        android:id="@+id/dialButton2"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/btn_call"
+                        android:contentDescription="@string/description_dial_button"
+                        android:src="@drawable/ic_dial_action_call"
+                        android:state_enabled="false" />
+                    <ImageView
+                        android:id="@+id/call_action_sub_icon2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="11dip"
+                        android:layout_marginLeft="55dip"
+                        android:src="@drawable/ic_sim_icon_2"
+                        android:layout_alignParentRight="false" />
+                </RelativeLayout>
+            </LinearLayout>
+
             <ImageButton
                 android:id="@+id/overflow_menu_on_dialpad"
                 android:layout_height="match_parent"
