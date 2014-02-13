@@ -910,7 +910,7 @@ public class DialpadFragment extends Fragment
             addToContactMenuItem.setVisible(true);
 
             //add for csvt
-            videocallsettingsMenuItem.setVisible(isVTSupported());
+            videocallMenuItem.setVisible(isVTSupported());
             if(isVTSupported()){
                 videocallMenuItem.setIntent(getVTCallIntent(digits.toString()));
             }
