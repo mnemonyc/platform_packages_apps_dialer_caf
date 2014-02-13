@@ -17,10 +17,13 @@
 package com.android.dialer.calllog;
 
 import android.content.Context;
+import android.content.ContentUris;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract.Contacts;
+import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.PhoneLookup;
+import android.provider.ContactsContract.RawContacts;
 import android.telephony.PhoneNumberUtils;
 import android.text.TextUtils;
 
@@ -105,6 +108,7 @@ public class ContactInfoHelper {
      */
     private ContactInfo lookupContactFromUri(Uri uri) {
         final ContactInfo info;
+        long id;
         Cursor phonesCursor =
                 mContext.getContentResolver().query(
                         uri, PhoneQuery._PROJECTION, null, null, null);
@@ -125,8 +129,19 @@ public class ContactInfoHelper {
                     info.photoUri =
                             UriUtils.parseUriOrNull(phonesCursor.getString(PhoneQuery.PHOTO_URI));
                     info.formattedNumber = null;
+                    id = contactId;
                 } else {
                     info = ContactInfo.EMPTY;
+                    id = -1;
+                }
+                    Uri contactUri = Contacts.CONTENT_URI;
+                    ContentUris.withAppendedId(contactUri,id);
+                    Cursor mCursor = mContext.getContentResolver().query(contactUri,new String[] {
+                        RawContacts.ACCOUNT_TYPE, RawContacts.ACCOUNT_NAME}, null, null, null);
+                if (mCursor != null && mCursor.getCount() >0 && mCursor.moveToFirst()) {
+                    info.accountType = mCursor.getString(0);
+                    info.accountName = mCursor.getString(1);
+                    mCursor.close();
                 }
             } finally {
                 phonesCursor.close();

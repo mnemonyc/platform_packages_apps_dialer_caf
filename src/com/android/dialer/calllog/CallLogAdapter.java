@@ -16,6 +16,7 @@
 
 package com.android.dialer.calllog;
 
+import android.accounts.Account;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
@@ -694,6 +695,7 @@ public class CallLogAdapter extends GroupingListAdapter
         final int[] callTypes = getCallTypes(c, count);
         final String geocode = c.getString(CallLogQuery.GEOCODED_LOCATION);
         final PhoneCallDetails details;
+        Account mAccount;
         if (TextUtils.isEmpty(name)) {
             details = new PhoneCallDetails(number, formattedNumber, countryIso, geocode,
                     callTypes, date, duration, subscription, durationType);
@@ -712,10 +714,15 @@ public class CallLogAdapter extends GroupingListAdapter
         } else {
             mCallLogViewsHelper.setPhoneCallDetails(views, details, isHighlighted, mFilterString);
         }
+        if(info.accountName!=null && info.accountType !=null) {
+            mAccount =new Account(info.accountName,info.accountType);
+        } else {
+            mAccount = null;
+        }
         if (lookupUri == null) {
             setDefaultPhoto(views, photoId, info.formattedNumber);
         } else {
-            setPhoto(views, photoId, lookupUri);
+            setPhoto(views, photoId, lookupUri,mAccount);
         }
 
         // Listen for the first draw
@@ -854,10 +861,10 @@ public class CallLogAdapter extends GroupingListAdapter
         mContactPhotoManager.loadThumbnail(views.quickContactView, photoId, null, true);
     }
 
-    private void setPhoto(CallLogListItemViews views, long photoId, Uri contactUri) {
+    private void setPhoto(CallLogListItemViews views, long photoId, Uri contactUri,Account mAccount) {
         views.quickContactView.assignContactUri(contactUri);
         //Do not show sim contact icon in call log.
-        mContactPhotoManager.loadThumbnail(views.quickContactView, photoId, null, true);
+        mContactPhotoManager.loadThumbnail(views.quickContactView, photoId, mAccount, true);
     }
 
     /**
