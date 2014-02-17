@@ -134,8 +134,7 @@ public class ContactInfoHelper {
                     info = ContactInfo.EMPTY;
                     id = -1;
                 }
-                    Uri contactUri = Contacts.CONTENT_URI;
-                    ContentUris.withAppendedId(contactUri,id);
+                    Uri contactUri = ContentUris.withAppendedId(Contacts.CONTENT_URI,id);
                     Cursor mCursor = mContext.getContentResolver().query(contactUri,new String[] {
                         RawContacts.ACCOUNT_TYPE, RawContacts.ACCOUNT_NAME}, null, null, null);
                 if (mCursor != null && mCursor.getCount() >0 && mCursor.moveToFirst()) {
