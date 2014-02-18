@@ -29,6 +29,7 @@ import android.widget.FrameLayout;
 
 import com.android.dialer.R;
 import com.android.dialer.calllog.CallLogAdapter;
+import com.android.dialer.calllog.CallLogListItemViews;
 import com.android.dialer.calllog.CallLogNotificationsHelper;
 import com.android.dialer.calllog.CallLogQueryHandler;
 import com.android.dialer.list.SwipeHelper.OnItemGestureListener;
@@ -244,6 +245,9 @@ public class PhoneFavoriteMergedAdapter extends BaseAdapter {
                         null : wrapper.getChildAt(0), parent);
                 wrapper.removeAllViews();
                 final View callLogItem = view.findViewById(R.id.call_log_list_item);
+                final CallLogListItemViews views = (CallLogListItemViews) view.getTag();
+                views.callIconSub1.setVisibility(View.GONE);
+                views.callIconSub2.setVisibility(View.GONE);
                 // Reset the internal call log item view if it is being recycled
                 callLogItem.setTranslationX(0);
                 callLogItem.setAlpha(1);

@@ -32,6 +32,7 @@ import android.text.style.StyleSpan;
 import android.view.View;
 import android.widget.TextView;
 
+import com.android.contacts.common.MoreContactUtils;
 import com.android.contacts.common.test.NeededForTesting;
 import com.android.dialer.calllog.CallTypeHelper;
 import com.android.dialer.calllog.ContactInfo;
@@ -76,8 +77,8 @@ public class PhoneCallDetailsHelper {
         // Display the icon for the last call sub.
         if (MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
             views.subIconView.setVisibility(View.VISIBLE);
-            views.subIconView.setImageDrawable(
-                    DialtactsActivity.getMultiSimIcon(mContext, details.subscription));
+            views.subIconView.setImageDrawable(MoreContactUtils.getMultiSimIcon(mContext,
+                    MoreContactUtils.FRAMEWORK_ICON, details.subscription));
         } else {
             views.subIconView.setVisibility(View.GONE);
         }

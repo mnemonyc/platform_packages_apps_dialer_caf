@@ -76,4 +76,9 @@
     <!-- Padding for the tooltip -->
     <dimen name="dismiss_button_padding_start">20dip</dimen>
     <dimen name="dismiss_button_padding_end">28dip</dimen>
+
+    <!-- Dimensions for dsds divider -->
+    <dimen name="dsds_vertical_divider_vertical_margin">0dip</dimen>
+    <dimen name="dsds_vertical_divider_width">1px</dimen>
+    <dimen name="dsds_vertical_divider_height">32dip</dimen>
 </resources>
