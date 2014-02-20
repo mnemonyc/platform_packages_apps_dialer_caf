@@ -66,6 +66,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.view.ViewTreeObserver;
 import android.view.ViewTreeObserver.OnPreDrawListener;
 import android.widget.AdapterView;
@@ -81,6 +82,7 @@ import android.widget.TextView;
 
 import com.android.contacts.common.CallUtil;
 import com.android.contacts.common.GeoUtil;
+import com.android.contacts.common.MoreContactUtils;
 import com.android.contacts.common.activity.TransactionSafeActivity;
 import com.android.contacts.common.preference.ContactsPreferences;
 import com.android.contacts.common.util.PhoneNumberFormatter;
@@ -95,6 +97,7 @@ import com.android.dialer.database.DialerDatabaseHelper;
 import com.android.dialer.interactions.PhoneNumberInteraction;
 import com.android.dialer.util.OrientationUtil;
 import com.android.internal.telephony.ITelephony;
+import com.android.internal.telephony.MSimConstants;
 import com.android.internal.telephony.TelephonyProperties;
 import com.android.phone.common.CallLogAsync;
 import com.android.phone.common.HapticFeedback;
@@ -227,6 +230,17 @@ public class DialpadFragment extends Fragment
 
     private View mDialButtonContainer;
     private View mDialButton;
+    protected View mDialButtonSub;
+
+    protected View mDialDivider;
+    protected View mDialButtonSub1;
+    protected View mDialButton1;
+    protected View mCallActionSubIcon1;
+
+    protected View mDialButtonSub2;
+    protected View mDialButton2;
+    protected View mCallActionSubIcon2;
+
     private ImageButton mDialConferenceButton;
     private ListView mDialpadChooser;
     private DialpadChooserAdapter mDialpadChooserAdapter;
@@ -324,7 +338,13 @@ public class DialpadFragment extends Fragment
     private boolean mAdjustTranslationForAnimation = false;
 
     private static final String PREF_DIGITS_FILLED_BY_INTENT = "pref_digits_filled_by_intent";
+    private static final int DIAL_BUTTON_SUB_WIDTH_SP = 100;
 
+
+    private float sp2Px(float sp) {
+        DisplayMetrics displayMetrics = getActivity().getResources().getDisplayMetrics();
+        return sp * displayMetrics.scaledDensity;
+    }
     /**
      * Return an Intent for launching voicemail screen.
      */
@@ -464,14 +484,20 @@ public class DialpadFragment extends Fragment
             setupKeypad(fragmentView);
         }
 
+        // DSDS dual button setting
         mDialButton = fragmentView.findViewById(R.id.dialButton);
-        if (r.getBoolean(R.bool.config_show_onscreen_dial_button)) {
-            mDialButton.setOnClickListener(this);
-            mDialButton.setOnLongClickListener(this);
-        } else {
-            mDialButton.setVisibility(View.GONE); // It's VISIBLE by default
-            mDialButton = null;
-        }
+        mDialButtonSub = fragmentView.findViewById(R.id.dialButton_sub);
+
+        mDialDivider = fragmentView.findViewById(R.id.sub_divider);
+        mDialButton1 = fragmentView.findViewById(R.id.dialButton1);
+        mDialButtonSub1 = fragmentView.findViewById(R.id.dialButton_sub1);
+        mCallActionSubIcon1 = fragmentView.findViewById(R.id.call_action_sub_icon1);
+
+        mDialButton2 = fragmentView.findViewById(R.id.dialButton2);
+        mDialButtonSub2 = fragmentView.findViewById(R.id.dialButton_sub2);
+        mCallActionSubIcon2 = fragmentView.findViewById(R.id.call_action_sub_icon2);
+
+        setDialButtonVisibility(r);
 
         mDialConferenceButton = (ImageButton) fragmentView.findViewById(R.id.dialConferenceButton);
         if (isCallOnImsEnabled()) {
@@ -519,6 +545,107 @@ public class DialpadFragment extends Fragment
         return fragmentView;
     }
 
+    private void setDialButtonVisibility(Resources r) {
+        if (!MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
+            if (r.getBoolean(R.bool.config_show_onscreen_dial_button)) {
+                mDialButton.setOnClickListener(this);
+                mDialButton.setOnLongClickListener(this);
+            } else {
+                mDialButton.setVisibility(View.GONE); // It's VISIBLE by default
+                mDialButton = null;
+            }
+            mDialButtonSub.setVisibility(View.GONE);
+        } else {
+            if (MoreContactUtils.getButtonStyle(this.getActivity())) {
+                final Context context = getActivity();
+
+                mDialButton.setVisibility(View.GONE);
+                mDialButtonSub.setVisibility(View.VISIBLE);
+
+                if (r.getBoolean(R.bool.config_show_onscreen_dial_button)) {
+                    mDialButton1.setOnClickListener(this);
+                    mDialButton1.setOnLongClickListener(this);
+                    ((ImageView) mCallActionSubIcon1)
+                            .setImageDrawable(MoreContactUtils.getMultiSimIcon(context,
+                                    MoreContactUtils.DIALER_ICON, MSimConstants.SUB1));
+                    mDialButton2.setOnClickListener(this);
+                    mDialButton2.setOnLongClickListener(this);
+                    ((ImageView) mCallActionSubIcon2)
+                            .setImageDrawable(MoreContactUtils.getMultiSimIcon(context,
+                                    MoreContactUtils.DIALER_ICON, MSimConstants.SUB2));
+                }
+                if (MSimTelephonyManager.getDefault().getMultiSimConfiguration()
+                        == MSimTelephonyManager.MultiSimVariants.DSDS) {
+                    if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB1)
+                            && (MSimTelephonyManager.getDefault().getCallState(MSimConstants.SUB2)
+                                    == TelephonyManager.CALL_STATE_IDLE)) {
+                       mDialButtonSub1.setVisibility(View.VISIBLE);
+                    } else {
+                        mDialButtonSub1.setVisibility(View.GONE);
+                    }
+
+                    if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB2)
+                            && (MSimTelephonyManager.getDefault().getCallState(MSimConstants.SUB1)
+                                    == TelephonyManager.CALL_STATE_IDLE)) {
+                        mDialButtonSub2.setVisibility(View.VISIBLE);
+                    } else {
+                        mDialButtonSub2.setVisibility(View.GONE);
+                    }
+                } else {
+                    if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB1)) {
+                       mDialButtonSub1.setVisibility(View.VISIBLE);
+                    } else {
+                        mDialButtonSub1.setVisibility(View.GONE);
+                    }
+
+                    if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB2)) {
+                        mDialButtonSub2.setVisibility(View.VISIBLE);
+                    } else {
+                        mDialButtonSub2.setVisibility(View.GONE);
+                    }
+                }
+                if (mDialButtonSub1.getVisibility() == View.GONE
+                        && mDialButtonSub2.getVisibility() == View.GONE) {
+                    mDialButton.setVisibility(View.VISIBLE);
+                    mDialButtonSub.setVisibility(View.GONE);
+                }
+                if (mDialButtonSub1.getVisibility() == View.VISIBLE
+                        && mDialButtonSub2.getVisibility() == View.VISIBLE) {
+                    LayoutParams params1 = mDialButtonSub1.getLayoutParams();
+                    params1.width = (int) sp2Px(DIAL_BUTTON_SUB_WIDTH_SP);
+                    mDialButtonSub1.setLayoutParams(params1);
+                    LayoutParams params2 = mDialButtonSub2.getLayoutParams();
+                    params2.width = (int) sp2Px(DIAL_BUTTON_SUB_WIDTH_SP);
+                    mDialButtonSub2.setLayoutParams(params2);
+
+                    mCallActionSubIcon1.setVisibility(View.VISIBLE);
+                    mCallActionSubIcon2.setVisibility(View.VISIBLE);
+                } else {
+                    LayoutParams params1 = mDialButtonSub1.getLayoutParams();
+                    params1.width = LayoutParams.MATCH_PARENT;
+                    mDialButtonSub1.setLayoutParams(params1);
+                    LayoutParams params2 = mDialButtonSub2.getLayoutParams();
+                    params2.width = LayoutParams.MATCH_PARENT;
+                    mDialButtonSub2.setLayoutParams(params2);
+
+                    mCallActionSubIcon1.setVisibility(View.GONE);
+                    mCallActionSubIcon2.setVisibility(View.GONE);
+                }
+                if (mDialButtonContainer != null) {
+                    mDialButtonContainer.setPadding(
+                            0, mDialButtonContainer.getPaddingTop(),
+                            0, mDialButtonContainer.getPaddingBottom());
+                }
+                if (mDialButtonSub1.getVisibility() == View.VISIBLE
+                        && mDialButtonSub2.getVisibility() == View.VISIBLE) {
+                    mDialDivider.setVisibility(View.VISIBLE);
+                } else {
+                    mDialDivider.setVisibility(View.GONE);
+                }
+            }
+        }
+    }
+
     @Override
     public void onStart() {
         super.onStart();
@@ -534,6 +661,10 @@ public class DialpadFragment extends Fragment
 
         final View overflowButton = getView().findViewById(R.id.overflow_menu_on_dialpad);
         overflowButton.setOnClickListener(this);
+    }
+
+    public void refreshButton() {
+        setDialButtonVisibility(getResources());
     }
 
     private boolean isLayoutReady() {
@@ -842,6 +973,8 @@ public class DialpadFragment extends Fragment
         stopWatch.lap("bes");
 
         stopWatch.stopAndLog(TAG, 50);
+
+        setDialButtonVisibility(getResources());
     }
 
     @Override
@@ -1077,8 +1210,23 @@ public class DialpadFragment extends Fragment
                 return;
             }
             case R.id.dialButton: {
-                mHaptic.vibrate();  // Vibrate here too, just like we do for the regular keys
-                dialButtonPressed();
+                if (!MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
+                    mHaptic.vibrate();
+                    dialButtonPressed();
+                }
+                return;
+            }
+            case R.id.dialButton1:
+                if (MoreContactUtils.getButtonStyle(this.getActivity())) {
+                    mHaptic.vibrate();
+                    dialWidgetSwitched(MSimConstants.SUB1);
+                }
+                return;
+            case R.id.dialButton2: {
+                if (MoreContactUtils.getButtonStyle(this.getActivity())) {
+                    mHaptic.vibrate();
+                    dialWidgetSwitched(MSimConstants.SUB2);
+                }
                 return;
             }
             case R.id.digits: {
@@ -1331,6 +1479,41 @@ public class DialpadFragment extends Fragment
                 intent.putExtra(ADD_PARTICIPANT_KEY, mAddParticipant);
                 startActivity(intent);
                 hideAndClearDialpad();
+            }
+        }
+    }
+
+    public void dialWidgetSwitched(int subscription) {
+        if (isDigitsEmpty()) { // No number entered.
+            handleDialButtonClickWithEmptyDigits();
+        } else {
+            final String number = mDigits.getText().toString();
+
+            // "persist.radio.otaspdial" is a temporary hack needed for one
+            // carrier's automated
+            // test equipment.
+            // TODO: clean it up.
+            if (number != null
+                    && !TextUtils.isEmpty(mProhibitedPhoneNumberRegexp)
+                    && number.matches(mProhibitedPhoneNumberRegexp)
+                    && (SystemProperties.getInt("persist.radio.otaspdial", 0) != 1)) {
+                Log.i(TAG, "The phone number is prohibited explicitly by a rule.");
+                if (getActivity() != null) {
+                    DialogFragment dialogFragment = ErrorDialogFragment.newInstance(
+                            R.string.dialog_phone_call_prohibited_message);
+                    dialogFragment.show(getFragmentManager(), "phone_prohibited_dialog");
+                }
+
+                // Clear the digits just in case.
+                mDigits.getText().clear();
+            } else {
+                final Intent intent = CallUtil.getCallIntent(number,
+                        (getActivity() instanceof DialtactsActivity ?
+                                ((DialtactsActivity) getActivity()).getCallOrigin() : null));
+                intent.putExtra(MSimConstants.SUBSCRIPTION_KEY, subscription);
+                startActivity(intent);
+                mClearDigitsOnStop = true;
+                getActivity().finish();
             }
         }
     }
@@ -1793,7 +1976,16 @@ public class DialpadFragment extends Fragment
      */
     private void updateDialAndDeleteButtonEnabledState() {
         final boolean digitsNotEmpty = !isDigitsEmpty();
+        if (!MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
+            enableDialButton(digitsNotEmpty, mDialButton);
+        } else {
+            enableDialButton(digitsNotEmpty, mDialButton1);
+            enableDialButton(digitsNotEmpty, mDialButton2);
+        }
+        mDelete.setEnabled(digitsNotEmpty);
+    }
 
+    private void enableDialButton(boolean digitsNotEmpty, View mDialButton) {
         if (mDialButton != null) {
             // On CDMA phones, if we're already on a call, we *always*
             // enable the Dial button (since you can press it without
@@ -1943,7 +2135,7 @@ public class DialpadFragment extends Fragment
     private Intent newFlashIntent() {
         final Intent intent = CallUtil.getCallIntent(EMPTY_NUMBER);
         intent.putExtra(EXTRA_SEND_EMPTY_FLASH, true);
-        intent.putExtra(SUBSCRIPTION_KEY, mSubscription);
+        intent.putExtra(MSimConstants.SUBSCRIPTION_KEY, mSubscription);
         return intent;
     }
 
