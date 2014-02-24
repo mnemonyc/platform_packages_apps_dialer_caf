@@ -143,6 +143,9 @@ public class CallLogFragment extends ListFragment
     // Exactly same variable is in Fragment as a package private.
     private boolean mMenuVisible = true;
 
+    private String mQueryNumber = "";
+    private Boolean isInSearchMode = false;
+    private Boolean isPartSearch = true;
     // Default to all calls.
     protected int mCallTypeFilter = CallLogQueryHandler.CALL_TYPE_ALL;
     private static int mBeforeEnabledSimCount = 0;
@@ -689,6 +692,18 @@ public class CallLogFragment extends ListFragment
         }
     }
 
+    public boolean isInSearchMode() {
+        return isInSearchMode;
+    }
+
+    public void exitSearchMode() {
+        isInSearchMode = false;
+        isPartSearch = true;
+        mQueryNumber = "";
+        mCallLogQueryHandler.setNumber(mQueryNumber);
+        refreshData();
+    }
+
     /** Requests updates to the data to be shown. */
     private void refreshData() {
         // Prevent unnecessary refresh.
@@ -768,6 +783,26 @@ public class CallLogFragment extends ListFragment
         Intent serviceIntent = new Intent(getActivity(), CallLogNotificationsService.class);
         serviceIntent.setAction(CallLogNotificationsService.ACTION_UPDATE_NOTIFICATIONS);
         getActivity().startService(serviceIntent);
+    }
+
+    public void setSearchNumber(String data, boolean partSearch, boolean needRefresh) {
+        Log.d("TAG", "setSearchNumber:" + data + " isPartSearch:" + partSearch);
+        if (data == null)
+            return;
+
+        isInSearchMode = true;
+        mQueryNumber = data;
+        isPartSearch = partSearch;
+        if (mCallLogQueryHandler == null) {
+            mCallLogQueryHandler = new CallLogQueryHandler(getActivity().getContentResolver(), this);
+        }
+        mCallLogQueryHandler.setNumber(mQueryNumber);
+        mCallLogQueryHandler.setPartSearch(isPartSearch);
+        mRefreshDataRequired = true;
+        if (needRefresh) {
+            refreshData();
+        }
+
     }
 
     /**
