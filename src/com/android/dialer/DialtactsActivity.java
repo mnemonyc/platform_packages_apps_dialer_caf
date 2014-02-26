@@ -30,6 +30,7 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.app.SearchManager;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -142,6 +143,10 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
     private static final int TAB_INDEX_FAVORITES = 2;
 
     private static final int TAB_INDEX_COUNT = 3;
+
+    private boolean mNeedSearchNumber = false;
+    private String mCalllogSearchNumber = "";
+    private boolean mIsCalllogPartSearch = true;
 
     private static final int SUBACTIVITY_EXPORT_CONTACTS = 100;
     public SharedPreferences mPrefs;
@@ -693,16 +698,6 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
         for (int i = 0; i < TAB_INDEX_COUNT; i++) {
             sendFragmentVisibilityChange(i, i == currentPosition && !mInSearchUi);
         }
-        if(ACTION_SEARCH.equals(this.getIntent().getAction())){
-            Intent intent = new Intent(this, CallDetailActivity.class);
-            String id = "0";
-            if (this.getIntent().getData() != null) {
-                id = this.getIntent().getData().getQueryParameter("id");
-            }
-            intent.putExtra(CallDetailActivity.EXTRA_CALL_LOG_IDS, new long[]{Long.decode(id)});
-            startActivity(intent);
-            finish();
-        }
     }
 
     @Override
@@ -879,6 +874,19 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
             mDialpadFragment = (DialpadFragment) fragment;
         } else if (fragment instanceof CallLogFragment) {
             mCallLogFragment = (CallLogFragment) fragment;
+            Log.d("TAG", "onAttachFragment() CallLogFragment is " + (mCallLogFragment != null));
+            if (currentPosition == TAB_INDEX_CALL_LOG) {
+                mCallLogFragment.setMenuVisibility(true);
+
+                if (mNeedSearchNumber) {
+                    Log.d("TAG", "onAttachFragment() mNeedSearchNumber = true, "
+                            + mCalllogSearchNumber + ", " + mIsCalllogPartSearch);
+                    mCallLogFragment.setSearchNumber(mCalllogSearchNumber, mIsCalllogPartSearch,
+                            false);
+                    mNeedSearchNumber = false;
+                }
+
+            }
         } else if (fragment instanceof PhoneFavoriteFragment) {
             mPhoneFavoriteFragment = (PhoneFavoriteFragment) fragment;
             mPhoneFavoriteFragment.setListener(mPhoneFavoriteListener);
@@ -1011,6 +1019,8 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
             return;
         }
 
+        final boolean isSearchRequest = ACTION_SEARCH.equals(intent.getAction());
+
         // Remember the old manually selected tab index so that it can be restored if it is
         // overwritten by one of the programmatic tab selections
         final int savedTabIndex = mLastManuallySelectedFragment;
@@ -1018,7 +1028,7 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
         final int tabIndex;
         if (DialpadFragment.phoneIsInUse() || isDialIntent(intent)) {
             tabIndex = TAB_INDEX_DIALER;
-        } else if (recentCallsRequest) {
+        } else if (recentCallsRequest|| isSearchRequest) {
             tabIndex = TAB_INDEX_CALL_LOG;
         } else {
             tabIndex = mLastManuallySelectedFragment;
@@ -1031,6 +1041,36 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
         }
         mPageChangeListener.setCurrentPosition(tabIndex);
         sendFragmentVisibilityChange(tabIndex, true /* visible */ );
+        if (isSearchRequest) {
+            Log.d("TAG", "ACTION_SEARCH");
+            String query = intent.getStringExtra(SearchManager.QUERY);
+            Log.d("TAG", "ACTION_SEARCH query: " + query);
+            String data = intent.getStringExtra(SearchManager.EXTRA_DATA_KEY);
+            Log.d("TAG", "ACTION_SEARCH data: " + data);
+            String user_data = intent.getStringExtra(SearchManager.USER_QUERY);
+            Log.d("TAG", "ACTION_SEARCH user_data: " + user_data);
+            if (data != null) {
+                if (mCallLogFragment != null) {
+                    mCallLogFragment.setSearchNumber(data, false, true);
+                } else {
+                    Log.d("TAG", "mCallLogFragment == null");
+                    mNeedSearchNumber = true;
+                    mCalllogSearchNumber = data;
+                    mIsCalllogPartSearch = false;
+                }
+            } else if (query != null) {
+                if (mCallLogFragment != null) {
+                    mCallLogFragment.setSearchNumber(query, true, true);
+                } else {
+                    Log.d("TAG", "mCallLogFragment == null");
+                    mNeedSearchNumber = true;
+                    mCalllogSearchNumber = query;
+                    mIsCalllogPartSearch = true;
+                }
+            } else {
+                Log.d("TAG", "Ignore this action");
+            }
+        }
 
         // Restore to the previous manual selection
         mLastManuallySelectedFragment = savedTabIndex;
@@ -1125,9 +1165,16 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
 
     @Override
     public void onBackPressed() {
+
+        Tab tab = getActionBar().getSelectedTab();
         if (mInSearchUi) {
             // We should let the user go back to usual screens with tabs.
             exitSearchUi();
+
+        } else if (mCallLogFragment != null && mCallLogFragment.isInSearchMode() && tab != null
+                && tab.getPosition() == TAB_INDEX_CALL_LOG) {
+            mCallLogFragment.exitSearchMode();
+
         } else if (isTaskRoot()) {
             // Instead of stopping, simply push this to the back of the stack.
             // This is only done when running at the top of the stack;
