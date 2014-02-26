@@ -59,8 +59,14 @@ import com.android.dialer.R;
      */
     public void setPhoneCallDetails(CallLogListItemViews views, PhoneCallDetails details,
             boolean isHighlighted, boolean useCallAsPrimaryAction) {
+        setPhoneCallDetails(views, details, isHighlighted,
+                useCallAsPrimaryAction, null);
+    }
+
+    public void setPhoneCallDetails(CallLogListItemViews views, PhoneCallDetails details,
+            boolean isHighlighted, boolean useCallAsPrimaryAction, String filter) {
         mPhoneCallDetailsHelper.setPhoneCallDetails(views.phoneCallDetailsViews, details,
-                isHighlighted);
+                isHighlighted, filter);
         boolean canCall = PhoneNumberUtilsWrapper.canPlaceCallsTo(details.number,
                 details.numberPresentation);
         boolean canPlay = details.callTypes[0] == Calls.VOICEMAIL_TYPE;
