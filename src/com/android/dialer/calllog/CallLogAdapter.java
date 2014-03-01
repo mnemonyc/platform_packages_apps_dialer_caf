@@ -105,6 +105,8 @@ public class CallLogAdapter extends GroupingListAdapter
     private final CallFetcher mCallFetcher;
     private ViewTreeObserver mViewTreeObserver = null;
 
+    private String mFilterString;
+
     /**
      * A cache of the contact details for the phone numbers in the call log.
      * <p>
@@ -676,7 +678,7 @@ public class CallLogAdapter extends GroupingListAdapter
         // New items also use the highlighted version of the text.
         final boolean isHighlighted = isNew;
         mCallLogViewsHelper.setPhoneCallDetails(views, details, isHighlighted,
-                mUseCallAsPrimaryAction);
+                mUseCallAsPrimaryAction, mFilterString);
 
         if (photoId == 0 && photoUri != null) {
             setPhoto(views, photoUri, lookupUri);
@@ -982,5 +984,9 @@ public class CallLogAdapter extends GroupingListAdapter
             number = matchingNumber;
         }
         return number;
+    }
+
+    public void setQueryString(String filter) {
+        mFilterString = filter;
     }
 }
