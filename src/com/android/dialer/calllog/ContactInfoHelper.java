@@ -134,9 +134,16 @@ public class ContactInfoHelper {
                     info = ContactInfo.EMPTY;
                     id = -1;
                 }
-                    Uri contactUri = ContentUris.withAppendedId(Contacts.CONTENT_URI,id);
-                    Cursor mCursor = mContext.getContentResolver().query(contactUri,new String[] {
-                        RawContacts.ACCOUNT_TYPE, RawContacts.ACCOUNT_NAME}, null, null, null);
+                    Cursor mCursor = null;
+                    if( id != -1 ) {
+                       Uri contactUri = ContentUris.withAppendedId(Contacts.CONTENT_URI,id);
+                    try {
+                       mCursor = mContext.getContentResolver().query(contactUri,
+                          new String[] {
+                          RawContacts.ACCOUNT_TYPE, RawContacts.ACCOUNT_NAME}, null, null, null);
+                    } catch (Exception e){
+                    }
+                    }
                 if (mCursor != null && mCursor.getCount() >0 && mCursor.moveToFirst()) {
                     info.accountType = mCursor.getString(0);
                     info.accountName = mCursor.getString(1);
