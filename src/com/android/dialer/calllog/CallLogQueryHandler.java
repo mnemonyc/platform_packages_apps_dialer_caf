@@ -33,6 +33,7 @@ import android.os.Message;
 import android.provider.CallLog.Calls;
 import android.provider.VoicemailContract.Status;
 import android.util.Log;
+import android.os.SystemProperties;
 
 import com.android.common.io.MoreCloseables;
 import com.android.contacts.common.database.NoNullCursorAsyncQueryHandler;
@@ -157,6 +158,21 @@ public class CallLogQueryHandler extends NoNullCursorAsyncQueryHandler {
         fetchCalls(callType, 0, CallLogQueryHandler.CALL_SUB_ALL);
     }
 
+    public void fetchCalls(String filter) {
+        cancelFetch();
+        int requestId = newCallsRequest();
+        fetchCalls(QUERY_CALLLOG_TOKEN ,requestId,filter);
+    }
+
+    public void fetchCalls(int token,int requestId,String filter) {
+        String selection = "(" + Calls.NUMBER + " like '%" + filter
+                + "%'  or  " + Calls.CACHED_NAME + " like '%" + filter + "%' )";
+
+        startQuery(token, requestId, Calls.CONTENT_URI_WITH_VOICEMAIL,
+                CallLogQuery._PROJECTION, selection, null,
+                Calls.DEFAULT_SORT_ORDER);
+    }
+
     public void fetchVoicemailStatus() {
         startQuery(QUERY_VOICEMAIL_STATUS_TOKEN, null, Status.CONTENT_URI,
                 VoicemailStatusHelperImpl.PROJECTION, null, null, null);
@@ -189,12 +205,23 @@ public class CallLogQueryHandler extends NoNullCursorAsyncQueryHandler {
             }
             // Add a clause to fetch only items newer than the requested date
             selectionArgs.add(Integer.toString(callType));
-            if (callType == Calls.INCOMING_TYPE) {
-                selectionArgs.add(Integer.toString(CallTypeHelper.INCOMING_CSVT_TYPE));
-            } else if (callType == Calls.OUTGOING_TYPE) {
-                selectionArgs.add(Integer.toString(CallTypeHelper.OUTGOING_CSVT_TYPE));
-            } else if (callType == Calls.MISSED_TYPE) {
-                selectionArgs.add(Integer.toString(CallTypeHelper.MISSED_CSVT_TYPE));
+            if (isVTSupported()) {
+                if (callType == Calls.INCOMING_TYPE) {
+                    selectionArgs.add(Integer.toString(CallTypeHelper.INCOMING_CSVT_TYPE));
+                } else if (callType == Calls.OUTGOING_TYPE) {
+                    selectionArgs.add(Integer.toString(CallTypeHelper.OUTGOING_CSVT_TYPE));
+                } else if (callType == Calls.MISSED_TYPE) {
+                    selectionArgs.add(Integer.toString(CallTypeHelper.MISSED_CSVT_TYPE));
+                }
+            }
+            else {
+                if (callType == Calls.INCOMING_TYPE) {
+                    selectionArgs.add(Integer.toString(CallTypeHelper.INCOMING_IMS_TYPE));
+                } else if (callType == Calls.OUTGOING_TYPE) {
+                    selectionArgs.add(Integer.toString(CallTypeHelper.OUTGOING_IMS_TYPE));
+                } else if (callType == Calls.MISSED_TYPE) {
+                    selectionArgs.add(Integer.toString(CallTypeHelper.MISSED_IMS_TYPE));
+                }
             }
         }
 
@@ -338,5 +365,11 @@ public class CallLogQueryHandler extends NoNullCursorAsyncQueryHandler {
          * Called when {@link CallLogQueryHandler#fetchCalls(int)}complete.
          */
         void onCallsFetched(Cursor combinedCursor);
+    }
+
+    public boolean isVTSupported(){
+        return SystemProperties.getBoolean(
+                "persist.radio.csvt.enabled"
+       /* TelephonyProperties.PROPERTY_CSVT_ENABLED*/, false);
     }
 }
