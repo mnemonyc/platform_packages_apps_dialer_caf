@@ -46,6 +46,7 @@ public class AllContactsFragment extends PhoneNumberPickerFragment{
         setDarkTheme(false);
         setPhotoPosition(ContactListItemView.getDefaultPhotoPosition(true /* opposite */));
         setUseCallableUri(true);
+        setShowTwoButton(true);
     }
 
     @Override
