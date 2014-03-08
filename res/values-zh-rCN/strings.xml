@@ -50,6 +50,8 @@
     <string name="call_log_incoming_header" msgid="2787722299753674684">"只显示来电"</string>
     <string name="call_log_outgoing_header" msgid="761009180766735769">"只显示外拨电话"</string>
     <string name="call_log_missed_header" msgid="8017148056610855956">"只显示未接来电"</string>
+    <string name="call_duration_active">"通话时长:"</string>
+    <string name="call_duration_call_out">"呼叫时长:"</string>
     <string name="voicemail_status_voicemail_not_available" msgid="3021980206152528883">"无法连接到语音信箱服务器。"</string>
     <string name="voicemail_status_messages_waiting" msgid="7113421459602803605">"无法连接到语音信箱服务器。新的语音邮件正在等待接收。"</string>
     <string name="voicemail_status_configure_voicemail" msgid="3738537770636895689">"设置您的语音信箱。"</string>
@@ -165,6 +167,21 @@
     <string name="no_favorites" msgid="5212485868783382971">"您收藏的联系人和经常通话\n的联系人都会显示在这里。\n现在就开始与联系人通话吧。"</string>
     <string name="contact_tooltip" msgid="7817483485692282287">"点按图片可查看所有号码，按住图片可重新排序"</string>
     <string name="description_dismiss" msgid="2146276780562549643">"关闭"</string>
+    <!--add for csvt, Menu item label for call settings [CHAR LIMIT=30] -->
+    <string name="video_call">可视电话</string>
+    <string name="video_call_settings">可视电话设置</string>
+
+    <!-- add for csvt, Menu item used to initiate videocall from dialer -->
+    <string name="videocall">可视电话</string>
+
+    <!-- add for csvt, Menu item used to initiate videocall settings from dialer -->
+    <string name="videocall_settings">可视电话设置</string>
+
+    <!-- add for csvt, String describing the text for a  Video call number in quick contact.
+        Note: AccessibilityServices use this attribute to announce what the view represents.
+        This is especially valuable for views without textual representation like ImageView. -->
+    <string name="description_videocall">可视电话 <xliff:g id="name">%1$s</xliff:g></string>
+
     <!--  for speed dial -->
     <string name="set_speed_dial">快速拨号设置</string>
     <string name="dialog_title">提示</string>
