@@ -2309,4 +2309,10 @@ public class DialpadFragment extends Fragment
                 }).setNegativeButton(android.R.string.cancel,null)
                 .show();
     }
+
+    public void setNumber(String phoneNumber) {
+        if (!TextUtils.isEmpty(phoneNumber)) {
+            setFormattedDigits(phoneNumber, null);
+        }
+    }
 }
