@@ -45,6 +45,7 @@ public class CallLogListItemHelperTest extends AndroidTestCase {
     private static final String TEST_COUNTRY_ISO = "US";
     /** The geocoded location used in the tests. */
     private static final String TEST_GEOCODE = "United States";
+    private static final int TEST_DURATIONTYPE = 0;
 
     /** The object under test. */
     private CallLogListItemHelper mHelper;
@@ -185,7 +186,8 @@ public class CallLogListItemHelperTest extends AndroidTestCase {
         mHelper.setPhoneCallDetails(mViews,
                 new PhoneCallDetails(number, presentation, formattedNumber,
                         TEST_COUNTRY_ISO, TEST_GEOCODE,
-                        new int[]{ callType }, TEST_DATE, TEST_DURATION, TEST_SUBSCRIPTION),
+                        new int[]{ callType }, TEST_DATE, TEST_DURATION, TEST_SUBSCRIPTION,
+                        TEST_DURATIONTYPE),
                 false, false);
     }
 
@@ -195,7 +197,8 @@ public class CallLogListItemHelperTest extends AndroidTestCase {
         mHelper.setPhoneCallDetails(mViews,
                 new PhoneCallDetails(number, presentation, formattedNumber,
                         TEST_COUNTRY_ISO, TEST_GEOCODE,
-                        new int[]{ callType }, TEST_DATE, TEST_DURATION, TEST_SUBSCRIPTION),
+                        new int[]{ callType }, TEST_DATE, TEST_DURATION, TEST_SUBSCRIPTION,
+                        TEST_DURATIONTYPE),
                 false, true);
     }
 
@@ -204,7 +207,7 @@ public class CallLogListItemHelperTest extends AndroidTestCase {
         mHelper.setPhoneCallDetails(mViews,
                 new PhoneCallDetails(TEST_NUMBER, Calls.PRESENTATION_ALLOWED,
                         TEST_FORMATTED_NUMBER, TEST_COUNTRY_ISO, TEST_GEOCODE,
-                        types, TEST_DATE, TEST_DURATION, TEST_SUBSCRIPTION),
+                        types, TEST_DATE, TEST_DURATION, TEST_SUBSCRIPTION, TEST_DURATIONTYPE),
                 false, false);
     }
 
@@ -213,7 +216,7 @@ public class CallLogListItemHelperTest extends AndroidTestCase {
         mHelper.setPhoneCallDetails(mViews,
                 new PhoneCallDetails(TEST_NUMBER, Calls.PRESENTATION_ALLOWED,
                         TEST_FORMATTED_NUMBER, TEST_COUNTRY_ISO, TEST_GEOCODE,
-                        types, TEST_DATE, TEST_DURATION, TEST_SUBSCRIPTION),
+                        types, TEST_DATE, TEST_DURATION, TEST_SUBSCRIPTION, TEST_DURATIONTYPE),
                 false, true);
     }
 
@@ -222,7 +225,7 @@ public class CallLogListItemHelperTest extends AndroidTestCase {
         mHelper.setPhoneCallDetails(mViews,
                 new PhoneCallDetails(TEST_NUMBER, Calls.PRESENTATION_ALLOWED,
                         TEST_FORMATTED_NUMBER, TEST_COUNTRY_ISO, TEST_GEOCODE,
-                        types, TEST_DATE, TEST_DURATION, TEST_SUBSCRIPTION),
+                        types, TEST_DATE, TEST_DURATION, TEST_SUBSCRIPTION, TEST_DURATIONTYPE),
                 true, false);
     }
 
@@ -233,7 +236,7 @@ public class CallLogListItemHelperTest extends AndroidTestCase {
         mHelper.setPhoneCallDetails(mViews,
                 new PhoneCallDetails(TEST_NUMBER, Calls.PRESENTATION_ALLOWED,
                         TEST_FORMATTED_NUMBER, TEST_COUNTRY_ISO, TEST_GEOCODE,
-                        types, TEST_DATE, TEST_DURATION, TEST_SUBSCRIPTION),
+                        types, TEST_DATE, TEST_DURATION, TEST_SUBSCRIPTION, TEST_DURATIONTYPE),
                 true, true);
     }
 }
