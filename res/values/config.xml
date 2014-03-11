@@ -28,4 +28,5 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 <resources>
     <bool name="smartdialer_enabled">true</bool>
     <bool name="call_duration_enabled">true</bool>
+    <bool name="call_durationtype_enabled">false</bool>
 </resources>
