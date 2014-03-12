@@ -50,7 +50,8 @@ public class AllContactsActivity extends TransactionSafeActivity {
 
                 @Override
                 public void onCallNumberDirectly(String phoneNumber) {
-                final Intent intent = CallUtil.getCallIntent(phoneNumber, null);
+                    final Intent intent = new Intent(Intent.ACTION_DIAL, Uri.fromParts(
+                            CallUtil.SCHEME_TEL, phoneNumber, null));
                     startActivity(intent);
                 }
 
