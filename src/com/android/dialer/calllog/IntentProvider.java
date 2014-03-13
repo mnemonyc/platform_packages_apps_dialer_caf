@@ -47,8 +47,8 @@ public abstract class IntentProvider {
         return new IntentProvider() {
             @Override
             public Intent getIntent(Context context) {
-                Intent intent = CallUtil.getCallIntent(number);
-                intent.putExtra(MSimConstants.SUBSCRIPTION_KEY, subscription);
+                Intent intent = new Intent(Intent.ACTION_DIAL, Uri.fromParts(
+                        CallUtil.SCHEME_TEL, number, null));
                 return intent;
             }
         };

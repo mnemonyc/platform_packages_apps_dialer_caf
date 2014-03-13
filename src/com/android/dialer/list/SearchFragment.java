@@ -43,6 +43,7 @@ public class SearchFragment extends PhoneNumberPickerFragment {
         setDarkTheme(false);
         setPhotoPosition(ContactListItemView.getDefaultPhotoPosition(true /* opposite */));
         setUseCallableUri(true);
+        setShowDialpad(true);
 
         try {
             mActivityScrollListener = (OnListFragmentScrolledListener) activity;

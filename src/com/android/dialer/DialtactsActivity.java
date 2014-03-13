@@ -295,8 +295,8 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
 
                 @Override
                 public void onCallNumberDirectly(String phoneNumber) {
-                    Intent intent = CallUtil.getCallIntent(phoneNumber, getCallOrigin());
-                    startActivity(intent);
+                    mDialpadFragment.setNumber(phoneNumber);
+                    showDialpadFragment(true);
                     mClearSearchOnPause = true;
                 }
 
@@ -929,8 +929,8 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
 
         @Override
         public void onCallNumberDirectly(String phoneNumber) {
-            Intent intent = CallUtil.getCallIntent(phoneNumber, getCallOrigin());
-            startActivity(intent);
+            mDialpadFragment.setNumber(phoneNumber);
+            showDialpadFragment(true);
         }
     };
 
