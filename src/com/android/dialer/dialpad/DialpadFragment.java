@@ -565,6 +565,8 @@ public class DialpadFragment extends Fragment
                 mDialButtonSub.setVisibility(View.VISIBLE);
 
                 if (r.getBoolean(R.bool.config_show_onscreen_dial_button)) {
+                    mDialButton.setOnClickListener(this);
+                    mDialButton.setOnLongClickListener(this);
                     mDialButton1.setOnClickListener(this);
                     mDialButton1.setOnLongClickListener(this);
                     ((ImageView) mCallActionSubIcon1)
@@ -1232,10 +1234,8 @@ public class DialpadFragment extends Fragment
                 return;
             }
             case R.id.dialButton: {
-                if (!MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
-                    mHaptic.vibrate();
-                    dialButtonPressed();
-                }
+                mHaptic.vibrate();
+                dialButtonPressed();
                 return;
             }
             case R.id.dialButton1:
