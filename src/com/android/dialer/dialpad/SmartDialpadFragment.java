@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2013 - 2014, The Linux Foundation. All rights reserved.
  *
  * Not a Contribution.
  *
@@ -353,6 +353,10 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
         super.onDestroy();
         getActivity().unregisterReceiver(mAirplaneStateReceiver);
         getActivity().getContentResolver().unregisterContentObserver(mContactsObserver);
+        if (mCallLogAdapter != null) {
+            mCallLogAdapter.stopRequestProcessing();
+            mCallLogAdapter.changeCursor(null, null);
+        }
     }
 
     @Override
@@ -426,6 +430,7 @@ public class SmartDialpadFragment extends DialpadFragment implements View.OnClic
             return;
 
         if (mCallLogAdapter != null) {
+            mCallLogAdapter.stopRequestProcessing();
             mCallLogAdapter.changeCursor(null, null);
             setCallLogListViewHeight(mCallLogListView);
         }
