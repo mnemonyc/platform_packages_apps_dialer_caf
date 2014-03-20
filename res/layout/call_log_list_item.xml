@@ -47,7 +47,6 @@
             android:gravity="center_vertical"
             android:background="?android:attr/selectableItemBackground"
             android:focusable="true"
-            android:nextFocusRight="@+id/call_button_sub1"
             android:nextFocusLeft="@+id/quick_contact_photo"
         >
             <QuickContactBadge
@@ -132,18 +131,19 @@
                 android:layout_height="@dimen/call_log_call_action_size"
                 android:background="?android:attr/dividerVertical"
                 android:layout_gravity="center_vertical"
+                android:visibility="gone"
             />
             <RelativeLayout
                 android:id="@+id/layout_sub1"
                 android:layout_width="@dimen/dsds_btnstyle_layout_width"
                 android:layout_height="@dimen/dsds_btnstyle_layout_height"
-                android:layout_gravity="center" >
+                android:layout_gravity="center"
+                android:visibility="gone" >
                 <ImageButton
                     android:id="@+id/call_button_sub1"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="?android:attr/selectableItemBackground"
-                    android:nextFocusLeft="@id/primary_action_view"
                 />
                 <ImageView
                     android:id="@+id/call_icon_sub1"
@@ -160,18 +160,19 @@
                 android:layout_height="@dimen/call_log_call_action_size"
                 android:background="?android:attr/dividerVertical"
                 android:layout_gravity="center_vertical"
+                android:visibility="gone"
             />
             <RelativeLayout
                 android:id="@+id/layout_sub2"
                 android:layout_width="@dimen/dsds_btnstyle_layout_width"
                 android:layout_height="@dimen/dsds_btnstyle_layout_height"
-                android:layout_gravity="center" >
+                android:layout_gravity="center"
+                android:visibility="gone" >
                 <ImageButton
                     android:id="@+id/call_button_sub2"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="?android:attr/selectableItemBackground"
-                    android:nextFocusLeft="@id/primary_action_view"
                 />
                 <ImageView
                     android:id="@+id/call_icon_sub2"

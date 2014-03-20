@@ -28,6 +28,7 @@ import android.util.Log;
 import com.android.contacts.common.CallUtil;
 import com.android.contacts.common.activity.TransactionSafeActivity;
 import com.android.contacts.common.list.OnPhoneNumberPickerActionListener;
+import com.android.contacts.common.MoreContactUtils;
 import com.android.dialer.DialtactsActivity;
 import com.android.dialer.R;
 import com.android.dialer.interactions.PhoneNumberInteraction;
@@ -50,8 +51,13 @@ public class AllContactsActivity extends TransactionSafeActivity {
 
                 @Override
                 public void onCallNumberDirectly(String phoneNumber) {
-                    final Intent intent = new Intent(Intent.ACTION_DIAL, Uri.fromParts(
-                            CallUtil.SCHEME_TEL, phoneNumber, null));
+                    Intent intent;
+                    if (MoreContactUtils.getEnabledSimCount() > 1) {
+                        intent = new Intent(Intent.ACTION_DIAL,
+                        Uri.fromParts(CallUtil.SCHEME_TEL, phoneNumber, null));
+                    } else {
+                        intent = CallUtil.getCallIntent(phoneNumber, null);
+                    }
                     startActivity(intent);
                 }
 
