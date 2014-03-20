@@ -68,6 +68,7 @@ import com.android.contacts.common.activity.TransactionSafeActivity;
 import com.android.contacts.common.dialog.ClearFrequentsDialog;
 import com.android.contacts.common.interactions.ImportExportDialogFragment;
 import com.android.contacts.common.interactions.ImportExportDialogFragment.ExportToSimThread;
+import com.android.contacts.common.MoreContactUtils;
 import com.android.contacts.common.SimContactsConstants;
 import com.android.contacts.common.list.OnPhoneNumberPickerActionListener;
 import com.android.contacts.common.vcard.ExportVCardActivity;
@@ -295,8 +296,14 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
 
                 @Override
                 public void onCallNumberDirectly(String phoneNumber) {
-                    mDialpadFragment.setNumber(phoneNumber);
-                    showDialpadFragment(true);
+                    if (MoreContactUtils.getEnabledSimCount() > 1) {
+                        mDialpadFragment.setNumber(phoneNumber);
+                        showDialpadFragment(true);
+                    } else {
+                        Intent intent = CallUtil.getCallIntent(phoneNumber,
+                        getCallOrigin());
+                        startActivity(intent);
+                    }
                     mClearSearchOnPause = true;
                 }
 
@@ -929,8 +936,14 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
 
         @Override
         public void onCallNumberDirectly(String phoneNumber) {
-            mDialpadFragment.setNumber(phoneNumber);
-            showDialpadFragment(true);
+            if (MoreContactUtils.getEnabledSimCount() > 1) {
+                mDialpadFragment.setNumber(phoneNumber);
+                showDialpadFragment(true);
+            } else {
+                Intent intent = CallUtil.getCallIntent(phoneNumber,
+                getCallOrigin());
+                startActivity(intent);
+            }
         }
     };
 

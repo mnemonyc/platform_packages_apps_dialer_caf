@@ -136,8 +136,6 @@ public class CallLogFragment extends ListFragment
     // Default to all calls.
     protected int mCallTypeFilter = CallLogQueryHandler.CALL_TYPE_ALL;
 
-    private static int mBeforeEnabledSimCount = 0;
-
     // Log limit - if no limit is specified, then the default in {@link CallLogQueryHandler}
     // will be used.
     private int mLogLimit = -1;
@@ -429,11 +427,6 @@ public class CallLogFragment extends ListFragment
     @Override
     public void onResume() {
         super.onResume();
-        int enabledSimCount = MoreContactUtils.getEnabledSimCount();
-        if (enabledSimCount != mBeforeEnabledSimCount) {
-            mRefreshDataRequired = true;
-            mBeforeEnabledSimCount = enabledSimCount;
-        }
         refreshData();
     }
 
@@ -593,10 +586,6 @@ public class CallLogFragment extends ListFragment
             updateOnEntry();
             mRefreshDataRequired = false;
         }
-    }
-
-    public void refreshButton() {
-        mAdapter.notifyDataSetChanged();
     }
 
     /** Updates call data and notification state while leaving the call log tab. */
