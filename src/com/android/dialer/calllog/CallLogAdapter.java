@@ -39,14 +39,12 @@ import android.widget.TextView;
 
 import com.android.common.widget.GroupingListAdapter;
 import com.android.contacts.common.ContactPhotoManager;
-import com.android.contacts.common.MoreContactUtils;
 import com.android.contacts.common.util.UriUtils;
 import com.android.dialer.DialtactsActivity;
 import com.android.dialer.PhoneCallDetails;
 import com.android.dialer.PhoneCallDetailsHelper;
 import com.android.dialer.R;
 import com.android.dialer.util.ExpirableCache;
-import com.android.internal.telephony.MSimConstants;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 
@@ -210,17 +208,6 @@ public class CallLogAdapter extends GroupingListAdapter
         @Override
         public void onClick(View view) {
             startActivityForAction(view);
-        }
-    };
-
-    /** Listener for the secondary action in the list, either call or play. */
-    private final View.OnClickListener mSecondaryActionListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            IntentProvider intentProvider = (IntentProvider) view.getTag();
-            if (intentProvider != null) {
-                mContext.startActivity(intentProvider.getIntent(mContext));
-            }
         }
     };
 
@@ -536,8 +523,6 @@ public class CallLogAdapter extends GroupingListAdapter
         // Get the views to bind to.
         CallLogListItemViews views = CallLogListItemViews.fromView(view);
         views.primaryActionView.setOnClickListener(mActionListener);
-        views.callButtonSub1.setOnClickListener(mSecondaryActionListener);
-        views.callButtonSub2.setOnClickListener(mSecondaryActionListener);
         views.primaryActionView.setOnLongClickListener(mPrimaryActionLongClickListener);
         view.setTag(views);
     }
@@ -579,42 +564,6 @@ public class CallLogAdapter extends GroupingListAdapter
                     subscription));
         } else {
             views.primaryActionView.setTag(null);
-        }
-
-        // Store away the voicemail information so we can play it directly.
-        if (callType == Calls.VOICEMAIL_TYPE) {
-            String voicemailUri = c.getString(CallLogQuery.VOICEMAIL_URI);
-            final long rowId = c.getLong(CallLogQuery.ID);
-
-            views.callButtonSub1.setTag(IntentProvider.getPlayVoicemailIntentProvider(rowId,
-                    voicemailUri, MSimConstants.SUB1));
-            views.callButtonSub2.setTag(IntentProvider.getPlayVoicemailIntentProvider(rowId,
-                    voicemailUri, MSimConstants.SUB2));
-            MoreContactUtils.controlCallIconDisplay(mContext, views.layoutSub1,
-                    views.callButtonSub1, views.callIconSub1, views.layoutSub2,
-                    views.callButtonSub2, views.callIconSub2,
-                    views.dividerView_sub1, views.dividerView);
-
-            // For voicemail, needn't show the call sub icon, set it as gone.
-            views.callIconSub1.setVisibility(View.GONE);
-            views.callIconSub2.setVisibility(View.GONE);
-
-        } else if (!TextUtils.isEmpty(number)) {
-            // Store away the number so we can call it directly if you click on the call icon.
-            views.callButtonSub1.setImageResource(R.drawable.ic_ab_dialer_holo_light);
-            views.callButtonSub1.setTag(IntentProvider.getReturnCallIntentProvider(number,
-                    MSimConstants.SUB1));
-            views.callButtonSub2.setImageResource(R.drawable.ic_ab_dialer_holo_light);
-            views.callButtonSub2.setTag(IntentProvider.getReturnCallIntentProvider(number,
-                    MSimConstants.SUB2));
-            MoreContactUtils.controlCallIconDisplay(mContext, views.layoutSub1,
-                    views.callButtonSub1, views.callIconSub1, views.layoutSub2,
-                    views.callButtonSub2, views.callIconSub2,
-                    views.dividerView_sub1, views.dividerView);
-        } else {
-            // No action enabled.
-            views.callButtonSub1.setTag(null);
-            views.callButtonSub2.setTag(null);
         }
 
         // Lookup contacts with this number
