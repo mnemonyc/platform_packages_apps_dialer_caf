@@ -16,6 +16,7 @@
 
 package com.android.dialer.calllog;
 
+import android.accounts.Account;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -208,15 +209,6 @@ public class CallLogAdapter extends GroupingListAdapter
         @Override
         public void onClick(View view) {
             startActivityForAction(view);
-        }
-    };
-
-    private final View.OnLongClickListener mPrimaryActionLongClickListener
-            = new View.OnLongClickListener() {
-        @Override
-        public boolean onLongClick(View v) {
-            // Override this method to show context menu
-            return false;
         }
     };
 
@@ -523,7 +515,6 @@ public class CallLogAdapter extends GroupingListAdapter
         // Get the views to bind to.
         CallLogListItemViews views = CallLogListItemViews.fromView(view);
         views.primaryActionView.setOnClickListener(mActionListener);
-        views.primaryActionView.setOnLongClickListener(mPrimaryActionLongClickListener);
         view.setTag(views);
     }
 
@@ -613,6 +604,7 @@ public class CallLogAdapter extends GroupingListAdapter
         final int[] callTypes = getCallTypes(c, count);
         final String geocode = c.getString(CallLogQuery.GEOCODED_LOCATION);
         final PhoneCallDetails details;
+        Account mAccount;
 
         if (TextUtils.isEmpty(name)) {
             details = new PhoneCallDetails(number, numberPresentation,
@@ -630,10 +622,15 @@ public class CallLogAdapter extends GroupingListAdapter
         mCallLogViewsHelper.setPhoneCallDetails(views, details, isHighlighted,
                 mUseCallAsPrimaryAction, mFilterString);
 
-        if (photoId == 0 && photoUri != null) {
-            setPhoto(views, photoUri, lookupUri);
+        if(info.accountName!=null && info.accountType !=null) {
+            mAccount =new Account(info.accountName,info.accountType);
         } else {
-            setPhoto(views, photoId, lookupUri);
+            mAccount = null;
+        }
+        if (photoId == 0 && photoUri != null) {
+            setPhoto(views, photoUri, lookupUri, mAccount);
+        } else {
+            setPhoto(views, photoId, lookupUri, mAccount);
         }
 
         views.quickContactView.setContentDescription(views.phoneCallDetailsViews.nameView.
@@ -863,14 +860,17 @@ public class CallLogAdapter extends GroupingListAdapter
         return callTypes;
     }
 
-    private void setPhoto(CallLogListItemViews views, long photoId, Uri contactUri) {
+    private void setPhoto(CallLogListItemViews views, long photoId,
+            Uri contactUri, Account mAccount) {
         views.quickContactView.assignContactUri(contactUri);
-        mContactPhotoManager.loadThumbnail(views.quickContactView, photoId, null, false /* darkTheme */);
+        mContactPhotoManager.loadThumbnail(views.quickContactView, photoId,
+                mAccount, false /* darkTheme */);
     }
 
-    private void setPhoto(CallLogListItemViews views, Uri photoUri, Uri contactUri) {
+    private void setPhoto(CallLogListItemViews views, Uri photoUri,
+            Uri contactUri, Account mAccount) {
         views.quickContactView.assignContactUri(contactUri);
-        mContactPhotoManager.loadDirectoryPhoto(views.quickContactView, photoUri, null,
+        mContactPhotoManager.loadDirectoryPhoto(views.quickContactView, photoUri, mAccount,
                 false /* darkTheme */);
     }
 
