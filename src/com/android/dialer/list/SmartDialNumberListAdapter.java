@@ -43,9 +43,11 @@ public class SmartDialNumberListAdapter extends DialerPhoneNumberListAdapter {
     private static final boolean DEBUG = false;
 
     private SmartDialNameMatcher mNameMatcher;
+    private Context mContext;
 
     public SmartDialNumberListAdapter(Context context) {
         super(context);
+        mContext = context;
         if (DEBUG) {
             Log.v(TAG, "Constructing List Adapter");
         }
@@ -60,12 +62,12 @@ public class SmartDialNumberListAdapter extends DialerPhoneNumberListAdapter {
         }
 
         if (getQueryString() == null) {
-            mNameMatcher = new SmartDialNameMatcher("", SmartDialPrefix.getMap());
+            mNameMatcher = new SmartDialNameMatcher("", SmartDialPrefix.getMap(), mContext);
             loader.configureQuery("");
         } else {
             loader.configureQuery(getQueryString());
             mNameMatcher = new SmartDialNameMatcher(PhoneNumberUtils.normalizeNumber(
-                    getQueryString()), SmartDialPrefix.getMap());
+                    getQueryString()), SmartDialPrefix.getMap(), mContext);
         }
     }
 
