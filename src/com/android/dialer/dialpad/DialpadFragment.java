@@ -856,8 +856,9 @@ public class DialpadFragment extends Fragment
     }
 
     private boolean isCallOnImsEnabled() {
-        return (SystemProperties.getBoolean(
-                TelephonyProperties.CALLS_ON_IMS_ENABLED_PROPERTY, false));
+        // we need not to check TelephonyProperties.CALLS_ON_IMS_ENABLED_PROPERTY here,
+        // just return false.
+        return false;
     }
 
     public void setStartedFromNewIntent(boolean value) {
