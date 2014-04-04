@@ -897,11 +897,18 @@ public class DialpadFragment extends Fragment
                 R.string.dialpad_8_letters, R.string.dialpad_9_letters,
                 R.string.dialpad_star_letters, R.string.dialpad_pound_letters};
 
+        final int[] labelIds = new int[] {R.string.dialpad_0_labels, R.string.dialpad_1_labels,
+                R.string.dialpad_2_labels, R.string.dialpad_3_labels, R.string.dialpad_4_labels,
+                R.string.dialpad_5_labels, R.string.dialpad_6_labels, R.string.dialpad_7_labels,
+                R.string.dialpad_8_labels, R.string.dialpad_9_labels,
+                R.string.dialpad_star_labels, R.string.dialpad_pound_labels};
+
         final Resources resources = getResources();
 
         DialpadKeyButton dialpadKey;
         TextView numberView;
         TextView lettersView;
+        TextView labelsView;
 
         for (int i = 0; i < buttonIds.length; i++) {
             dialpadKey = (DialpadKeyButton) fragmentView.findViewById(buttonIds[i]);
@@ -914,6 +921,8 @@ public class DialpadFragment extends Fragment
             }
             numberView = (TextView) dialpadKey.findViewById(R.id.dialpad_key_number);
             lettersView = (TextView) dialpadKey.findViewById(R.id.dialpad_key_letters);
+            labelsView = (TextView) dialpadKey.findViewById(R.id.dialpad_key_labels);
+
             final String numberString = resources.getString(numberIds[i]);
             numberView.setText(numberString);
             dialpadKey.setContentDescription(numberString);
@@ -923,6 +932,10 @@ public class DialpadFragment extends Fragment
                     lettersView.setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(
                             R.dimen.dialpad_key_plus_size));
                 }
+            }
+
+            if(labelsView != null) {
+                labelsView.setText(resources.getString(labelIds[i]));
             }
         }
 
