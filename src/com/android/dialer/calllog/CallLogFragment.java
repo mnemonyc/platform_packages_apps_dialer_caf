@@ -287,7 +287,7 @@ public class CallLogFragment extends ListFragment
 
         menu.setHeaderTitle(mNumber);
 
-        if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB1)) {
+        if (MoreContactUtils.isMultiSimEnable(mContext, MSimConstants.SUB1)) {
             String sub1Name = MoreContactUtils.getSimSpnName(MSimConstants.SUB1);
             ipCallBySlot1MenuItem.setTitle(getActivity().getString(
                     com.android.contacts.common.R.string.ip_call_by_slot, sub1Name));
@@ -295,7 +295,7 @@ public class CallLogFragment extends ListFragment
         } else {
             ipCallBySlot1MenuItem.setVisible(false);
         }
-        if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB2)) {
+        if (MoreContactUtils.isMultiSimEnable(mContext, MSimConstants.SUB2)) {
             String sub2Name = MoreContactUtils.getSimSpnName(MSimConstants.SUB2);
             ipCallBySlot2MenuItem.setTitle(getActivity().getString(
                     com.android.contacts.common.R.string.ip_call_by_slot, sub2Name));
