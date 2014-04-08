@@ -624,7 +624,7 @@ public class DialpadFragment extends Fragment
                 }
                 if (MSimTelephonyManager.getDefault().getMultiSimConfiguration()
                         == MSimTelephonyManager.MultiSimVariants.DSDS) {
-                    if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB1)
+                    if (MoreContactUtils.isMultiSimEnable(mContext, MSimConstants.SUB1)
                             && (MSimTelephonyManager.getDefault().getCallState(MSimConstants.SUB2)
                                     == TelephonyManager.CALL_STATE_IDLE)) {
                        mDialButtonSub1.setVisibility(View.VISIBLE);
@@ -632,7 +632,7 @@ public class DialpadFragment extends Fragment
                         mDialButtonSub1.setVisibility(View.GONE);
                     }
 
-                    if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB2)
+                    if (MoreContactUtils.isMultiSimEnable(mContext, MSimConstants.SUB2)
                             && (MSimTelephonyManager.getDefault().getCallState(MSimConstants.SUB1)
                                     == TelephonyManager.CALL_STATE_IDLE)) {
                         mDialButtonSub2.setVisibility(View.VISIBLE);
@@ -640,18 +640,19 @@ public class DialpadFragment extends Fragment
                         mDialButtonSub2.setVisibility(View.GONE);
                     }
                 } else {
-                    if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB1)) {
+                    if (MoreContactUtils.isMultiSimEnable(mContext, MSimConstants.SUB1)) {
                        mDialButtonSub1.setVisibility(View.VISIBLE);
                     } else {
                         mDialButtonSub1.setVisibility(View.GONE);
                     }
 
-                    if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB2)) {
+                    if (MoreContactUtils.isMultiSimEnable(mContext, MSimConstants.SUB2)) {
                         mDialButtonSub2.setVisibility(View.VISIBLE);
                     } else {
                         mDialButtonSub2.setVisibility(View.GONE);
                     }
                 }
+
                 if (mDialButtonSub1.getVisibility() == View.GONE
                         && mDialButtonSub2.getVisibility() == View.GONE) {
                     mDialButton.setVisibility(View.VISIBLE);
@@ -856,8 +857,9 @@ public class DialpadFragment extends Fragment
     }
 
     private boolean isCallOnImsEnabled() {
-        return (SystemProperties.getBoolean(
-                TelephonyProperties.CALLS_ON_IMS_ENABLED_PROPERTY, false));
+        // we need not to check TelephonyProperties.CALLS_ON_IMS_ENABLED_PROPERTY here,
+        // just return false.
+        return false;
     }
 
     public void setStartedFromNewIntent(boolean value) {
@@ -1092,7 +1094,7 @@ public class DialpadFragment extends Fragment
             ipCallBySlot1MenuItem.setVisible(false);
             ipCallBySlot2MenuItem.setVisible(false);
         } else {
-            if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB1)) {
+            if (MoreContactUtils.isMultiSimEnable(mContext, MSimConstants.SUB1)) {
                 String sub1Name = MoreContactUtils.getSimSpnName(MSimConstants.SUB1);
                 ipCallBySlot1MenuItem.setTitle(getActivity().getString(
                         com.android.contacts.common.R.string.ip_call_by_slot, sub1Name));
@@ -1100,7 +1102,7 @@ public class DialpadFragment extends Fragment
             } else {
                 ipCallBySlot1MenuItem.setVisible(false);
             }
-            if (MoreContactUtils.isMultiSimEnable(MSimConstants.SUB2)) {
+            if (MoreContactUtils.isMultiSimEnable(mContext, MSimConstants.SUB2)) {
                 String sub2Name = MoreContactUtils.getSimSpnName(MSimConstants.SUB2);
                 ipCallBySlot2MenuItem.setTitle(getActivity().getString(
                         com.android.contacts.common.R.string.ip_call_by_slot, sub2Name));
