@@ -33,6 +33,8 @@ public class ContactInfo {
     public String number;
     public String formattedNumber;
     public String normalizedNumber;
+    public String accountType;
+    public String accountName;
     /** The photo for the contact, if available. */
     public long photoId;
     /** The high-res photo for the contact, if available. */
