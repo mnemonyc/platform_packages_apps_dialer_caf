@@ -267,7 +267,7 @@ public class CallLogActivity extends Activity {
             startActivity(intent);
             return true;
         case R.id.delete_all:
-            ClearCallLogDialog.show(getFragmentManager());
+            onDelCallLog();
             return true;
         case R.id.search_calllog:
             enterSearchUi();
@@ -275,6 +275,12 @@ public class CallLogActivity extends Activity {
 
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void onDelCallLog() {
+        Intent intent = new Intent(
+                "com.android.contacts.action.MULTI_PICK_CALL");
+        startActivity(intent);
     }
 
     private void enterSearchUi() {
