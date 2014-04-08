@@ -20,6 +20,7 @@ import android.app.Fragment;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.telephony.PhoneNumberUtils;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.TypefaceSpan;
@@ -53,8 +54,13 @@ public class AllContactsActivity extends TransactionSafeActivity {
                 public void onCallNumberDirectly(String phoneNumber) {
                     Intent intent;
                     if (MoreContactUtils.getEnabledSimCount() > 1) {
-                        intent = new Intent(Intent.ACTION_DIAL,
-                        Uri.fromParts(CallUtil.SCHEME_TEL, phoneNumber, null));
+                        if (PhoneNumberUtils.isUriNumber(phoneNumber)) {
+                            intent = new Intent(Intent.ACTION_DIAL,
+                                    Uri.fromParts(CallUtil.SCHEME_SIP, phoneNumber, null));
+                        } else {
+                            intent = new Intent(Intent.ACTION_DIAL,
+                                    Uri.fromParts(CallUtil.SCHEME_TEL, phoneNumber, null));
+                        }
                     } else {
                         intent = CallUtil.getCallIntent(phoneNumber, null);
                     }
