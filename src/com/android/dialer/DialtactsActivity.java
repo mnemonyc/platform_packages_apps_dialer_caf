@@ -423,8 +423,11 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
 
         mDialerDatabaseHelper = DatabaseHelperManager.getDatabaseHelper(this);
         SmartDialPrefix.initializeNanpSettings(this);
+        final IntentFilter intentFilter = new IntentFilter(
+                Intent.ACTION_AIRPLANE_MODE_CHANGED);
         final IntentFilter exportCompleteFilter = new IntentFilter(SimContactsConstants
                 .INTENT_EXPORT_COMPLETE);
+        registerReceiver(mReceiver, intentFilter);
         registerReceiver(mExportToSimCompleteListener, exportCompleteFilter);
     }
 
@@ -457,6 +460,7 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
     @Override
     public void onDestroy() {
         super.onDestroy();
+        unregisterReceiver(mReceiver);
         unregisterReceiver(mExportToSimCompleteListener);
     }
 
@@ -1181,4 +1185,17 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
         intent.putExtra(Intents.Insert.NAME, text);
         return intent;
     }
+
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (Intent.ACTION_AIRPLANE_MODE_CHANGED.equals(action)) {
+                if (null != mDialpadFragment) {
+                    mDialpadFragment.refreshButton();
+                }
+            }
+        }
+    };
+
 }
