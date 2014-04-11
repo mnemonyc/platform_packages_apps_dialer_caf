@@ -738,14 +738,21 @@ public class DialpadFragment extends Fragment
         if (Intent.ACTION_DIAL.equals(action) || Intent.ACTION_VIEW.equals(action)) {
             Uri uri = intent.getData();
             if (uri != null) {
-                if (CallUtil.SCHEME_TEL.equals(uri.getScheme())) {
+                if (CallUtil.SCHEME_TEL.equals(uri.getScheme())
+                        || CallUtil.SCHEME_SIP.equals(uri.getScheme())) {
                     // Put the requested number into the input area
                     String data = uri.getSchemeSpecificPart();
                     // Remember it is filled via Intent.
                     mDigitsFilledByIntent = true;
-                    final String converted = PhoneNumberUtils.convertKeypadLettersToDigits(
-                            PhoneNumberUtils.replaceUnicodeDigits(data));
-                    setFormattedDigits(converted, null);
+                    String newData;
+                    if (CallUtil.SCHEME_TEL.equals(uri.getScheme())) {
+                        newData = PhoneNumberUtils.convertKeypadLettersToDigits(
+                                PhoneNumberUtils.replaceUnicodeDigits(data));
+                    } else {
+                        // Do not convert, when it is a SIP number.
+                        newData = data;
+                    }
+                    setFormattedDigits(newData, null);
                     return true;
                 } else {
                     String type = intent.getType();
@@ -870,16 +877,26 @@ public class DialpadFragment extends Fragment
      * Sets formatted digits to digits field.
      */
     private void setFormattedDigits(String data, String normalizedNumber) {
-        // strip the non-dialable numbers out of the data string.
-        String dialString = PhoneNumberUtils.extractNetworkPortion(data);
-        dialString =
-                PhoneNumberUtils.formatNumber(dialString, normalizedNumber, mCurrentCountryIso);
+        String dialString;
+        boolean isSipNumber = PhoneNumberUtils.isUriNumber(data);
+        if (isSipNumber) {
+            dialString = data;
+        } else {
+            // strip the non-dialable numbers out of the data string.
+            dialString = PhoneNumberUtils.extractNetworkPortion(data);
+            dialString =
+                    PhoneNumberUtils.formatNumber(dialString, normalizedNumber, mCurrentCountryIso);
+        }
         if (!TextUtils.isEmpty(dialString)) {
-            Editable digits = mDigits.getText();
-            digits.replace(0, digits.length(), dialString);
-            // for some reason this isn't getting called in the digits.replace call above..
-            // but in any case, this will make sure the background drawable looks right
-            afterTextChanged(digits);
+            if (isSipNumber) {
+                mDigits.setText(dialString);
+            } else {
+                Editable digits = mDigits.getText();
+                digits.replace(0, digits.length(), dialString);
+                // for some reason this isn't getting called in the digits.replace call above..
+                // but in any case, this will make sure the background drawable looks right
+                afterTextChanged(digits);
+            }
         }
     }
 
@@ -1095,7 +1112,8 @@ public class DialpadFragment extends Fragment
             ipCallBySlot2MenuItem.setVisible(false);
         } else {
             if (MoreContactUtils.isMultiSimEnable(mContext, MSimConstants.SUB1)) {
-                String sub1Name = MoreContactUtils.getSimSpnName(MSimConstants.SUB1);
+                String sub1Name = MoreContactUtils.getMultiSimAliasesName(
+                        mContext, MSimConstants.SUB1);
                 ipCallBySlot1MenuItem.setTitle(getActivity().getString(
                         com.android.contacts.common.R.string.ip_call_by_slot, sub1Name));
                 ipCallBySlot1MenuItem.setVisible(true);
@@ -1103,7 +1121,8 @@ public class DialpadFragment extends Fragment
                 ipCallBySlot1MenuItem.setVisible(false);
             }
             if (MoreContactUtils.isMultiSimEnable(mContext, MSimConstants.SUB2)) {
-                String sub2Name = MoreContactUtils.getSimSpnName(MSimConstants.SUB2);
+                String sub2Name = MoreContactUtils.getMultiSimAliasesName(
+                        mContext, MSimConstants.SUB2);
                 ipCallBySlot2MenuItem.setTitle(getActivity().getString(
                         com.android.contacts.common.R.string.ip_call_by_slot, sub2Name));
                 ipCallBySlot2MenuItem.setVisible(true);
@@ -2102,6 +2121,15 @@ public class DialpadFragment extends Fragment
             }
         }
         mDelete.setEnabled(digitsNotEmpty);
+        setDeleteButtonVisibility(digitsNotEmpty);
+    }
+
+    private void setDeleteButtonVisibility(boolean visibility) {
+        if (visibility) {
+            mDelete.setVisibility(View.VISIBLE);
+        } else {
+            mDelete.setVisibility(View.GONE);
+        }
     }
 
     /**
