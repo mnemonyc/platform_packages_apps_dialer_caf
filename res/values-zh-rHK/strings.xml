@@ -175,24 +175,4 @@
         Note: AccessibilityServices use this attribute to announce what the view represents.
         This is especially valuable for views without textual representation like ImageView. -->
     <string name="description_videocall">視訊通話 <xliff:g id="name">%1$s</xliff:g></string>
-        <!--  Do not translate. -->
-    <string name="dialpad_0_letters">+</string>
-    <!--  Do not translate. -->
-    <string name="dialpad_1_letters">一</string>
-    <!--  Do not translate. -->
-    <string name="dialpad_2_letters">丨</string>
-    <!--  Do not translate. -->
-    <string name="dialpad_3_letters">丿</string>
-    <!--  Do not translate. -->
-    <string name="dialpad_4_letters">丶</string>
-    <!--  Do not translate. -->
-    <string name="dialpad_5_letters">乛</string>
-    <!--  Do not translate. -->
-    <string name="dialpad_6_letters"></string>
-    <!--  Do not translate. -->
-    <string name="dialpad_7_letters"></string>
-    <!--  Do not translate. -->
-    <string name="dialpad_8_letters"></string>
-    <!--  Do not translate. -->
-    <string name="dialpad_9_letters"></string>
 </resources>

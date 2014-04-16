@@ -77,6 +77,7 @@ import com.android.dialer.voicemail.VoicemailStatusHelper;
 import com.android.dialer.voicemail.VoicemailStatusHelper.StatusMessage;
 import com.android.dialer.voicemail.VoicemailStatusHelperImpl;
 import com.android.internal.telephony.MSimConstants;
+import com.android.internal.telephony.PhoneConstants;
 
 import java.util.List;
 
@@ -153,6 +154,10 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
     private boolean mHasRemoveFromCallLogOption;
     /** Whether we should show "Video Call" in the options menu. */
     private boolean mHasVideoCallOption;
+    /** Whether we should show "Ip Call by SIM1" in the options menu. */
+    private boolean mHasSubOneIpCallOption;
+    /** Whether we should show "Ip Call by SIM2" in the options menu. */
+    private boolean mHasSubTwoIpCallOption;
 
     private ProximitySensorManager mProximitySensorManager;
     private final ProximitySensorListener mProximitySensorListener = new ProximitySensorListener();
@@ -654,6 +659,16 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
                         canPlaceCallsTo && !isSipNumber && !isVoicemailNumber;
                 mHasTrashOption = hasVoicemail();
                 mHasRemoveFromCallLogOption = !hasVoicemail();
+                mHasSubOneIpCallOption = canPlaceCallsTo
+                        && !isSipNumber
+                        && !isVoicemailNumber
+                        && MoreContactUtils
+                                .isMultiSimEnable(CallDetailActivity.this, MSimConstants.SUB1);
+                mHasSubTwoIpCallOption = canPlaceCallsTo
+                        && !isSipNumber
+                        && !isVoicemailNumber
+                        && MoreContactUtils
+                                .isMultiSimEnable(CallDetailActivity.this, MSimConstants.SUB2);
                 invalidateOptionsMenu();
 
                 ListView historyList = (ListView) findViewById(R.id.history);
@@ -970,14 +985,50 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
     public boolean onPrepareOptionsMenu(Menu menu) {
         // This action deletes all elements in the group from the call log.
         // We don't have this action for voicemails, because you can just use the trash button.
+        String sub1Name = MoreContactUtils.getMultiSimAliasesName(this,MSimConstants.SUB1);
+        String sub2Name = MoreContactUtils.getMultiSimAliasesName(this,MSimConstants.SUB2);
+
         menu.findItem(R.id.menu_calllog_detail_video_call).setVisible(mHasVideoCallOption);
         menu.findItem(R.id.menu_remove_from_call_log).setVisible(mHasRemoveFromCallLogOption);
         menu.findItem(R.id.menu_edit_number_before_call).setVisible(mHasEditNumberBeforeCallOption);
         menu.findItem(R.id.menu_trash).setVisible(mHasTrashOption);
+        menu.findItem(R.id.menu_ip_call_by_slot1).setVisible(mHasSubOneIpCallOption);
+        menu.findItem(R.id.menu_ip_call_by_slot2).setVisible(mHasSubTwoIpCallOption);
+
+        if (mHasSubOneIpCallOption) {
+            menu.findItem(R.id.menu_ip_call_by_slot1).setTitle(getString(
+                    com.android.contacts.common.R.string.ip_call_by_slot, sub1Name));
+        }
+        if (mHasSubTwoIpCallOption) {
+            menu.findItem(R.id.menu_ip_call_by_slot2).setTitle(getString(
+                    com.android.contacts.common.R.string.ip_call_by_slot, sub2Name));
+        }
         return super.onPrepareOptionsMenu(menu);
     }
     public void onMenuVTCall(MenuItem menuItem) {
         startActivity(getVTCallIntent(mNumber));
+    }
+
+    public void onMenuIpCallBySlot1(MenuItem menuItem) {
+        if (MoreContactUtils.isIPNumberExist(this, MSimConstants.SUB1)) {
+            Intent callIntent = new Intent(CallUtil.getCallIntent(mNumber));
+            callIntent.putExtra(PhoneConstants.IP_CALL, true);
+            callIntent.putExtra(MSimConstants.SUBSCRIPTION_KEY, MSimConstants.SUB1);
+            startActivity(callIntent);
+        } else {
+            MoreContactUtils.showNoIPNumberDialog(this, MSimConstants.SUB1);
+        }
+    }
+
+    public void onMenuIpCallBySlot2(MenuItem menuItem) {
+        if (MoreContactUtils.isIPNumberExist(this, MSimConstants.SUB2)) {
+            Intent callIntent = new Intent(CallUtil.getCallIntent(mNumber));
+            callIntent.putExtra(PhoneConstants.IP_CALL, true);
+            callIntent.putExtra(MSimConstants.SUBSCRIPTION_KEY, MSimConstants.SUB2);
+            startActivity(callIntent);
+        } else {
+            MoreContactUtils.showNoIPNumberDialog(this, MSimConstants.SUB2);
+        }
     }
 
     public void onMenuRemoveFromCallLog(MenuItem menuItem) {

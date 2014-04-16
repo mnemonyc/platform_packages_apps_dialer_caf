@@ -15,6 +15,7 @@
  */
 package com.android.dialer.list;
 
+import android.accounts.Account;
 import android.animation.ObjectAnimator;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -103,6 +104,8 @@ public class PhoneFavoritesTileAdapter extends BaseAdapter implements
     protected int mNameIndex;
     protected int mPresenceIndex;
     protected int mStatusIndex;
+    protected int mAccountTypeIndex;
+    protected int mAccountNameIndex;
 
     private int mPhoneNumberIndex;
     private int mPhoneNumberTypeIndex;
@@ -198,6 +201,8 @@ public class PhoneFavoritesTileAdapter extends BaseAdapter implements
         mStarredIndex = ContactTileLoaderFactory.STARRED;
         mPresenceIndex = ContactTileLoaderFactory.CONTACT_PRESENCE;
         mStatusIndex = ContactTileLoaderFactory.CONTACT_STATUS;
+        mAccountTypeIndex = ContactTileLoaderFactory.ACCOUNT_TYPE;
+        mAccountNameIndex = ContactTileLoaderFactory.ACCOUNT_NAME;
 
         mPhoneNumberIndex = ContactTileLoaderFactory.PHONE_NUMBER;
         mPhoneNumberTypeIndex = ContactTileLoaderFactory.PHONE_NUMBER_TYPE;
@@ -289,8 +294,18 @@ public class PhoneFavoritesTileAdapter extends BaseAdapter implements
             final String name = cursor.getString(mNameIndex);
             final boolean isStarred = cursor.getInt(mStarredIndex) > 0;
             final boolean isDefaultNumber = cursor.getInt(mIsDefaultNumberIndex) > 0;
+            final String accoutName = cursor.getString(mAccountNameIndex);
+            final String accoutType = cursor.getString(mAccountTypeIndex);
 
             final ContactEntry contact = new ContactEntry();
+
+            Account mAccount;
+            if (!TextUtils.isEmpty(accoutName)
+                    && !TextUtils.isEmpty(accoutType)) {
+                mAccount = new Account(accoutName, accoutType);
+            } else {
+                mAccount = null;
+            }
 
             contact.id = id;
             contact.name = (!TextUtils.isEmpty(name)) ? name :
@@ -300,6 +315,7 @@ public class PhoneFavoritesTileAdapter extends BaseAdapter implements
                     Uri.withAppendedPath(Contacts.CONTENT_LOOKUP_URI, lookupKey), id);
             contact.isFavorite = isStarred;
             contact.isDefaultNumber = isDefaultNumber;
+            contact.account = mAccount;
 
             // Set phone number and label
             final int phoneNumberType = cursor.getInt(mPhoneNumberTypeIndex);

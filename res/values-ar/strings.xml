@@ -161,24 +161,4 @@
     <string name="no_favorites" msgid="5212485868783382971">"جهات الاتصال المفضلة وجهات الاتصال التي\nتتصل غالبًا بها ستظهر هنا.\nلذا عليك البدء في الاتصال."</string>
     <string name="contact_tooltip" msgid="7817483485692282287">"انقر على الصورة للاطلاع على كل الأرقام أو اضغط مع الاستمرار لإعادة الترتيب"</string>
     <string name="description_dismiss" msgid="2146276780562549643">"تجاهل"</string>
-    <!--  Do not translate. -->
-    <string name="dialpad_0_letters">+</string>
-    <!--  Do not translate. -->
-    <string name="dialpad_1_letters"></string>
-    <!--  Do not translate. -->
-    <string name="dialpad_2_letters">بةتث</string>
-    <!--  Do not translate. -->
-    <string name="dialpad_3_letters">ءا</string>
-    <!--  Do not translate. -->
-    <string name="dialpad_4_letters">سشصض</string>
-    <!--  Do not translate. -->
-    <string name="dialpad_5_letters">دذرز</string>
-    <!--  Do not translate. -->
-    <string name="dialpad_6_letters">جحخ</string>
-    <!--  Do not translate. -->
-    <string name="dialpad_7_letters">نهوي</string>
-    <!--  Do not translate. -->
-    <string name="dialpad_8_letters">فقكلم</string>
-    <!--  Do not translate. -->
-    <string name="dialpad_9_letters">طظعغ</string>
 </resources>
