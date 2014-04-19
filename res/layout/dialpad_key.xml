@@ -32,14 +32,29 @@
           android:textSize="@dimen/dialpad_key_numbers_size"
           android:fontFamily="sans-serif-light"
           />
-      <TextView
-          android:id="@+id/dialpad_key_letters"
-          android:layout_width="@dimen/dialpad_key_letters_width"
-          android:layout_height="wrap_content"
-          android:textColor="@color/dialpad_secondary_text_color"
-          android:textSize="@dimen/dialpad_key_letters_size"
-          android:paddingLeft="11dp"
-          android:fontFamily="sans-serif-light"
-          />
+          <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="vertical" >
+                <TextView
+                    android:id="@+id/dialpad_key_labels"
+                    android:layout_width="@dimen/dialpad_key_letters_width"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/dialpad_secondary_text_color"
+                    android:textSize="@dimen/dialpad_key_letters_size"
+                    android:paddingLeft="11dp"
+                    android:fontFamily="sans-serif-light"
+                />
+                <TextView
+                    android:id="@+id/dialpad_key_letters"
+                    android:layout_width="@dimen/dialpad_key_letters_width"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/dialpad_secondary_text_color"
+                    android:textSize="@dimen/dialpad_key_letters_size"
+                    android:paddingLeft="11dp"
+                    android:fontFamily="sans-serif-light"
+                />
+      </LinearLayout>
     </LinearLayout>
 </com.android.dialer.dialpad.DialpadKeyButton>
