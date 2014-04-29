@@ -39,6 +39,8 @@ import com.android.dialer.calllog.ContactInfo;
 import com.android.dialer.calllog.PhoneNumberHelper;
 import com.android.dialer.calllog.PhoneNumberUtilsWrapper;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
  * Helper class to fill in the views in {@link PhoneCallDetailsViews}.
  */
@@ -72,6 +74,7 @@ public class PhoneCallDetailsHelper {
     }
 
     /** Fills the call details views with content. */
+    @VisibleForTesting
     public void setPhoneCallDetails(PhoneCallDetailsViews views,
             PhoneCallDetails details, boolean isHighlighted) {
         setPhoneCallDetails(views, details, isHighlighted, null);
