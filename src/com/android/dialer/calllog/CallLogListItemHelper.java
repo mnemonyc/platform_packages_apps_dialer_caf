@@ -26,6 +26,8 @@ import com.android.dialer.PhoneCallDetails;
 import com.android.dialer.PhoneCallDetailsHelper;
 import com.android.dialer.R;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
  * Helper class to fill in the views of a call log entry.
  */
@@ -57,6 +59,7 @@ import com.android.dialer.R;
      * @param details the details of a phone call needed to fill in the data
      * @param isHighlighted whether to use the highlight text for the call
      */
+    @VisibleForTesting
     public void setPhoneCallDetails(CallLogListItemViews views, PhoneCallDetails details,
             boolean isHighlighted, boolean useCallAsPrimaryAction) {
         setPhoneCallDetails(views, details, isHighlighted,
