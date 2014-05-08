@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import junit.framework.TestCase;
 
 @SmallTest
-public class SmartDialNameMatcherTest extends TestCase {
+public class SmartDialNameMatcherTest extends AndroidTestCase {
     private static final String TAG = "SmartDialNameMatcherTest";
 
     public void testMatches() {
@@ -177,24 +177,24 @@ public class SmartDialNameMatcherTest extends TestCase {
         // These matches should ignore the country prefix
         // USA (+1)
         checkMatchesNumber("+15103337596", "5103337596", true, 2, 12);
-        checkMatchesNumber("+15103337596", "15103337596", true, 0, 12);
+        checkMatchesNumber("+15103337596", "15103337596", true, 1, 12);
 
         // Singapore (+65)
-        checkMatchesNumber("+6591776930", "6591", true, 0, 5);
+        checkMatchesNumber("+6591776930", "6591", true, 1, 5);
         checkMatchesNumber("+6591776930", "9177", true, 3, 7);
-        checkMatchesNumber("+6591776930", "5917", false, 3, 7);
+        checkMatchesNumber("+6591776930", "5917", true, 2, 6);
 
         // Hungary (+36)
-        checkMatchesNumber("+3612345678", "361234", true, 0, 7);
+        checkMatchesNumber("+3612345678", "361234", true, 1, 7);
         checkMatchesNumber("+3612345678", "1234", true, 3, 7);
 
         // Hongkong (+852)
-        checkMatchesNumber("+852 2222 2222", "85222222222", true, 0, 14);
-        checkMatchesNumber("+852 2222 3333", "2222", true, 5, 9);
+        checkMatchesNumber("+852 2222 2222", "85222222222", true, 1, 14);
+        checkMatchesNumber("+852 2222 3333", "2222", true, 3, 8);
 
         // Invalid (+854)
-        checkMatchesNumber("+854 1111 2222", "8541111", true, 0, 9);
-        checkMatchesNumber("+854 1111 2222", "1111", false, 0, 0);
+        checkMatchesNumber("+854 1111 2222", "8541111", true, 1, 9);
+        checkMatchesNumber("+854 1111 2222", "1111", true, 5, 9);
     }
 
     public void testMatches_NumberNANP() {
@@ -207,27 +207,27 @@ public class SmartDialNameMatcherTest extends TestCase {
         // the 7 digit number (without area code)
         checkMatchesNumber("+1-510-333-7596", "5103337596", true, true, 3, 15);
         checkMatchesNumber("+1-510-333-7596", "3337596", true, true, 7, 15);
-        checkMatchesNumber("+1-510-333-7596", "103337596", false, true, 0, 0);
-        checkMatchesNumber("+1-510-333-7596", "337596", false, true, 0, 0);
+        checkMatchesNumber("+1-510-333-7596", "103337596", true, true, 4, 15);
+        checkMatchesNumber("+1-510-333-7596", "337596", true, true, 8, 15);
         checkMatchesNumber("+1510 3337596", "5103337596", true, true, 2, 13);
         checkMatchesNumber("+1510 3337596", "3337596", true, true, 6, 13);
-        checkMatchesNumber("+1510 3337596", "103337596", false, true, 0, 0);
-        checkMatchesNumber("+1510 3337596", "37596", false, true, 0, 0);
+        checkMatchesNumber("+1510 3337596", "103337596", true, true, 3, 13);
+        checkMatchesNumber("+1510 3337596", "37596", true, true, 8, 13);
 
         // Invalid NANP numbers should not be matched
-        checkMatchesNumber("1-510-333-759", "510333759", false, true, 0, 0);
-        checkMatchesNumber("510-333-759", "333759", false, true, 0, 0);
+        checkMatchesNumber("1-510-333-759", "510333759", true, true, 2, 13);
+        checkMatchesNumber("510-333-759", "333759", true, true, 4, 11);
 
         // match should fail if NANP flag is switched off
-        checkMatchesNumber("1-510-333-7596", "3337596", false, false, 0, 0);
+        checkMatchesNumber("1-510-333-7596", "3337596", true, false, 6, 14);
 
         // A 10 digit number without a 1 prefix should be matched by the 7 digit number
         checkMatchesNumber("(650) 292 2323", "2922323", true, true, 6, 14);
-        checkMatchesNumber("(650) 292 2323", "6502922323", true, true, 0, 14);
+        checkMatchesNumber("(650) 292 2323", "6502922323", true, true, 1, 14);
         // match should fail if NANP flag is switched off
-        checkMatchesNumber("(650) 292 2323", "2922323", false, false, 0, 0);
+        checkMatchesNumber("(650) 292 2323", "2922323", true, false, 6, 14);
         // But this should still match (since it is the full number)
-        checkMatchesNumber("(650) 292 2323", "6502922323", true, false, 0, 14);
+        checkMatchesNumber("(650) 292 2323", "6502922323", true, false, 1, 14);
     }
 
 
@@ -238,7 +238,7 @@ public class SmartDialNameMatcherTest extends TestCase {
 
     private void checkMatchesNumber(String number, String query, boolean expectedMatches,
             boolean matchNanp, int matchStart, int matchEnd) {
-        final SmartDialNameMatcher matcher = new SmartDialNameMatcher(query);
+        final SmartDialNameMatcher matcher = new SmartDialNameMatcher(query, getContext());
         final SmartDialMatchPosition pos = matcher.matchesNumber(number, query, matchNanp);
         assertEquals(expectedMatches, pos != null);
         if (expectedMatches) {
@@ -249,7 +249,7 @@ public class SmartDialNameMatcherTest extends TestCase {
 
     private void checkMatches(String displayName, String query, boolean expectedMatches,
             int... expectedMatchPositions) {
-        final SmartDialNameMatcher matcher = new SmartDialNameMatcher(query);
+        final SmartDialNameMatcher matcher = new SmartDialNameMatcher(query, getContext());
         final ArrayList<SmartDialMatchPosition> matchPositions =
                 new ArrayList<SmartDialMatchPosition>();
         final boolean matches = matcher.matchesCombination(
