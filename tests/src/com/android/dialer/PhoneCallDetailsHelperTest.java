@@ -37,7 +37,7 @@ import java.util.Locale;
  */
 public class PhoneCallDetailsHelperTest extends AndroidTestCase {
     /** The number to be used to access the voicemail. */
-    private static final String TEST_VOICEMAIL_NUMBER = "125";
+    private static final String TEST_VOICEMAIL_NUMBER = "*86";
     /** The date of the call log entry. */
     private static final long TEST_DATE =
         new GregorianCalendar(2011, 5, 3, 13, 0, 0).getTimeInMillis();
@@ -187,18 +187,18 @@ public class PhoneCallDetailsHelperTest extends AndroidTestCase {
     public void testSetPhoneCallDetails_NoGeocode() {
         setPhoneCallDetailsWithNumberAndGeocode("+14125555555", "1-412-555-5555", null);
         assertNameEquals("1-412-555-5555");  // The phone number is shown as the name.
-        assertLabelEquals("-"); // The empty geocode is shown as the label.
+        assertLabelEquals(" "); // The empty geocode is shown as the label.
     }
 
     public void testSetPhoneCallDetails_EmptyGeocode() {
         setPhoneCallDetailsWithNumberAndGeocode("+14125555555", "1-412-555-5555", "");
         assertNameEquals("1-412-555-5555");  // The phone number is shown as the name.
-        assertLabelEquals("-"); // The empty geocode is shown as the label.
+        assertLabelEquals(" "); // The empty geocode is shown as the label.
     }
 
     public void testSetPhoneCallDetails_NoGeocodeForVoicemail() {
         setPhoneCallDetailsWithNumberAndGeocode(TEST_VOICEMAIL_NUMBER, "", "United States");
-        assertLabelEquals("-"); // The empty geocode is shown as the label.
+        assertLabelEquals(" "); // The empty geocode is shown as the label.
     }
 
     public void testSetPhoneCallDetails_Highlighted() {
