@@ -136,7 +136,8 @@ public class SmartDialPrefixTest extends AndroidTestCase {
 
     private ContactNumber constructNewContactWithDummyIds(MatrixCursor contactCursor,
             MatrixCursor nameCursor, String number, int id, String displayName) {
-        return constructNewContact(contactCursor, nameCursor, id, number, 0, "", displayName, 0, 0,
+        // Contact with same contact id will be considered as duplicated and will skip matching it.
+        return constructNewContact(contactCursor, nameCursor, id, number, id, "", displayName, 0, 0,
                 0, 0, 0, 0, 0);
     }
 
@@ -157,7 +158,7 @@ public class SmartDialPrefixTest extends AndroidTestCase {
 
     private ArrayList<ContactNumber> getLooseMatchesFromDb(String query) {
         final SmartDialNameMatcher nameMatcher = new SmartDialNameMatcher(query,
-                SmartDialPrefix.getMap());
+                SmartDialPrefix.getMap(), getContext());
         return mTestHelper.getLooseMatches(query, nameMatcher);
     }
 
@@ -445,14 +446,15 @@ public class SmartDialPrefixTest extends AndroidTestCase {
 
         assertTrue(getLooseMatchesFromDb("6591776930").contains(contactno2));
         assertTrue(getLooseMatchesFromDb("91776930").contains(contactno2));
-        assertFalse(getLooseMatchesFromDb("591776930").contains(contactno2));
+        // We need to adjust test cases for number matching rules are changed.
+        assertTrue(getLooseMatchesFromDb("591776930").contains(contactno2));
 
         assertTrue(getLooseMatchesFromDb("85212345678").contains(contactno3));
         assertTrue(getLooseMatchesFromDb("12345678").contains(contactno3));
-        assertFalse(getLooseMatchesFromDb("5212345678").contains(contactno3));
+        assertTrue(getLooseMatchesFromDb("5212345678").contains(contactno3));
 
         assertTrue(getLooseMatchesFromDb("85112345678").contains(contactno4));
-        assertFalse(getLooseMatchesFromDb("12345678").contains(contactno4));
+        assertTrue(getLooseMatchesFromDb("12345678").contains(contactno4));
     }
 
     // Tests special case handling for NANP numbers
@@ -502,16 +504,16 @@ public class SmartDialPrefixTest extends AndroidTestCase {
         assertTrue(getLooseMatchesFromDb("2849170").contains(contactno4));
 
         assertTrue(getLooseMatchesFromDb("1415123123").contains(contactno5));
-        assertFalse(getLooseMatchesFromDb("415123123").contains(contactno5));
-        assertFalse(getLooseMatchesFromDb("123123").contains(contactno5));
+        assertTrue(getLooseMatchesFromDb("415123123").contains(contactno5));
+        assertTrue(getLooseMatchesFromDb("123123").contains(contactno5));
 
         assertTrue(getLooseMatchesFromDb("415123123").contains(contactno6));
-        assertFalse(getLooseMatchesFromDb("123123").contains(contactno6));
+        assertTrue(getLooseMatchesFromDb("123123").contains(contactno6));
 
         assertTrue(getLooseMatchesFromDb("15102849170").contains(contactno7));
         assertTrue(getLooseMatchesFromDb("5102849170").contains(contactno7));
         assertTrue(getLooseMatchesFromDb("2849170").contains(contactno7));
-        assertFalse(getLooseMatchesFromDb("849170").contains(contactno7));
+        assertTrue(getLooseMatchesFromDb("849170").contains(contactno7));
         assertFalse(getLooseMatchesFromDb("10849170").contains(contactno7));
 
         assertTrue(getLooseMatchesFromDb("1510284917").contains(contactno8));
@@ -519,8 +521,8 @@ public class SmartDialPrefixTest extends AndroidTestCase {
         assertFalse(getLooseMatchesFromDb("2849170").contains(contactno8));
 
         assertTrue(getLooseMatchesFromDb("8575102849170").contains(contactno9));
-        assertFalse(getLooseMatchesFromDb("5102849170").contains(contactno9));
-        assertFalse(getLooseMatchesFromDb("2849170").contains(contactno9));
+        assertTrue(getLooseMatchesFromDb("5102849170").contains(contactno9));
+        assertTrue(getLooseMatchesFromDb("2849170").contains(contactno9));
 
         // TODO(klp) Adds test for non-NANP region number matchings.
     }
@@ -546,11 +548,11 @@ public class SmartDialPrefixTest extends AndroidTestCase {
         contactCursor.close();
 
         assertTrue(getLooseMatchesFromDb("4151234567").contains(contactno0));
-        assertFalse(getLooseMatchesFromDb("1234567").contains(contactno0));
+        assertTrue(getLooseMatchesFromDb("1234567").contains(contactno0));
 
         assertTrue(getLooseMatchesFromDb("15102849170").contains(contactno1));
-        assertFalse(getLooseMatchesFromDb("5102849170").contains(contactno1));
-        assertFalse(getLooseMatchesFromDb("2849170").contains(contactno1));
+        assertTrue(getLooseMatchesFromDb("5102849170").contains(contactno1));
+        assertTrue(getLooseMatchesFromDb("2849170").contains(contactno1));
     }
 
     public void testParseInfo() {
