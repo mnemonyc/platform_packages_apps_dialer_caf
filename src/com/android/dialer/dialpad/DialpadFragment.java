@@ -247,6 +247,7 @@ public class DialpadFragment extends Fragment
     private ImageButton mDialConferenceButton;
     private ListView mDialpadChooser;
     private DialpadChooserAdapter mDialpadChooserAdapter;
+    private View mListSmartDialerLayout;
 
     /**
      * Regular expression prohibiting manual phone call. Can be empty, which means "no rule".
@@ -470,6 +471,7 @@ public class DialpadFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedState) {
         final View fragmentView = inflater.inflate(R.layout.dialpad_fragment, container,
                 false);
+        mListSmartDialerLayout = fragmentView.findViewById(R.id.listoutside);
         boolean smartdialerEnabled = getResources().getBoolean(R.bool.smartdialer_enabled);
         if (!smartdialerEnabled) {
             fragmentView.findViewById(R.id.listlayout).setVisibility(View.GONE);
@@ -1768,6 +1770,7 @@ public class DialpadFragment extends Fragment
             if (mDialpadStub != null) mDialpadStub.setVisibility(View.GONE);
             if (mDialpad != null) mDialpad.setVisibility(View.GONE);
             if (mDialButtonContainer != null) mDialButtonContainer.setVisibility(View.GONE);
+            if (mListSmartDialerLayout != null) mListSmartDialerLayout.setVisibility(View.GONE);
 
             mDialpadChooser.setVisibility(View.VISIBLE);
 
@@ -1813,6 +1816,8 @@ public class DialpadFragment extends Fragment
         if (mDigitsContainer != null) mDigitsContainer.setVisibility(nonConferenceButtonVisibility);
         if (mDigits != null) mDigits.setVisibility(nonConferenceButtonVisibility);
         if (mDelete != null) mDelete.setVisibility(nonConferenceButtonVisibility);
+        if (mListSmartDialerLayout != null)
+            mListSmartDialerLayout.setVisibility(nonConferenceButtonVisibility);
         if (mDialpad != null) mDialpad.setVisibility(nonConferenceButtonVisibility);
         if (mDialConferenceButton != null) {
             /*
