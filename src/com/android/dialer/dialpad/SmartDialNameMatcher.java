@@ -193,12 +193,31 @@ public class SmartDialNameMatcher {
 
         String phoneNum = phoneNumber.replaceAll("[\\+\\*\\#\\-\\.\\(\\,\\)\\/ ]", "");
         if (!TextUtils.isEmpty(phoneNum) && phoneNum.contains(query)) {
+            // firstly, find the start position in original phone number.
             int start = phoneNum.indexOf(query);
-            int end = start + query.length();
-            for (int i = start; i < phoneNumber.length(); i++) {
+            int length = phoneNumber.length();
+            for (int i = start; i < length; i++) {
                 char ch = phoneNumber.charAt(i);
-                if (mSchar.indexOf(ch) != -1 && i < end) {
+                if (ch != phoneNum.charAt(start)) {
+                    continue;
+                }
+                if (phoneNumber.substring(i).replaceAll("[\\+\\*\\#\\-\\.\\(\\,\\)\\/ ]", "")
+                        .indexOf(query) == 0) {
+                    start = i;
+                    break;
+                }
+            }
+            // secondly, find the end position in original phone number.
+            int end = start + query.length();
+            for (int i = start; i < length; i++) {
+                char ch = phoneNumber.charAt(i);
+                if (mSchar.indexOf(ch) != -1) {
                     end++;
+                    continue;
+                }
+                if (phoneNumber.substring(start, end).replaceAll("[\\+\\*\\#\\-\\.\\(\\,\\)\\/ ]", "")
+                        .contains(query)) {
+                    break;
                 }
             }
             return new SmartDialMatchPosition(start, end);
