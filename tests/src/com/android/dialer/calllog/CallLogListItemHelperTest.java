@@ -64,6 +64,7 @@ public class CallLogListItemHelperTest extends AndroidTestCase {
                 TEST_VOICEMAIL_NUMBER);
         PhoneCallDetailsHelper phoneCallDetailsHelper = new PhoneCallDetailsHelper(
                 context, callTypeHelper, phoneUtils);
+        mPhoneNumberHelper = new PhoneNumberHelper(resources);
         mHelper = new CallLogListItemHelper(phoneCallDetailsHelper, mPhoneNumberHelper, resources);
         mViews = CallLogListItemViews.createForTest(context);
     }
