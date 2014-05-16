@@ -912,11 +912,11 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
         text.setText(entry.text);
 
         Context context = this.getApplicationContext();
-        callButtonSub1.setImageResource(R.drawable.ic_ab_dialer_holo_dark);
+        callButtonSub1.setImageResource(R.drawable.ic_ab_dialer_holo_light);
         callButtonSub1.setTag(entry);
         callButtonSub1.setOnClickListener(mFourthActionListener);
 
-        callButtonSub2.setImageResource(R.drawable.ic_ab_dialer_holo_dark);
+        callButtonSub2.setImageResource(R.drawable.ic_ab_dialer_holo_light);
         callButtonSub2.setTag(entry);
         callButtonSub2.setOnClickListener(mFifthActionListener);
 
