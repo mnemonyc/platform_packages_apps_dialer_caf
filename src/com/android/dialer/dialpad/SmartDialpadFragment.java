@@ -20,6 +20,7 @@
 
 package com.android.dialer.dialpad;
 
+import android.accounts.Account;
 import android.app.DialogFragment;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
@@ -96,6 +97,8 @@ public class SmartDialpadFragment extends DialpadFragment
             ("display_name"),
             ("photo_id"),
             ("lookup"),
+            (RawContacts.ACCOUNT_TYPE),
+            (RawContacts.ACCOUNT_NAME),
     };
     private static final int AIRPLANE_MODE_ON_VALUE = 1;
     private static final int AIRPLANE_MODE_OFF_VALUE = 0;
@@ -105,6 +108,8 @@ public class SmartDialpadFragment extends DialpadFragment
     private static final int QUERY_DISPLAY_NAME = 2;
     private static final int QUERY_PHOTO_ID = 3;
     private static final int QUERY_LOOKUP_KEY = 4;
+    private static final int QUERY_ACCOUNT_TYPE = 5;
+    private static final int QUERY_ACCOUNT_NAME = 6;
     private static final Uri CONTENT_SMART_DIALER_FILTER_URI =
             Uri.withAppendedPath(ContactsContract.AUTHORITY_URI, "smart_dialer_filter");
     private Handler mHandler = new Handler();
@@ -635,9 +640,15 @@ public class SmartDialpadFragment extends DialpadFragment
                 photoId = cursor.getLong(QUERY_PHOTO_ID);
             }
 
+            Account account = null;
+            if (!cursor.isNull(QUERY_ACCOUNT_TYPE) && !cursor.isNull(QUERY_ACCOUNT_NAME)) {
+                final String accountType = cursor.getString(QUERY_ACCOUNT_TYPE);
+                final String accountName = cursor.getString(QUERY_ACCOUNT_NAME);
+                account = new Account(accountName, accountType);
+            }
             QuickContactBadge photo = view.getQuickContact();
             photo.assignContactFromPhone(cursor.getString(QUERY_NUMBER), true);
-            ContactPhotoManager.getInstance(mContext).loadThumbnail(photo, photoId, false);
+            ContactPhotoManager.getInstance(mContext).loadThumbnail(photo, photoId, account, true);
             view.setPresence(null);
 
         }
