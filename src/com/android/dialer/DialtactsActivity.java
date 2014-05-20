@@ -28,8 +28,11 @@ import android.app.FragmentManager;
 import android.app.FragmentManager.BackStackEntry;
 import android.app.FragmentTransaction;
 import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -63,7 +66,11 @@ import com.android.contacts.common.CallUtil;
 import com.android.contacts.common.activity.TransactionSafeActivity;
 import com.android.contacts.common.dialog.ClearFrequentsDialog;
 import com.android.contacts.common.interactions.ImportExportDialogFragment;
+import com.android.contacts.common.interactions.ImportExportDialogFragment.ExportToSimThread;
+import com.android.contacts.common.SimContactsConstants;
 import com.android.contacts.common.list.OnPhoneNumberPickerActionListener;
+import com.android.contacts.common.vcard.ExportVCardActivity;
+import com.android.contacts.common.vcard.VCardCommonArguments;
 import com.android.dialer.calllog.CallLogActivity;
 import com.android.dialer.database.DialerDatabaseHelper;
 import com.android.dialer.dialpad.DialpadFragment;
@@ -81,6 +88,8 @@ import com.android.dialerbind.DatabaseHelperManager;
 import com.android.internal.telephony.ITelephony;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * The dialer tab's title is 'phone', a more common name (see strings.xml).
@@ -96,6 +105,12 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
 
     public static final String SHARED_PREFS_NAME = "com.android.dialer_preferences";
 
+    public static final String PREFERRED_SIM_ICON_INDEX = "preferred_sim_icon_index";
+    public static final String[] MULTI_SIM_NAME = {
+        "perferred_name_sub1", "preferred_name_sub2"
+    };
+
+    public static final String RESULT_KEY = "result";
     /** Used to open Call Setting */
     private static final String PHONE_PACKAGE = "com.android.phone";
     private static final String CALL_SETTINGS_CLASS_NAME =
@@ -179,6 +194,18 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
     private String mSearchQuery;
 
     private DialerDatabaseHelper mDialerDatabaseHelper;
+
+    private ArrayList<String[]> mContactList;
+    private ExportToSimThread mExportThread = null;
+    private final BroadcastReceiver mExportToSimCompleteListener = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(SimContactsConstants.INTENT_EXPORT_COMPLETE)) {
+                ImportExportDialogFragment.destroyExportToSimThread();
+                mExportThread = null;
+            }
+        }
+    };
 
     private class OverflowPopupMenu extends PopupMenu {
         public OverflowPopupMenu(Context context, View anchor) {
@@ -332,6 +359,9 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
 
         mDialerDatabaseHelper = DatabaseHelperManager.getDatabaseHelper(this);
         SmartDialPrefix.initializeNanpSettings(this);
+        final IntentFilter exportCompleteFilter = new IntentFilter(SimContactsConstants
+                .INTENT_EXPORT_COMPLETE);
+        registerReceiver(mExportToSimCompleteListener, exportCompleteFilter);
     }
 
     @Override
@@ -355,6 +385,12 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
             mClearSearchOnPause = false;
         }
         super.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(mExportToSimCompleteListener);
     }
 
     @Override
@@ -476,19 +512,70 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == ACTIVITY_REQUEST_CODE_VOICE_SEARCH) {
-            if (resultCode == RESULT_OK) {
-                final ArrayList<String> matches = data.getStringArrayListExtra(
-                        RecognizerIntent.EXTRA_RESULTS);
-                if (matches.size() > 0) {
-                    final String match = matches.get(0);
-                    mSearchView.setText(match);
+        switch(requestCode) {
+            case ACTIVITY_REQUEST_CODE_VOICE_SEARCH:
+                if (resultCode == RESULT_OK) {
+                    final ArrayList<String> matches = data.getStringArrayListExtra(
+                            RecognizerIntent.EXTRA_RESULTS);
+                    if (matches.size() > 0) {
+                        final String match = matches.get(0);
+                        mSearchView.setText(match);
+                    } else {
+                        Log.e(TAG, "Voice search - nothing heard");
+                    }
                 } else {
-                    Log.e(TAG, "Voice search - nothing heard");
+                    Log.e(TAG, "Voice search failed");
                 }
-            } else {
-                Log.e(TAG, "Voice search failed");
-            }
+                break;
+            case ImportExportDialogFragment.SUBACTIVITY_MULTI_PICK_CONTACT:
+                if (resultCode == RESULT_OK) {
+                    mContactList = new ArrayList<String[]>();
+                    Bundle b = data.getExtras();
+                    Bundle choiceSet = b.getBundle(RESULT_KEY);
+                    Set<String> set = choiceSet.keySet();
+                    Iterator<String> i = set.iterator();
+                    while (i.hasNext()) {
+                        String contactInfo[] = choiceSet.getStringArray(i.next());
+                        mContactList.add(contactInfo);
+                    }
+                    Log.d(TAG, "return " + mContactList.size() + " contacts");
+                    if (!mContactList.isEmpty()) {
+                        if (!ImportExportDialogFragment.isExportingToSIM()) {
+                            ImportExportDialogFragment.destroyExportToSimThread();
+                            mExportThread =
+                                new ImportExportDialogFragment()
+                                    .createExportToSimThread(
+                                        ImportExportDialogFragment.ExportToSimThread.TYPE_SELECT,
+                                        ImportExportDialogFragment.mExportSub,
+                                        mContactList,
+                                        DialtactsActivity.this);
+                            mExportThread.start();
+                        }
+                    }
+                }
+                break;
+            case ImportExportDialogFragment.SUBACTIVITY_EXPORT_CONTACTS:
+                if (resultCode == RESULT_OK) {
+                    Bundle result = data.getExtras().getBundle(RESULT_KEY);
+                    Set<String> keySet = result.keySet();
+                    Iterator<String> it = keySet.iterator();
+                    StringBuilder selExportBuilder = new StringBuilder();
+                    while (it.hasNext()) {
+                        String id = it.next();
+                        if (0 != selExportBuilder.length()) {
+                            selExportBuilder.append(",");
+                        }
+                        selExportBuilder.append(id);
+                    }
+                    selExportBuilder.insert(0, "_id IN (");
+                    selExportBuilder.append(")");
+                    Intent exportIntent = new Intent(this, ExportVCardActivity.class);
+                    exportIntent.putExtra("SelExport", selExportBuilder.toString());
+                    exportIntent.putExtra(VCardCommonArguments.ARG_CALLING_ACTIVITY,
+                            DialtactsActivity.class.getName());
+                    this.startActivity(exportIntent);
+                }
+                break;
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
