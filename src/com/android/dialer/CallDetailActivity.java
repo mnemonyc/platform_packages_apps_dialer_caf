@@ -718,8 +718,7 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
 
     /** Load the contact photos and places them in the corresponding views. */
     private void loadContactPhotos(Uri photoUri) {
-        //Do not show sim contact icon in call detail.
-        mContactPhotoManager.loadPhoto(mContactBackgroundView, photoUri, null,
+        mContactPhotoManager.loadPhoto(mContactBackgroundView, photoUri,
                 mContactBackgroundView.getWidth(), true);
     }
 
