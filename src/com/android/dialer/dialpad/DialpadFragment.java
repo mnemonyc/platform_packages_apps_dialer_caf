@@ -204,7 +204,7 @@ public class DialpadFragment extends Fragment
      * isn't enclosed by the container.
      */
     private View mDigitsContainer;
-    protected EditText mDigits;
+    private EditText mDigits;
 
     private EditText mRecipients;
     private View mDialpadStub;
@@ -215,7 +215,7 @@ public class DialpadFragment extends Fragment
     private View mDelete;
     private ToneGenerator mToneGenerator;
     private final Object mToneGeneratorLock = new Object();
-    protected View mDialpad;
+    private View mDialpad;
     private View mSpacer;
 
     /**
@@ -403,10 +403,6 @@ public class DialpadFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedState) {
         final View fragmentView = inflater.inflate(R.layout.dialpad_fragment, container,
                 false);
-        boolean smartdialerEnabled = getResources().getBoolean(R.bool.smartdialer_enabled);
-        if (!smartdialerEnabled) {
-            fragmentView.findViewById(R.id.listlayout).setVisibility(View.GONE);
-        }
         fragmentView.buildLayer();
 
         final ViewTreeObserver vto = fragmentView.getViewTreeObserver();
@@ -1339,7 +1335,7 @@ public class DialpadFragment extends Fragment
     /**
      * Plays the specified tone for TONE_LENGTH_MS milliseconds.
      */
-    protected void playTone(int tone) {
+    private void playTone(int tone) {
         playTone(tone, TONE_LENGTH_MS);
     }
 
@@ -1419,8 +1415,9 @@ public class DialpadFragment extends Fragment
      * @param enabled If true, show the "dialpad chooser" instead
      *                of the regular Dialer UI
      */
-    protected void showDialpadChooser(boolean enabled) {
-        // Check if onCreateView() is already called by checking one of View objects.
+    private void showDialpadChooser(boolean enabled) {
+        // Check if onCreateView() is already called by checking one of View
+        // objects.
         if (!isLayoutReady()) {
             return;
         }
@@ -1858,7 +1855,7 @@ public class DialpadFragment extends Fragment
     /**
      * @return true if the widget with the phone number digits is empty.
      */
-    protected boolean isDigitsEmpty() {
+    private boolean isDigitsEmpty() {
         return mDigits.length() == 0;
     }
 
