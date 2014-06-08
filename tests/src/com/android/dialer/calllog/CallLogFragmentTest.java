@@ -70,6 +70,8 @@ public class CallLogFragmentTest extends ActivityInstrumentationTestCase2<Fragme
     /** The formatted version of {@link #TEST_NUMBER}. */
     private static final String TEST_FORMATTED_NUMBER = "1 212-555-1000";
 
+    private static final String TEST_DEFAULT_CUSTOM_LABEL = "myLabel";
+
     /** The activity in which we are hosting the fragment. */
     private FragmentTestActivity mActivity;
     private CallLogFragment mFragment;
@@ -115,7 +117,7 @@ public class CallLogFragmentTest extends ActivityInstrumentationTestCase2<Fragme
         FragmentManager fragmentManager = mActivity.getFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.add(FragmentTestActivity.LAYOUT_ID, mFragment);
-        transaction.commit();
+        transaction.commitAllowingStateLoss();
         // Wait for the fragment to be loaded.
         getInstrumentation().waitForIdleSync();
 
@@ -218,8 +220,10 @@ public class CallLogFragmentTest extends ActivityInstrumentationTestCase2<Fragme
     @MediumTest
     public void testBindView_WithCachedName() {
         mCursor.moveToFirst();
+        // provide a default custom label instead of an empty string, which corresponds to
+        // {@value com.android.dialer.calllog.ContactInfo#GEOCODE_AS_LABEL}
         insertWithCachedValues(TEST_NUMBER, NOW, 0, Calls.INCOMING_TYPE,
-                "John Doe", Phone.TYPE_HOME, null);
+                "John Doe", Phone.TYPE_HOME, TEST_DEFAULT_CUSTOM_LABEL);
         View view = mAdapter.newStandAloneView(getActivity(), mParentView);
         mAdapter.bindStandAloneView(view, getActivity(), mCursor);
 
@@ -232,7 +236,7 @@ public class CallLogFragmentTest extends ActivityInstrumentationTestCase2<Fragme
     public void testBindView_UriNumber() {
         mCursor.moveToFirst();
         insertWithCachedValues("sip:johndoe@gmail.com", NOW, 0, Calls.INCOMING_TYPE,
-                "John Doe", Phone.TYPE_HOME, "");
+                "John Doe", Phone.TYPE_HOME, TEST_DEFAULT_CUSTOM_LABEL);
         View view = mAdapter.newStandAloneView(getActivity(), mParentView);
         mAdapter.bindStandAloneView(view, getActivity(), mCursor);
 
@@ -244,8 +248,10 @@ public class CallLogFragmentTest extends ActivityInstrumentationTestCase2<Fragme
     @MediumTest
     public void testBindView_HomeLabel() {
         mCursor.moveToFirst();
+        // provide a default custom label instead of an empty string, which corresponds to
+        // {@value com.android.dialer.calllog.ContactInfo#GEOCODE_AS_LABEL}
         insertWithCachedValues(TEST_NUMBER, NOW, 0, Calls.INCOMING_TYPE,
-                "John Doe", Phone.TYPE_HOME, null);
+                "John Doe", Phone.TYPE_HOME, TEST_DEFAULT_CUSTOM_LABEL);
         View view = mAdapter.newStandAloneView(getActivity(), mParentView);
         mAdapter.bindStandAloneView(view, getActivity(), mCursor);
 
@@ -257,8 +263,10 @@ public class CallLogFragmentTest extends ActivityInstrumentationTestCase2<Fragme
     @MediumTest
     public void testBindView_WorkLabel() {
         mCursor.moveToFirst();
+        // provide a default custom label instead of an empty string, which corresponds to
+        // {@link com.android.dialer.calllog.ContactInfo#GEOCODE_AS_LABEL}
         insertWithCachedValues(TEST_NUMBER, NOW, 0, Calls.INCOMING_TYPE,
-                "John Doe", Phone.TYPE_WORK, null);
+                "John Doe", Phone.TYPE_WORK, TEST_DEFAULT_CUSTOM_LABEL);
         View view = mAdapter.newStandAloneView(getActivity(), mParentView);
         mAdapter.bindStandAloneView(view, getActivity(), mCursor);
 
@@ -358,8 +366,9 @@ public class CallLogFragmentTest extends ActivityInstrumentationTestCase2<Fragme
     // HELPERS to check conditions on the DB/views
     //
     /**
-     * Go over all the views in the list and check that the Call
-     * icon's visibility matches the nature of the number.
+     * Go over the views in the list and check to ensure that
+     * callable numbers have an associated call intent, where numbers
+     * which are not callable have a null intent.
      */
     private void checkCallStatus() {
         for (int i = 0; i < mList.length; i++) {
@@ -370,9 +379,17 @@ public class CallLogFragmentTest extends ActivityInstrumentationTestCase2<Fragme
             int presentation = getPhoneNumberPresentationForListEntry(i);
             if (presentation == Calls.PRESENTATION_RESTRICTED ||
                     presentation == Calls.PRESENTATION_UNKNOWN) {
-                assertFalse(View.VISIBLE == mItem.callButtonSub1.getVisibility());
+                //If number is not callable, the primary action view should have a null tag.
+                assertNull(mItem.callButtonSub1.getTag());
             } else {
-                assertEquals(View.VISIBLE, mItem.callButtonSub1.getVisibility());
+                //If the number is callable, the primary action view should have a non-null tag.
+                assertNotNull(mItem.callButtonSub1.getTag());
+
+                IntentProvider intentProvider = (IntentProvider)mItem.callButtonSub1.getTag();
+                Intent callIntent = intentProvider.getIntent(mActivity);
+
+                //The intent should be to make the call
+                assertEquals(Intent.ACTION_CALL_PRIVILEGED, callIntent.getAction());
             }
         }
     }
@@ -611,7 +628,9 @@ public class CallLogFragmentTest extends ActivityInstrumentationTestCase2<Fragme
                 privateOrUnknownOrVm[2] = true;
             } else {
                 int inout = mRnd.nextBoolean() ? Calls.OUTGOING_TYPE :  Calls.INCOMING_TYPE;
-                String number = new Formatter().format("1800123%04d", i).toString();
+                final Formatter formatter = new Formatter();
+                String number = formatter.format("1800123%04d", i).toString();
+                formatter.close();
                 insert(number, Calls.PRESENTATION_ALLOWED, NOW, RAND_DURATION, inout);
             }
         }
