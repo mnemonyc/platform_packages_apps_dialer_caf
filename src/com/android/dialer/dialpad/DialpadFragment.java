@@ -966,6 +966,10 @@ public class DialpadFragment extends Fragment
         // Long-pressing zero button will enter '+' instead.
         fragmentView.findViewById(R.id.zero).setOnLongClickListener(this);
 
+        // Long-pressing star button will enter ','(pause) instead.
+        fragmentView.findViewById(R.id.star).setOnLongClickListener(this);
+        // Long-pressing pound button will enter ';'(wait) instead.
+        fragmentView.findViewById(R.id.pound).setOnLongClickListener(this);
     }
 
     @Override
@@ -1442,6 +1446,28 @@ public class DialpadFragment extends Fragment
                     return false;
                 }
             }
+            case R.id.star: {
+                if (mDigits.length() > 1) {
+                    // Remove tentative input ('*') done by onTouch().
+                    removePreviousDigitIfPossible();
+                    keyPressed(KeyEvent.KEYCODE_COMMA);
+                    stopTone();
+                    mPressedDialpadKeys.remove(view);
+                    return true;
+                }
+                return false;
+            }
+            case R.id.pound: {
+                if (mDigits.length() > 1) {
+                    // Remove tentative input ('#') done by onTouch().
+                    removePreviousDigitIfPossible();
+                    keyPressed(KeyEvent.KEYCODE_SEMICOLON);
+                    stopTone();
+                    mPressedDialpadKeys.remove(view);
+                    return true;
+                }
+                return false;
+            }
         }
         return false;
     }
@@ -1613,8 +1639,7 @@ public class DialpadFragment extends Fragment
                                 ((DialtactsActivity) getActivity()).getCallOrigin() : null));
                 intent.putExtra(MSimConstants.SUBSCRIPTION_KEY, subscription);
                 startActivity(intent);
-                mClearDigitsOnStop = true;
-                getActivity().finish();
+                hideAndClearDialpad();
             }
         }
     }
