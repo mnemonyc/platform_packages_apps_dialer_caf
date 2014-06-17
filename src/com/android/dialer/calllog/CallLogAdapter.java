@@ -30,6 +30,7 @@ import android.provider.CallLog.Calls;
 import android.provider.ContactsContract.PhoneLookup;
 import android.telephony.MSimTelephonyManager;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,12 +41,14 @@ import android.widget.TextView;
 
 import com.android.common.widget.GroupingListAdapter;
 import com.android.contacts.common.ContactPhotoManager;
+import com.android.contacts.common.ContactPhotoManager.DefaultImageRequest;
 import com.android.contacts.common.util.UriUtils;
 import com.android.dialer.DialtactsActivity;
 import com.android.dialer.PhoneCallDetails;
 import com.android.dialer.PhoneCallDetailsHelper;
 import com.android.dialer.R;
 import com.android.dialer.util.ExpirableCache;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 
@@ -182,16 +185,18 @@ public class CallLogAdapter extends GroupingListAdapter
     /** Helper to set up contact photos. */
     private final ContactPhotoManager mContactPhotoManager;
     /** Helper to parse and process phone numbers. */
-    private PhoneNumberHelper mPhoneNumberHelper;
+    private PhoneNumberDisplayHelper mPhoneNumberHelper;
     /** Helper to group call log entries. */
     private final CallLogGroupBuilder mCallLogGroupBuilder;
 
     /** Can be set to true by tests to disable processing of requests. */
     private volatile boolean mRequestProcessingDisabled = false;
 
-    /** True if CallLogAdapter is created from the PhoneFavoriteFragment, where the primary
-     * action should be set to call a number instead of opening the detail page. */
-    private boolean mUseCallAsPrimaryAction = false;
+    /**
+     * Whether to show the secondary action button used to play voicemail or show call details.
+     * True if created from a CallLogFragment.
+     * False if created from the PhoneFavoriteFragment. */
+    private boolean mShowSecondaryActionButton = true;
 
     private boolean mIsCallLog = true;
     private int mNumMissedCalls = 0;
@@ -252,14 +257,14 @@ public class CallLogAdapter extends GroupingListAdapter
     };
 
     public CallLogAdapter(Context context, CallFetcher callFetcher,
-            ContactInfoHelper contactInfoHelper, boolean useCallAsPrimaryAction,
+            ContactInfoHelper contactInfoHelper, boolean showSecondaryActionButton,
             boolean isCallLog) {
         super(context);
 
         mContext = context;
         mCallFetcher = callFetcher;
         mContactInfoHelper = contactInfoHelper;
-        mUseCallAsPrimaryAction = useCallAsPrimaryAction;
+        mShowSecondaryActionButton = showSecondaryActionButton;
         mIsCallLog = isCallLog;
 
         mContactInfoCache = ExpirableCache.create(CONTACT_INFO_CACHE_SIZE);
@@ -269,7 +274,7 @@ public class CallLogAdapter extends GroupingListAdapter
         CallTypeHelper callTypeHelper = new CallTypeHelper(resources);
 
         mContactPhotoManager = ContactPhotoManager.getInstance(mContext);
-        mPhoneNumberHelper = new PhoneNumberHelper(resources);
+        mPhoneNumberHelper = new PhoneNumberDisplayHelper(resources);
         PhoneCallDetailsHelper phoneCallDetailsHelper = new PhoneCallDetailsHelper(
                 mContext, callTypeHelper, new PhoneNumberUtilsWrapper());
         mCallLogViewsHelper =
@@ -543,18 +548,33 @@ public class CallLogAdapter extends GroupingListAdapter
 
         final ContactInfo cachedContactInfo = getContactInfoFromCallLog(c);
 
-        if (!mUseCallAsPrimaryAction) {
-            // Sets the primary action to open call detail page.
-            views.primaryActionView.setTag(
-                    IntentProvider.getCallDetailIntentProvider(
-                            getCursor(), c.getPosition(), c.getLong(CallLogQuery.ID), count,
-                            subscription));
-        } else if (PhoneNumberUtilsWrapper.canPlaceCallsTo(number, numberPresentation)) {
+        final boolean isVoicemailNumber =
+                PhoneNumberUtilsWrapper.INSTANCE.isVoicemailNumber(number);
+
+        // Primary action is always to call, if possible.
+        if (PhoneNumberUtilsWrapper.canPlaceCallsTo(number, numberPresentation)) {
             // Sets the primary action to call the number.
             views.primaryActionView.setTag(IntentProvider.getReturnCallIntentProvider(number,
                     subscription));
         } else {
             views.primaryActionView.setTag(null);
+        }
+
+        if ( mShowSecondaryActionButton ) {
+            // Store away the voicemail information so we can play it directly.
+            if (callType == Calls.VOICEMAIL_TYPE) {
+                String voicemailUri = c.getString(CallLogQuery.VOICEMAIL_URI);
+                final long rowId = c.getLong(CallLogQuery.ID);
+                views.primaryActionView.setTag(
+                        IntentProvider.getPlayVoicemailIntentProvider(rowId, voicemailUri,
+                                subscription));
+            } else {
+                // Store the call details information.
+                views.primaryActionView.setTag(
+                        IntentProvider.getCallDetailIntentProvider(
+                                getCursor(), c.getPosition(), c.getLong(CallLogQuery.ID), count,
+                                subscription));
+            }
         }
 
         // Lookup contacts with this number
@@ -563,7 +583,7 @@ public class CallLogAdapter extends GroupingListAdapter
                 mContactInfoCache.getCachedValue(numberCountryIso);
         ContactInfo info = cachedInfo == null ? null : cachedInfo.getValue();
         if (!PhoneNumberUtilsWrapper.canPlaceCallsTo(number, numberPresentation)
-                || new PhoneNumberUtilsWrapper().isVoicemailNumber(number)) {
+                || isVoicemailNumber) {
             // If this is a number that cannot be dialed, there is no point in looking up a contact
             // for it.
             info = ContactInfo.EMPTY;
@@ -603,6 +623,7 @@ public class CallLogAdapter extends GroupingListAdapter
         CharSequence formattedNumber = info.formattedNumber;
         final int[] callTypes = getCallTypes(c, count);
         final String geocode = c.getString(CallLogQuery.GEOCODED_LOCATION);
+        final int sourceType = info.sourceType;
         final PhoneCallDetails details;
         Account mAccount;
 
@@ -612,15 +633,34 @@ public class CallLogAdapter extends GroupingListAdapter
                     duration, subscription, durationType);
         } else {
             details = new PhoneCallDetails(number, numberPresentation,
-                    formattedNumber, countryIso, geocode, callTypes, date,
-                    duration, name, ntype, label, lookupUri, photoUri, subscription, durationType);
+                    formattedNumber, countryIso, geocode, callTypes, date, duration, name,
+                    ntype, label, lookupUri, photoUri, subscription, durationType, sourceType);
         }
 
         final boolean isNew = c.getInt(CallLogQuery.IS_READ) == 0;
         // New items also use the highlighted version of the text.
         final boolean isHighlighted = isNew;
         mCallLogViewsHelper.setPhoneCallDetails(views, details, isHighlighted,
-                mUseCallAsPrimaryAction, mFilterString);
+                mShowSecondaryActionButton);
+
+        int contactType = ContactPhotoManager.TYPE_DEFAULT;
+
+        if (isVoicemailNumber) {
+            contactType = ContactPhotoManager.TYPE_VOICEMAIL;
+        } else if (mContactInfoHelper.isBusiness(info.sourceType)) {
+            contactType = ContactPhotoManager.TYPE_BUSINESS;
+        }
+
+        String lookupKey = lookupUri == null ? null
+                : ContactInfoHelper.getLookupKeyFromUri(lookupUri);
+
+        String nameForDefaultImage = null;
+        if (TextUtils.isEmpty(name)) {
+            nameForDefaultImage = mPhoneNumberHelper.getDisplayNumber(details.number,
+                    details.numberPresentation, details.formattedNumber).toString();
+        } else {
+            nameForDefaultImage = name;
+        }
 
         if(info.accountName!=null && info.accountType !=null) {
             mAccount =new Account(info.accountName,info.accountType);
@@ -628,13 +668,12 @@ public class CallLogAdapter extends GroupingListAdapter
             mAccount = null;
         }
         if (photoId == 0 && photoUri != null) {
-            setPhoto(views, photoUri, lookupUri, mAccount);
+            setPhoto(views, photoUri, lookupUri, nameForDefaultImage, lookupKey, contactType,
+                    mAccount);
         } else {
-            setPhoto(views, photoId, lookupUri, mAccount);
+            setPhoto(views, photoId, lookupUri, nameForDefaultImage, lookupKey, contactType,
+                    mAccount);
         }
-
-        views.quickContactView.setContentDescription(views.phoneCallDetailsViews.nameView.
-                getText());
 
         // Listen for the first draw
         if (mViewTreeObserver == null) {
@@ -860,18 +899,22 @@ public class CallLogAdapter extends GroupingListAdapter
         return callTypes;
     }
 
-    private void setPhoto(CallLogListItemViews views, long photoId,
-            Uri contactUri, Account mAccount) {
+    private void setPhoto(CallLogListItemViews views, long photoId, Uri contactUri,
+            String displayName, String identifier, int contactType, Account mAccount) {
         views.quickContactView.assignContactUri(contactUri);
-        mContactPhotoManager.loadThumbnail(views.quickContactView, photoId,
-                mAccount, false /* darkTheme */);
+        DefaultImageRequest request = new DefaultImageRequest(displayName, identifier,
+                contactType);
+        mContactPhotoManager.loadThumbnail(views.quickContactView, photoId, mAccount,
+                false /* darkTheme */, request);
     }
 
-    private void setPhoto(CallLogListItemViews views, Uri photoUri,
-            Uri contactUri, Account mAccount) {
+    private void setPhoto(CallLogListItemViews views, Uri photoUri, Uri contactUri,
+            String displayName, String identifier, int contactType, Account mAccount) {
         views.quickContactView.assignContactUri(contactUri);
-        mContactPhotoManager.loadDirectoryPhoto(views.quickContactView, photoUri, mAccount,
-                false /* darkTheme */);
+        DefaultImageRequest request = new DefaultImageRequest(displayName, identifier,
+                contactType);
+        mContactPhotoManager.loadDirectoryPhoto(views.quickContactView, photoUri,
+                mAccount, false /* darkTheme */, request);
     }
 
 

@@ -18,6 +18,7 @@ package com.android.dialer;
 
 import android.app.Activity;
 import android.app.LoaderManager.LoaderCallbacks;
+import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -32,6 +33,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.SystemProperties;
 import android.provider.CallLog;
+import android.provider.ContactsContract;
 import android.provider.CallLog.Calls;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.Contacts;
@@ -58,6 +60,7 @@ import android.widget.Toast;
 import com.android.contacts.common.ContactPhotoManager;
 import com.android.contacts.common.CallUtil;
 import com.android.contacts.common.ClipboardUtils;
+import com.android.contacts.common.ContactPhotoManager.DefaultImageRequest;
 import com.android.contacts.common.GeoUtil;
 import com.android.contacts.common.model.Contact;
 import com.android.contacts.common.model.ContactLoader;
@@ -68,7 +71,7 @@ import com.android.dialer.calllog.CallDetailHistoryAdapter;
 import com.android.dialer.calllog.CallTypeHelper;
 import com.android.dialer.calllog.ContactInfo;
 import com.android.dialer.calllog.ContactInfoHelper;
-import com.android.dialer.calllog.PhoneNumberHelper;
+import com.android.dialer.calllog.PhoneNumberDisplayHelper;
 import com.android.dialer.calllog.PhoneNumberUtilsWrapper;
 import com.android.dialer.util.AsyncTaskExecutor;
 import com.android.dialer.util.AsyncTaskExecutors;
@@ -119,7 +122,7 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
     public static final String EXTRA_FROM_NOTIFICATION = "EXTRA_FROM_NOTIFICATION";
 
     private CallTypeHelper mCallTypeHelper;
-    private PhoneNumberHelper mPhoneNumberHelper;
+    private PhoneNumberDisplayHelper mPhoneNumberHelper;
     private PhoneCallDetailsHelper mPhoneCallDetailsHelper;
     private TextView mHeaderTextView;
     private View mHeaderOverlayView;
@@ -342,7 +345,7 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
         mResources = getResources();
 
         mCallTypeHelper = new CallTypeHelper(getResources());
-        mPhoneNumberHelper = new PhoneNumberHelper(mResources);
+        mPhoneNumberHelper = new PhoneNumberDisplayHelper(mResources);
         mPhoneCallDetailsHelper = new PhoneCallDetailsHelper(this, mCallTypeHelper,
                 new PhoneNumberUtilsWrapper());
         mVoicemailStatusHelper = new VoicemailStatusHelperImpl();
@@ -592,14 +595,14 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
                             mainActionDescription);
                 }
 
+                final CharSequence displayNumber =
+                        mPhoneNumberHelper.getDisplayNumber(
+                                firstDetails.number,
+                                firstDetails.numberPresentation,
+                                firstDetails.formattedNumber);
+
                 // This action allows to call the number that places the call.
                 if (canPlaceCallsTo) {
-                    final CharSequence displayNumber =
-                            mPhoneNumberHelper.getDisplayNumber(
-                                    firstDetails.number,
-                                    firstDetails.numberPresentation,
-                                    firstDetails.formattedNumber);
-
                     Intent intent = CallUtil.getCallIntent(mNumber);
                     if (mSubscription != -1) {
                         intent.putExtra(MSimConstants.SUBSCRIPTION_KEY, mSubscription);
@@ -702,7 +705,20 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
                             }
                         },
                         historyList);
-                loadContactPhotos(photoUri);
+
+                final String displayNameForDefaultImage = TextUtils.isEmpty(firstDetails.name) ?
+                        displayNumber.toString() : firstDetails.name.toString();
+
+                final String lookupKey = ContactInfoHelper.getLookupKeyFromUri(contactUri);
+
+                final boolean isBusiness = mContactInfoHelper.isBusiness(firstDetails.sourceType);
+
+                final int contactType =
+                        isVoicemailNumber? ContactPhotoManager.TYPE_VOICEMAIL :
+                        isBusiness ? ContactPhotoManager.TYPE_BUSINESS :
+                        ContactPhotoManager.TYPE_DEFAULT;
+
+                loadContactPhotos(photoUri, displayNameForDefaultImage, lookupKey, contactType);
                 findViewById(R.id.call_detail).setVisibility(View.VISIBLE);
             }
         }
@@ -723,7 +739,13 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
             mMainActionPushLayerView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    startActivity(actionIntent);
+                    try {
+                        startActivity(actionIntent);
+                    } catch (ActivityNotFoundException e) {
+                        final Toast toast = Toast.makeText(CallDetailActivity.this,
+                                R.string.add_contact_not_available, Toast.LENGTH_SHORT);
+                        toast.show();
+                    }
                 }
             });
             mMainActionPushLayerView.setContentDescription(actionDescription);
@@ -765,6 +787,7 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
             final CharSequence numberLabel;
             final Uri photoUri;
             final Uri lookupUri;
+            int sourceType;
             // If this is not a regular number, there is no point in looking it up in the contacts.
             ContactInfo info =
                     PhoneNumberUtilsWrapper.canPlaceCallsTo(number, numberPresentation)
@@ -779,6 +802,7 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
                 numberLabel = "";
                 photoUri = null;
                 lookupUri = null;
+                sourceType = 0;
             } else {
                 formattedNumber = info.formattedNumber;
                 nameText = info.name;
@@ -786,12 +810,13 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
                 numberLabel = info.label;
                 photoUri = info.photoUri;
                 lookupUri = info.lookupUri;
+                sourceType = info.sourceType;
             }
             return new PhoneCallDetails(number, numberPresentation,
                     formattedNumber, countryIso, geocode,
                     new int[] { callType }, date, duration, nameText,
                     numberType, numberLabel, lookupUri, photoUri, subscription,
-                    durationType);
+                    durationType, sourceType);
         } finally {
             if (callCursor != null) {
                 callCursor.close();
@@ -800,10 +825,12 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
     }
 
     /** Load the contact photos and places them in the corresponding views. */
-    private void loadContactPhotos(Uri photoUri) {
-        //Do not show sim contact icon in call detail.
+    private void loadContactPhotos(Uri photoUri, String displayName, String lookupKey,
+            int contactType) {
+        final DefaultImageRequest request = new DefaultImageRequest(displayName, lookupKey,
+                contactType);
         mContactPhotoManager.loadPhoto(mContactBackgroundView, photoUri, null,
-                mContactBackgroundView.getWidth(), true);
+                mContactBackgroundView.getWidth(), true, request);
     }
 
     static final class ViewEntry {

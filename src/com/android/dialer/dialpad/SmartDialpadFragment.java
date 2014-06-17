@@ -648,7 +648,8 @@ public class SmartDialpadFragment extends DialpadFragment
             }
             QuickContactBadge photo = view.getQuickContact();
             photo.assignContactFromPhone(cursor.getString(QUERY_NUMBER), true);
-            ContactPhotoManager.getInstance(mContext).loadThumbnail(photo, photoId, account, true);
+            ContactPhotoManager.getInstance(mContext).loadThumbnail(photo, photoId, account, true,
+                    null);
             view.setPresence(null);
 
         }
