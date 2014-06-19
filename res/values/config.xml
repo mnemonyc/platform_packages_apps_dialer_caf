@@ -32,4 +32,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
     <!-- Dismiss the Keyguard screen when there is active call. -->
     <bool name="config_incall_dismiss_keyguard">true</bool>
+
+    <bool name="ims_enabled">true</bool>
+
 </resources>

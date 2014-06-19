@@ -266,6 +266,10 @@ public class DialpadFragment extends Fragment
     private static final String ADD_PARTICIPANT_KEY = "add_participant";
     private boolean mAddParticipant = false;
 
+    /** Identifier for the "IMSVT call" intent extra. */
+    private static final String IMS_VIDEOCALL_KEY = "ims_videocall";
+    private boolean mIMSVideoCall = false;
+
     /**
      * Identifier for intent extra for sending an empty Flash message for
      * CDMA networks. This message is used by the network to simulate a
@@ -879,6 +883,7 @@ public class DialpadFragment extends Fragment
         // We show "video call setting" menu only when the csvt is supported
         //which means the prop "persist.radio.csvt.enabled" = true
         videocallsettingsMenuItem.setVisible(isVTSupported());
+        videocallMenuItem.setVisible(isVTSupported() || isIMSSupported());
 
         // We show "add to contacts" menu only when the user is
         // seeing usual dialpad and has typed at least one digit.
@@ -912,11 +917,6 @@ public class DialpadFragment extends Fragment
             addToContactMenuItem.setIntent(DialtactsActivity.getAddNumberToContactIntent(digits));
             addToContactMenuItem.setVisible(true);
 
-            //add for csvt
-            videocallMenuItem.setVisible(isVTSupported());
-            if(isVTSupported()){
-                videocallMenuItem.setIntent(getVTCallIntent(digits.toString()));
-            }
         }
     }
 
@@ -1806,6 +1806,15 @@ public class DialpadFragment extends Fragment
             case R.id.menu_add_wait:
                 updateDialString(WAIT);
                 return true;
+            case R.id.menu_video_call:
+                if(isVTSupported()){
+                    final CharSequence digits = mDigits.getText();
+                    startActivity(getVTCallIntent(digits.toString()));
+                    hideAndClearDialpad(false);
+                } else if (isIMSSupported()){
+                    placeIMSVTCall();
+                }
+                return true;
             case R.id.menu_video_call_settings:
                 startActivity(getVTCallSettingsIntent());
                 return true;
@@ -2068,11 +2077,65 @@ public class DialpadFragment extends Fragment
         return DialtactsActivity.isCsvtActive();
     }
     private boolean isVTSupported() {
-        return SystemProperties.getBoolean("persist.radio.csvt.enabled", false);
-        //return this.getResources().getBoolean(R.bool.csvt_enabled);
+        boolean CSVTSupported = SystemProperties.getBoolean("persist.radio.csvt.enabled", false);
+        return CSVTSupported && MoreContactUtils.isAnySimAviable();
     }
 
     // add for csvt end
+
+    public void placeIMSVTCall() {
+        Log.i(TAG, "Dialer place ims vt call.");
+        boolean isDigitsShown = mDigits.isShown();
+        final String number = mDigits.getText().toString();
+
+        if (isDigitsShown && isDigitsEmpty()) { // No number entered.
+            handleDialButtonClickWithEmptyDigits();
+        } else if (!isDigitsShown && number.isEmpty()) {
+            // mRecipients must be empty
+            // TODO add support for conference URI in last number dialed
+            // use ErrorDialogFragment instead? also see android.app.AlertDialog
+            android.widget.Toast.makeText(getActivity(),
+                    "Error: Cannot dial.  Please provide conference recipients.",
+                    android.widget.Toast.LENGTH_SHORT).show();
+        } else {
+            // "persist.radio.otaspdial" is a temporary hack needed for one carrier's automated
+            // test equipment.
+            // TODO: clean it up.
+            if (number != null
+                    && !TextUtils.isEmpty(mProhibitedPhoneNumberRegexp)
+                    && number.matches(mProhibitedPhoneNumberRegexp)
+                    && (SystemProperties.getInt("persist.radio.otaspdial", 0) != 1)) {
+                Log.i(TAG, "The phone number is prohibited explicitly by a rule.");
+                if (getActivity() != null) {
+                    DialogFragment dialogFragment = ErrorDialogFragment.newInstance(
+                            R.string.dialog_phone_call_prohibited_message);
+                    dialogFragment.show(getFragmentManager(), "phone_prohibited_dialog");
+                }
+
+                // Clear the digits just in case.
+                mDigits.getText().clear();
+            } else {
+                final Intent intent = CallUtil.getCallIntent(number,
+                        (getActivity() instanceof DialtactsActivity ?
+                                ((DialtactsActivity) getActivity()).getCallOrigin() : null));
+                if (!isDigitsShown) {
+                    // must be dial conference add extra
+                    intent.putExtra(EXTRA_DIAL_CONFERENCE_URI, true);
+                }
+                intent.putExtra(ADD_PARTICIPANT_KEY, mAddParticipant);
+                mIMSVideoCall = true;
+                intent.putExtra(IMS_VIDEOCALL_KEY, mIMSVideoCall);
+                Log.e(TAG, "ims video call intent: " + intent + "extras" + intent.getExtras());
+                startActivity(intent);
+                hideAndClearDialpad(false);
+            }
+        }
+    }
+
+    public boolean isIMSSupported(){
+        boolean IMSSupported = this.getResources().getBoolean(R.bool.ims_enabled);
+        return IMSSupported && MoreContactUtils.isAnySimAviable();
+    }
 
     @Override
     public void onHiddenChanged(boolean hidden) {

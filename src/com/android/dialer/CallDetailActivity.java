@@ -639,11 +639,17 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
 
                     // The third action allows to invoke videocall to the number that placed the
                     // call.
-                    final boolean canVTCall = canPlaceCallsTo && isVTSupported() && !isSipNumber;
+                    final boolean canVTCall = canPlaceCallsTo && (isVTSupported() || isIMSSupported()) && !isSipNumber;
                     if (!MOVE_VTCALL_BTN_TO_OPTIONSMENU && canVTCall) {
+                        Intent vtIntent;
+                        if (isVTSupported()){
+                            vtIntent = getVTCallIntent(mNumber);
+                        } else {
+                            vtIntent = getIMSVTCallIntent(mNumber);
+                        }
                         entry.setThirdAction(
                             R.drawable.ic_contact_quick_contact_call_video_holo_dark,
-                            getVTCallIntent(mNumber),
+                            vtIntent,
                             getString(R.string.description_videocall,
                             nameOrNumber));
                         mHasVideoCallOption = false;
@@ -1036,7 +1042,16 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
         return super.onPrepareOptionsMenu(menu);
     }
     public void onMenuVTCall(MenuItem menuItem) {
-        startActivity(getVTCallIntent(mNumber));
+        if (isVTSupported()){
+            startActivity(getVTCallIntent(mNumber));
+        } else if (isIMSSupported()) {
+            // Make sure phone isn't already busy before starting direct call
+            TelephonyManager tm = (TelephonyManager)
+                    getSystemService(Context.TELEPHONY_SERVICE);
+            if (tm.getCallState() == TelephonyManager.CALL_STATE_IDLE) {
+                startActivity(getIMSVTCallIntent(mNumber));
+            }
+        }
     }
 
     public void onMenuIpCallBySlot1(MenuItem menuItem) {
@@ -1217,11 +1232,26 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
         }
 
     public boolean isVTSupported(){
-        return SystemProperties.getBoolean(
-                "persist.radio.csvt.enabled"
-       /* TelephonyProperties.PROPERTY_CSVT_ENABLED*/, false);
+        boolean ICSVTSupported = SystemProperties.getBoolean("persist.radio.csvt.enabled", false);
+        return ICSVTSupported && MoreContactUtils.isAnySimAviable();
     }
     //add for csvt
+
+    private Intent getIMSVTCallIntent(String number) {
+        Intent intent = CallUtil.getCallIntent(
+                Uri.fromParts(CallUtil.SCHEME_TEL, number, null));
+        if (mSubscription != -1) {
+            intent.putExtra(MSimConstants.SUBSCRIPTION_KEY, mSubscription);
+            Log.d(TAG, "Start the activity and the call log sub is: " + mSubscription);
+        }
+        intent.putExtra("ims_videocall", true);
+        return intent;
+    }
+
+    public boolean isIMSSupported(){
+        boolean IMSSupported = this.getResources().getBoolean(R.bool.ims_enabled);
+        return IMSSupported && MoreContactUtils.isAnySimAviable();
+    }
 
     /** Returns the given text, forced to be left-to-right. */
     private static CharSequence forceLeftToRight(CharSequence text) {
