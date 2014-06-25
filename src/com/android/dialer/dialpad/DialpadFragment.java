@@ -31,7 +31,6 @@ import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Paint;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
 import android.net.Uri;
@@ -319,52 +318,10 @@ public class DialpadFragment extends Fragment
     private static final String PREF_DIGITS_FILLED_BY_INTENT = "pref_digits_filled_by_intent";
     private static final int DIAL_BUTTON_SUB_WIDTH_SP = 100;
 
-    private float mDefaultTextSize_sp;
-    private String beforeTextString = "";
-
-    private float px2Sp(float px) {
-        DisplayMetrics displayMetrics = getActivity().getResources().getDisplayMetrics();
-        return px / displayMetrics.scaledDensity;
-    }
     private float sp2Px(float sp) {
         DisplayMetrics displayMetrics = getActivity().getResources().getDisplayMetrics();
         return sp * displayMetrics.scaledDensity;
     }
-
-    private void refreshDigitTextSize(Editable input) {
-        // the digit text size would not be refresh when text not change or
-        // digits' width is zero.
-        if (mDigits.getWidth() <= 0 || beforeTextString.equals(input.toString()))
-            return;
-
-        float newSize_sp = mDefaultTextSize_sp;
-
-        Paint paint = new Paint();
-        paint.setTextSize(mDefaultTextSize_sp);
-        final float inputTextLength_sp = paint.measureText(input.toString());
-        final float oneCharLength_sp = paint.measureText("0");
-
-        final float digitsWidth_px = mDigits.getWidth();
-        final float digitsWidth_sp = px2Sp(digitsWidth_px);
-
-        // when text's length is longer than digits' width, the text size should
-        // be decrease.
-        if (inputTextLength_sp > digitsWidth_sp) {
-            newSize_sp = mDefaultTextSize_sp
-                    - ((inputTextLength_sp - digitsWidth_sp) / oneCharLength_sp) * 2;
-        }
-
-        if (newSize_sp > mDefaultTextSize_sp) {
-            newSize_sp = mDefaultTextSize_sp;
-        }
-        if (newSize_sp < mDefaultTextSize_sp / 2.0) {
-            newSize_sp = (float) (mDefaultTextSize_sp / 2.0);
-        }
-
-        mDigits.setTextSize(newSize_sp);
-        beforeTextString = input.toString();
-    }
-
    /**
      * Return an Intent for launching voicemail screen.
      */
@@ -417,7 +374,6 @@ public class DialpadFragment extends Fragment
             mDialpadQueryListener.onDialpadQueryChanged(mDigits.getText().toString());
         }
         updateDialAndDeleteButtonEnabledState();
-        refreshDigitTextSize(input);
     }
 
     @Override
@@ -486,7 +442,6 @@ public class DialpadFragment extends Fragment
         mDigits.setOnLongClickListener(this);
         mDigits.addTextChangedListener(this);
         PhoneNumberFormatter.setPhoneNumberFormattingTextWatcher(getActivity(), mDigits);
-        mDefaultTextSize_sp = px2Sp(mDigits.getTextSize());
 
         // Check for the presence of the keypad
         View oneButton = fragmentView.findViewById(R.id.one);
@@ -861,9 +816,6 @@ public class DialpadFragment extends Fragment
         stopWatch.lap("bes");
 
         stopWatch.stopAndLog(TAG, 50);
-
-        refreshDigitTextSize(mDigits.getText());
-
     }
 
     @Override
@@ -906,7 +858,7 @@ public class DialpadFragment extends Fragment
         outState.putBoolean(PREF_DIGITS_FILLED_BY_INTENT, mDigitsFilledByIntent);
     }
 
-    private void setupMenuItems(Menu menu) {
+    public void setupMenuItems(Menu menu) {
         final MenuItem addToContactMenuItem = menu.findItem(R.id.menu_add_contacts);
         final MenuItem videocallMenuItem = menu.findItem(R.id.menu_video_call);
         final MenuItem videocallsettingsMenuItem = menu.findItem(R.id.menu_video_call_settings);

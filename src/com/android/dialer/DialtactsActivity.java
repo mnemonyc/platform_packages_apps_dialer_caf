@@ -610,6 +610,7 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
             case R.id.overflow_menu: {
                 if (isDialpadShowing()) {
                     mDialpadOverflowMenu.show();
+                    mDialpadFragment.setupMenuItems(mDialpadOverflowMenu.getMenu());
                 } else {
                     mOverflowMenu.show();
                 }
@@ -929,7 +930,8 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
     }
 
     private void setDialButtonVisibility(Resources r) {
-			        if(mDialpadButton.isShown()){
+        if (mDialpadButton.getVisibility() == View.VISIBLE) {
+            mDialButton.setVisibility(View.GONE);
             mDialButtonSub.setVisibility(View.GONE);
             return;
         }
