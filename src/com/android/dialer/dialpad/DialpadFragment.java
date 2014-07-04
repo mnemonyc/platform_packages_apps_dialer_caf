@@ -1639,8 +1639,7 @@ public class DialpadFragment extends Fragment
                                 ((DialtactsActivity) getActivity()).getCallOrigin() : null));
                 intent.putExtra(MSimConstants.SUBSCRIPTION_KEY, subscription);
                 startActivity(intent);
-                mClearDigitsOnStop = true;
-                getActivity().finish();
+                hideAndClearDialpad();
             }
         }
     }
