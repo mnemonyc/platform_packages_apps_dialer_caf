@@ -29,4 +29,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <bool name="smartdialer_enabled">false</bool>
     <bool name="call_duration_enabled">true</bool>
     <bool name="call_durationtype_enabled">false</bool>
+
+    <!-- Dismiss the Keyguard screen when there is active call. -->
+    <bool name="config_incall_dismiss_keyguard">true</bool>
 </resources>
