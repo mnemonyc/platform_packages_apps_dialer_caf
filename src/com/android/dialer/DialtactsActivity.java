@@ -762,7 +762,7 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
             mDialpadFragment.setYFraction(0);
         }
         ft.show(mDialpadFragment);
-        ft.commit();
+        ft.commitAllowingStateLoss();
         mDialButton.setVisibility(shouldShowOnscreenDialButton() ? View.VISIBLE : View.GONE);
         mDialButtonSub.setVisibility(View.GONE); 
         mDialpadButton.setVisibility(View.GONE);
