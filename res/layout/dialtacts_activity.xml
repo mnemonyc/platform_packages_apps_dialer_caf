@@ -151,15 +151,17 @@
     </FrameLayout>
 
     <!-- Fake action bar -->
-    <FrameLayout
+    <LinearLayout
         android:layout_height="@dimen/fake_action_bar_height"
         android:layout_width="match_parent"
         android:id="@+id/fake_action_bar"
+        android:orientation="horizontal"
         android:background="@color/actionbar_background_color">
         <ImageButton
             android:id="@+id/call_history_button"
             android:layout_width="@dimen/fake_menu_button_min_width"
             android:layout_height="match_parent"
+            android:layout_weight="1"
             android:layout_gravity="bottom|start"
             android:background="?android:attr/selectableItemBackground"
             android:contentDescription="@string/action_menu_call_history_description"
@@ -168,6 +170,7 @@
             android:id="@+id/dialpad_button"
             android:layout_width="@dimen/fake_menu_button_min_width"
             android:layout_height="match_parent"
+            android:layout_weight="1"
             android:layout_gravity="bottom|center"
             android:background="?android:attr/selectableItemBackground"
             android:contentDescription="@string/action_menu_dialpad_button"
@@ -176,6 +179,7 @@
             android:id="@+id/dial_button"
             android:layout_width="@dimen/fake_menu_button_min_width"
             android:layout_height="match_parent"
+            android:layout_weight="1"
             android:layout_gravity="bottom|center"
             android:background="@drawable/btn_call"
             android:contentDescription="@string/description_dial_button"
@@ -185,9 +189,19 @@
             android:id="@+id/overflow_menu"
             android:layout_width="@dimen/fake_menu_button_min_width"
             android:layout_height="match_parent"
-            android:layout_gravity="bottom|end"
+            android:layout_weight="1"
+            android:layout_gravity="bottom|center"
             android:src="@drawable/ic_menu_overflow_lt"
             android:contentDescription="@string/action_menu_overflow_description"
             android:background="?android:attr/selectableItemBackground"/>
-    </FrameLayout>
+        <ImageButton
+            android:id="@+id/dialConferenceButton"
+            android:layout_width="@dimen/fake_menu_button_min_width"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_gravity="bottom|end"
+            android:src="@drawable/ic_add_group_holo_dark"
+            android:contentDescription="@string/description_dial_button"
+            android:background="?android:attr/selectableItemBackground"/>
+    </LinearLayout>
 </LinearLayout>
