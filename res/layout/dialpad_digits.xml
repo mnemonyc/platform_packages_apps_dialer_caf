@@ -55,4 +55,22 @@
         android:background="@drawable/dialpad_key_colors"
         android:contentDescription="@string/description_delete_button"
         android:src="@drawable/ic_dial_action_delete" />
+    <!-- recipients replaces digits and deleteButton when
+    dial conference controls are made visible. -->
+    <EditText
+        android:id="@+id/recipients"
+        android:layout_width="0dip"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_marginLeft="8dip"
+        android:layout_weight="1"
+        android:autoText="true"
+        android:background="@android:color/transparent"
+        android:hint="@string/to_hint"
+        android:textColorHint="@color/searchbox_hint_text_color"
+        android:maxLength="2000"
+        android:maxLines="3"
+        android:minHeight="48dip"
+        android:textColor="@color/dialpad_digits_text_color"
+        android:textSize="16sp" />
 </LinearLayout>
