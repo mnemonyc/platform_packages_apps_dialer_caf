@@ -1272,7 +1272,7 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
      * Shows the search fragment
      */
     private void enterSearchUi(boolean smartDialSearch, String query) {
-        if (getFragmentManager().isDestroyed()) {
+        if (getFragmentManager().isDestroyed() || !isSafeToCommitTransactions()) {
             // Weird race condition where fragment is doing work after the activity is destroyed
             // due to talkback being on (b/10209937). Just return since we can't do any
             // constructive here.
