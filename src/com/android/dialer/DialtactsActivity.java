@@ -749,6 +749,41 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
                     this.startActivity(exportIntent);
                 }
                 break;
+            case ImportExportDialogFragment.SUBACTIVITY_SHARE_VISILBLE_CONTACTS:
+                if (resultCode == RESULT_OK) {
+                    Bundle result = data.getExtras().getBundle(RESULT_KEY);
+                    StringBuilder uriListBuilder = new StringBuilder();
+                    int index = 0;
+                    int size =result.keySet().size();
+                    // The premise of allowing to share contacts is that the
+                    // amount of those contacts which have been selected to
+                    // append and will be put into intent as extra data to
+                    // deliver is not more that 2000, because too long arguments
+                    // will cause TransactionTooLargeException in binder.
+                    if (size > ImportExportDialogFragment.MAX_COUNT_ALLOW_SHARE_CONTACT) {
+                        Toast.makeText(this, R.string.share_failed,
+                                Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    Iterator<String> it = result.keySet().iterator();
+                    String[] values = null;
+                    while (it.hasNext()) {
+                        if (index != 0) {
+                            uriListBuilder.append(':');
+                        }
+                        values = result.getStringArray(it.next());
+                        uriListBuilder.append(values[0]);
+                        index++;
+                    }
+                    Uri uri = Uri.withAppendedPath(
+                            Contacts.CONTENT_MULTI_VCARD_URI,
+                            Uri.encode(uriListBuilder.toString()));
+                    final Intent intent = new Intent(Intent.ACTION_SEND);
+                    intent.setType(Contacts.CONTENT_VCARD_TYPE);
+                    intent.putExtra(Intent.EXTRA_STREAM, uri);
+                    startActivity(intent);
+                }
+                break;
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -762,7 +797,7 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
             mDialpadFragment.setYFraction(0);
         }
         ft.show(mDialpadFragment);
-        ft.commit();
+        ft.commitAllowingStateLoss();
         mDialButton.setVisibility(shouldShowOnscreenDialButton() ? View.VISIBLE : View.GONE);
         mDialButtonSub.setVisibility(View.GONE); 
         mDialpadButton.setVisibility(View.GONE);
@@ -1237,7 +1272,7 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
      * Shows the search fragment
      */
     private void enterSearchUi(boolean smartDialSearch, String query) {
-        if (getFragmentManager().isDestroyed()) {
+        if (getFragmentManager().isDestroyed() || !isSafeToCommitTransactions()) {
             // Weird race condition where fragment is doing work after the activity is destroyed
             // due to talkback being on (b/10209937). Just return since we can't do any
             // constructive here.
