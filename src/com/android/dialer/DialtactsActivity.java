@@ -40,6 +40,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.os.ServiceManager;
+import android.os.SystemProperties;
 import android.provider.CallLog.Calls;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Intents;
@@ -82,6 +83,7 @@ import com.android.dialer.dialpad.DialpadFragment;
 import com.android.dialer.dialpad.SmartDialpadFragment;
 import com.android.dialer.dialpad.SmartDialNameMatcher;
 import com.android.dialer.dialpad.SmartDialPrefix;
+import com.android.dialer.dialpad.DialpadFragment.HostInterface;
 import com.android.dialer.interactions.PhoneNumberInteraction;
 import com.android.dialer.list.AllContactsActivity;
 import com.android.dialer.list.DragDropController;
@@ -96,6 +98,7 @@ import com.android.dialer.list.SmartDialSearchFragment;
 import com.android.dialerbind.DatabaseHelperManager;
 import com.android.internal.telephony.ITelephony;
 import com.android.internal.telephony.MSimConstants;
+import com.android.internal.telephony.TelephonyProperties;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -201,6 +204,7 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
     protected View mDialButton2;
     protected View mCallActionSubIcon2;
     
+    private ImageView mConferenceDailButton;
     private PopupMenu mOverflowMenu;
     private PopupMenu mDialpadOverflowMenu;
 
@@ -507,6 +511,8 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
         prepareVoiceSearchButton();
         mFirstLaunch = false;
         mDialerDatabaseHelper.startSmartDialUpdateThread();
+        setConferenceDailButtonImage(false);
+        setConferenceDialButtonVisibility(true);
     }
 
     @Override
@@ -604,6 +610,11 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
         activity.startActivity(settingsIntent);
     }
 
+    public static boolean isCallOnImsEnabled() {
+        return (SystemProperties.getBoolean(
+                TelephonyProperties.CALLS_ON_IMS_ENABLED_PROPERTY, false));
+    }
+
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
@@ -622,6 +633,13 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
                 // show the dialpad because the user has explicitly clicked the dialpad
                 // button.
                 mInCallDialpadUp = false;
+                if (mDialpadFragment != null) {
+                    mDialpadFragment.showDialConference(false);
+                }
+                if (mConferenceDailButton != null) {
+                    setConferenceDailButtonImage(false);
+                    setConferenceDialButtonVisibility(true);
+                }
                 showDialpadFragment(true);
                 break;
             case R.id.dial_button:
@@ -638,6 +656,17 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
                     mDialpadFragment.dialWidgetSwitched(MSimConstants.SUB2);
                 }
                 return;
+            case R.id.dialConferenceButton:
+                // Press dialConferenceButton need to update mDialpadButton, mDialButton
+                // and DialpadFragment before update recpients textView and dialConference
+                // Button. As mDialpadButton and mDialButton are toggle based on dialPad
+                // digits visibility, first we to set mDialpadButton as GONE before update
+                // the correct set of views.
+                showDialpadFragment(true);
+                mDialpadButton.setVisibility(view.VISIBLE);
+                mDialButton.setVisibility(view.GONE);
+                mDialpadFragment.dialConferenceButtonPressed();
+                break;
             case R.id.call_history_button:
                 // Use explicit CallLogActivity intent instead of ACTION_VIEW +
                 // CONTENT_TYPE, so that we always open our call log from our dialer
@@ -805,7 +834,7 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
         if (mDialpadOverflowMenu == null) {
             mDialpadOverflowMenu = mDialpadFragment.buildOptionsMenu(mMenuButton);
         }
-
+        setConferenceDialButtonVisibility(animate);
         mMenuButton.setOnTouchListener(mDialpadOverflowMenu.getDragToOpenListener());
         refreshButton();
     }
@@ -962,6 +991,9 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
 
         mDialpadButton = findViewById(R.id.dialpad_button);
         mDialpadButton.setOnClickListener(this);
+
+        mConferenceDailButton = (ImageView) findViewById(R.id.dialConferenceButton);
+        mConferenceDailButton.setOnClickListener(this);
     }
 
     private void setDialButtonVisibility(Resources r) {
@@ -1349,6 +1381,8 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
 
     @Override
     public void onBackPressed() {
+        setConferenceDailButtonImage(false);
+        setConferenceDialButtonVisibility(true);
         if (mDialpadFragment != null && mDialpadFragment.isVisible()) {
             hideDialpadFragment(true, false);
         } else if (getInSearchUi()) {
@@ -1395,6 +1429,30 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
         }
         if (enabled && mDialpadButton != null && !mDialpadButton.isShown()){
             refreshButton();
+        }
+    }
+
+    @Override
+    public void setConferenceDialButtonVisibility(boolean enabled) {
+        if(mConferenceDailButton != null) {
+            mConferenceDailButton.setVisibility(enabled && isCallOnImsEnabled() ?
+                    View.VISIBLE : View.GONE);
+        }
+    }
+
+    @Override
+    public void setConferenceDailButtonImage(boolean setAddParticipantButton) {
+        if(mConferenceDailButton != null) {
+            /*
+             * If dial conference view is shown, button should show dialpad
+             * image. Pressing the button again will return to normal dialpad
+             * view. If normal dialpad view is shown, button should show dial
+             * conference image. Pressing the button again will show dial
+             * conference view
+             */
+            mConferenceDailButton
+                    .setImageResource(setAddParticipantButton ? R.drawable.ic_add_group_holo_dark
+                            : R.drawable.ic_dialpad_holo_dark);
         }
     }
 
