@@ -31,6 +31,8 @@ import com.android.contacts.common.MoreContactUtils;
 import com.android.dialer.PhoneCallDetails;
 import com.android.dialer.R;
 
+import android.util.Log;
+import java.lang.Long;
 /**
  * Adapter for a ListView containing history items from the details of a call.
  */
@@ -145,9 +147,11 @@ public class CallDetailHistoryAdapter extends BaseAdapter {
         TextView durationView = (TextView) result.findViewById(R.id.duration);
 
         int callType = details.callTypes[0];
+        Log.e("CallDetailHistoryAdapter", "callType = " + callType);
         callTypeIconView.clear();
         callTypeIconView.add(callType);
         callTypeTextView.setText(mCallTypeHelper.getCallTypeText(callType));
+
         // Set the sub icon.
         if (MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
             subIconView.setVisibility(View.VISIBLE);
@@ -165,6 +169,8 @@ public class CallDetailHistoryAdapter extends BaseAdapter {
         // Set the duration
         boolean callDurationEnabled = mContext.getResources().getBoolean(
                 R.bool.call_duration_enabled);
+        Log.e("CallDetailHistoryAdapter", "callDurationEnabled = " + callDurationEnabled);
+        Log.e("CallDetailHistoryAdapter", "missed call?" + CallTypeHelper.isMissedCallType(callType));
         if (!callDurationEnabled || Calls.VOICEMAIL_TYPE == callType
                 || CallTypeHelper.isMissedCallType(callType)) {
             durationView.setVisibility(View.GONE);
@@ -173,7 +179,45 @@ public class CallDetailHistoryAdapter extends BaseAdapter {
             durationView.setText(formatDuration(details.duration, details.durationType));
         }
 
+        //set duration for VoLTE and VT
+        setImsCallDurationDetails(result, details);
+
         return result;
+    }
+
+    private void setImsCallDurationDetails(View result, PhoneCallDetails details){
+        int callType = details.callTypes[0];
+        TextView callTypeTextView_4G = (TextView) result.findViewById(R.id.call_type_text_4g);
+        TextView videoCallDurationView = (TextView) result.findViewById(R.id.video_call_duration);
+        if(mCallTypeHelper.isIMSCall(callType)){
+            callTypeTextView_4G.setVisibility(View.VISIBLE);
+            callTypeTextView_4G.setText("(HD)");
+            videoCallDurationView.setVisibility(View.VISIBLE);
+            String videoCallDuration = details.imsvideocallduration;
+            String voiceCallDuration = null;
+            Log.e("CallDetailHistoryAdapter", "videoCallDuration = " + videoCallDuration);
+            if (videoCallDuration != null){
+                voiceCallDuration = formatDuration((details.duration - Long.parseLong(videoCallDuration)), 3);
+                videoCallDuration = formatDuration(Long.parseLong(videoCallDuration), 3);
+            } else {
+                videoCallDuration = formatDuration(0, 3);
+                voiceCallDuration = formatDuration(details.duration, 3);
+            }
+            switch (callType){
+                case CallTypeHelper.INCOMING_IMS_VOICE_TYPE:
+                case CallTypeHelper.OUTGOING_IMS_VOICE_TYPE:
+                case CallTypeHelper.MISSED_IMS_VOICE_TYPE:
+                case CallTypeHelper.INCOMING_IMS_VIDEO_TYPE:
+                case CallTypeHelper.OUTGOING_IMS_VIDEO_TYPE:
+                case CallTypeHelper.MISSED_IMS_VIDEO_TYPE:
+                default:
+                    videoCallDurationView.setText("VT: " + videoCallDuration + ", VoLTE: " + voiceCallDuration);
+            }
+        }else {
+            videoCallDurationView.setVisibility(View.GONE);
+            callTypeTextView_4G.setVisibility(View.GONE);
+        }
+        return;
     }
 
     private String formatDuration(long elapsedSeconds, int durationType) {
@@ -199,6 +243,9 @@ public class CallDetailHistoryAdapter extends BaseAdapter {
                 case Calls.DURATION_TYPE_CALLOUT:
                     return mContext.getString(R.string.call_duration_call_out)
                             + timeStr;
+                case 3:
+                    Log.e("CallDetailHistoryAdapter", "vido call time");
+                    return "VT:" + timeStr;
                 default:
                     return timeStr;
             }
