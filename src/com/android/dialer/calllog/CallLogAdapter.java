@@ -217,6 +217,17 @@ public class CallLogAdapter extends GroupingListAdapter
         }
     };
 
+    private final View.OnAttachStateChangeListener mViewStateListener = new View.OnAttachStateChangeListener() {
+        @Override
+        public void onViewAttachedToWindow(View view) {
+        }
+
+        @Override
+        public void onViewDetachedFromWindow(View view) {
+            stopRequestProcessing();
+        }
+    };
+
     private void startActivityForAction(View view) {
         final IntentProvider intentProvider = (IntentProvider) view.getTag();
         if (intentProvider != null) {
@@ -520,6 +531,7 @@ public class CallLogAdapter extends GroupingListAdapter
         // Get the views to bind to.
         CallLogListItemViews views = CallLogListItemViews.fromView(view);
         views.primaryActionView.setOnClickListener(mActionListener);
+        view.addOnAttachStateChangeListener(mViewStateListener);
         view.setTag(views);
     }
 
