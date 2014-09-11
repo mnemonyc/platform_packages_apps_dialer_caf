@@ -1354,7 +1354,7 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
      */
     private void exitSearchUi() {
         // See related bug in enterSearchUI();
-        if (getFragmentManager().isDestroyed()) {
+        if (getFragmentManager().isDestroyed() || !isSafeToCommitTransactions()) {
             return;
         }
         // Go all the way back to the favorites fragment, regardless of how many times we
