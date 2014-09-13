@@ -1405,7 +1405,7 @@ public class DialpadFragment extends Fragment
         }
 
         if (enabled) {
-            // Log.i(TAG, "Showing dialpad chooser!");
+            Log.d(TAG, "Showing dialpad chooser!");
             if (mDigitsContainer != null) {
                 mDigitsContainer.setVisibility(View.GONE);
             } else {
@@ -1428,7 +1428,12 @@ public class DialpadFragment extends Fragment
             }
             mDialpadChooser.setAdapter(mDialpadChooserAdapter);
         } else {
-            // Log.i(TAG, "Displaying normal Dialer UI.");
+            Log.d(TAG, "Displaying normal Dialer UI.");
+            if (mDigitsContainer != null) {
+                mDigitsContainer.setVisibility(View.VISIBLE);
+            } else {
+                mDigits.setVisibility(View.VISIBLE);
+            }
             if (mDialpad != null) mDialpad.setVisibility(View.VISIBLE);
             ((HostInterface) getActivity()).setDialButtonContainerVisible(true);
             mDialpadChooser.setVisibility(View.GONE);
