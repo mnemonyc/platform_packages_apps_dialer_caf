@@ -163,6 +163,15 @@
         <item name="android:paddingLeft">@dimen/dialpad_number_to_letters_padding</item>
     </style>
 
+    <style name="DialpadKeyStarPoundLettersStyle">
+        <item name="android:textColor">@color/dialpad_secondary_text_color</item>
+        <item name="android:textSize">@dimen/dialpad_key_star_pound_size</item>
+        <item name="android:fontFamily">sans-serif-light</item>
+        <item name="android:layout_width">@dimen/dialpad_key_letters_width</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingLeft">@dimen/dialpad_number_to_letters_padding</item>
+    </style>
+
     <style name="DialpadKeyButtonStyle">
         <item name="android:soundEffectsEnabled">false</item>
         <item name="android:clickable">true</item>

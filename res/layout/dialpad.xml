@@ -82,9 +82,9 @@
                 <TextView
                     android:id="@id/dialpad_key_number"
                     style="@style/DialpadKeyStarPoundStyle" />
-                <View
-                    android:layout_height="match_parent"
-                    android:layout_width="@dimen/dialpad_key_letters_width" />
+                <TextView
+                    android:id="@+id/dialpad_key_letters"
+                    style="@style/DialpadKeyStarPoundLettersStyle" />
             </LinearLayout>
         </com.android.dialer.dialpad.DialpadKeyButton>
         <include layout="@layout/dialpad_key" android:id="@+id/zero"/>
@@ -96,9 +96,9 @@
                 <TextView
                     android:id="@id/dialpad_key_number"
                     style="@style/DialpadKeyStarPoundStyle" />
-                <View
-                    android:layout_height="match_parent"
-                    android:layout_width="@dimen/dialpad_key_letters_width" />
+                <TextView
+                    android:id="@+id/dialpad_key_letters"
+                    style="@style/DialpadKeyStarPoundLettersStyle" />
             </LinearLayout>
         </com.android.dialer.dialpad.DialpadKeyButton>
     </TableRow>
