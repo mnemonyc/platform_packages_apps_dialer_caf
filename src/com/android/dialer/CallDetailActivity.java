@@ -234,7 +234,8 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
         CallLog.Calls.GEOCODED_LOCATION,
         CallLog.Calls.NUMBER_PRESENTATION,
         CallLog.Calls.SUBSCRIPTION,
-        CallLog.Calls.DURATION_TYPE
+        CallLog.Calls.DURATION_TYPE,
+        CallLog.Calls.VIDEO_CALL_DURATION
     };
 
     static final int DATE_COLUMN_INDEX = 0;
@@ -246,6 +247,7 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
     static final int NUMBER_PRESENTATION_COLUMN_INDEX = 6;
     static final int SUBSCRIPTION = 7;
     static final int DURATION_TYPE_COLUMN_INDEX = 8;
+    static final int CALL_TYPE_DETAILS_COLUMN_INDEX = 9;
 
     private final View.OnClickListener mPrimaryActionListener = new View.OnClickListener() {
         @Override
@@ -774,7 +776,8 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
             final String geocode = callCursor.getString(GEOCODED_LOCATION_COLUMN_INDEX);
             final int subscription = callCursor.getInt(SUBSCRIPTION);
             int durationType = callCursor.getInt(DURATION_TYPE_COLUMN_INDEX);
-
+            String videoCallDuration = callCursor.getString(CALL_TYPE_DETAILS_COLUMN_INDEX);
+            Log.e(TAG, "videoCallDuration = " + videoCallDuration);
             if (TextUtils.isEmpty(countryIso)) {
                 countryIso = mDefaultCountryIso;
             }
@@ -816,7 +819,7 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
                     formattedNumber, countryIso, geocode,
                     new int[] { callType }, date, duration, nameText,
                     numberType, numberLabel, lookupUri, photoUri, subscription,
-                    durationType, sourceType);
+                    durationType, videoCallDuration, sourceType);
         } finally {
             if (callCursor != null) {
                 callCursor.close();

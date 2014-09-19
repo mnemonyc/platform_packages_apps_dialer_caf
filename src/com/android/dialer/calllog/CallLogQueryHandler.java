@@ -214,7 +214,7 @@ public class CallLogQueryHandler extends NoNullCursorAsyncQueryHandler {
                     selectionArgs.add(Integer.toString(CallTypeHelper.MISSED_CSVT_TYPE));
                 }
             }
-            else {
+/*            else {
                 if (callType == Calls.INCOMING_TYPE) {
                     selectionArgs.add(Integer.toString(CallTypeHelper.INCOMING_IMS_TYPE));
                 } else if (callType == Calls.OUTGOING_TYPE) {
@@ -223,6 +223,7 @@ public class CallLogQueryHandler extends NoNullCursorAsyncQueryHandler {
                     selectionArgs.add(Integer.toString(CallTypeHelper.MISSED_IMS_TYPE));
                 }
             }
+*/
         }
 
         if (sub > CALL_SUB_ALL) {
