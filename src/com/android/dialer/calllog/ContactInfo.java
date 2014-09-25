@@ -19,6 +19,7 @@ package com.android.dialer.calllog;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import com.android.contacts.common.SimContactsConstants;
 import com.android.contacts.common.util.UriUtils;
 import com.google.common.base.Objects;
 
@@ -83,5 +84,12 @@ public class ContactInfo {
                 "type", type).add("label", label).add("number", number).add("formattedNumber",
                 formattedNumber).add("normalizedNumber", normalizedNumber).add("photoId", photoId)
                 .add("photoUri", photoUri).toString();
+    }
+
+    public boolean isSimContactInfo() {
+        if (SimContactsConstants.ACCOUNT_TYPE_SIM.equals(accountType)) {
+            return true;
+        }
+        return false;
     }
 }
