@@ -82,12 +82,20 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/ims_call_duration_details"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:orientation="vertical"
     >
         <TextView
             android:id="@+id/video_call_duration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="?attr/call_log_secondary_text_color"
+        />
+        <TextView
+            android:id="@+id/voice_call_duration"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"

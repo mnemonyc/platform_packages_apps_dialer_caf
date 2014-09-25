@@ -135,6 +135,8 @@
 
     <string name="call_duration_active">Active duration:</string>
     <string name="call_duration_call_out">Call duration:</string>
+    <string name="ims_vt_duration">4G video call:</string>
+    <string name="ims_volte_duration">4G voice call:</string>
 
     <!--  Voicemail status message shown at the top of call log to notify the user that no new
     voicemails are currently available. This can happen when both notification as well as data
