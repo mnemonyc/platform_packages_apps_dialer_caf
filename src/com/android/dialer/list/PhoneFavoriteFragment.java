@@ -427,6 +427,12 @@ public class PhoneFavoriteFragment extends Fragment implements OnItemClickListen
         super.onPause();
     }
 
+    @Override
+    public void onDetach() {
+        mCallLogAdapter.stopRequestProcessing();
+        super.onDetach();
+    }
+
     /**
      * Cache the current view offsets into memory. Once a relayout of views in the ListView
      * has happened due to a dataset change, the cached offsets are used to create animations
