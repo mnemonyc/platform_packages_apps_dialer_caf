@@ -669,9 +669,9 @@
     <!-- The digit to be displayed on the 9 key of the dialpad [CHAR LIMIT=1]-->
     <string name="dialpad_9_number">9</string>
     <!--  Do not translate. -->
-    <string name="dialpad_star_number">* ,</string>
+    <string name="dialpad_star_number">*</string>
     <!--  Do not translate. -->
-    <string name="dialpad_pound_number"># ;</string>
+    <string name="dialpad_pound_number">#</string>
 
     <!--  Do not translate. -->
     <string name="dialpad_0_letters">+</string>
@@ -694,9 +694,9 @@
     <!--  Do not translate. -->
     <string name="dialpad_9_letters">WXYZ</string>
     <!--  Do not translate. -->
-    <string name="dialpad_star_letters"></string>
+    <string name="dialpad_star_letters">,</string>
     <!--  Do not translate. -->
-    <string name="dialpad_pound_letters"></string>
+    <string name="dialpad_pound_letters">;</string>
 
     <!--  Title of fragment that displays all contacts -->
     <string name="show_all_contacts_title">All contacts</string>

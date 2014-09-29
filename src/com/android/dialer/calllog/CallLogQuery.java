@@ -45,7 +45,8 @@ public final class CallLogQuery {
             Calls.IS_READ,                   // 16
             Calls.NUMBER_PRESENTATION,       // 17
             Calls.SUBSCRIPTION,              // 18
-            Calls.DURATION_TYPE              // 19
+            Calls.DURATION_TYPE,             // 19
+            Calls.VIDEO_CALL_DURATION        // 20
     };
 
     public static final int ID = 0;
@@ -68,4 +69,5 @@ public final class CallLogQuery {
     public static final int NUMBER_PRESENTATION = 17;
     public static final int SUBSCRIPTION = 18;
     public static final int DURATION_TYPE = 19;
+    public static final int VIDEO_CALL_DURATION = 20;
 }

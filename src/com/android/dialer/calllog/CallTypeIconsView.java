@@ -79,10 +79,16 @@ public class CallTypeIconsView extends View {
     private Drawable getCallTypeDrawable(int callType) {
         switch (callType) {
             case Calls.INCOMING_TYPE:
+			case CallTypeHelper.INCOMING_IMS_VIDEO_TYPE:
+			case CallTypeHelper.INCOMING_IMS_VOICE_TYPE:
                 return mResources.incoming;
             case Calls.OUTGOING_TYPE:
+			case CallTypeHelper.OUTGOING_IMS_VIDEO_TYPE:
+			case CallTypeHelper.OUTGOING_IMS_VOICE_TYPE:
                 return mResources.outgoing;
             case Calls.MISSED_TYPE:
+			case CallTypeHelper.MISSED_IMS_VIDEO_TYPE:
+			case CallTypeHelper.MISSED_IMS_VOICE_TYPE:
                 return mResources.missed;
             case Calls.VOICEMAIL_TYPE:
                 return mResources.voicemail;
@@ -105,13 +111,6 @@ public class CallTypeIconsView extends View {
                 } else {
                     return mResources.missed;
                 }
-            //add for ims call log type
-            case CallTypeHelper.INCOMING_IMS_TYPE:
-                return mResources.ims_incoming;
-            case CallTypeHelper.OUTGOING_IMS_TYPE:
-                return mResources.ims_outgoing;
-            case CallTypeHelper.MISSED_IMS_TYPE:
-                return mResources.ims_missed;
 
             default:
                 // It is possible for users to end up with calls with unknown call types in their
