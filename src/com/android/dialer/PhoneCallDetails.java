@@ -62,6 +62,8 @@ public class PhoneCallDetails {
     /** The subscription of the call. */
     public final int subscription;
     public final int durationType;
+	//video call duration for ims call
+	public final String imsvideocallduration;
     /**
      * The source type of the contact associated with this call.
      */
@@ -72,7 +74,15 @@ public class PhoneCallDetails {
             CharSequence formattedNumber, String countryIso, String geocode,
             int[] callTypes, long date, long duration, int subscription, int durationType) {
         this(number, numberPresentation, formattedNumber, countryIso, geocode,
-                callTypes, date, duration, "", 0, "", null, null, subscription, durationType, 0);
+                callTypes, date, duration, "", 0, "", null, null, subscription, durationType, null, 0);
+    }
+
+    /** Create the details for a call with a number not associated with a contact. */
+    public PhoneCallDetails(CharSequence number, int numberPresentation,
+            CharSequence formattedNumber, String countryIso, String geocode,
+            int[] callTypes, long date, long duration, int subscription, int durationType, String imsvideocallduration) {
+        this(number, numberPresentation, formattedNumber, countryIso, geocode,
+                callTypes, date, duration, "", 0, "", null, null, subscription, durationType, imsvideocallduration, 0);
     }
 
     /** Create the details for a call with a number associated with a contact. */
@@ -80,7 +90,7 @@ public class PhoneCallDetails {
             CharSequence formattedNumber, String countryIso, String geocode,
             int[] callTypes, long date, long duration, CharSequence name,
             int numberType, CharSequence numberLabel, Uri contactUri,
-            Uri photoUri, int subscription, int durationType, int sourceType) {
+            Uri photoUri, int subscription, int durationType, String imsvideocallduration, int sourceType) {
         this.number = number;
         this.numberPresentation = numberPresentation;
         this.formattedNumber = formattedNumber;
@@ -96,6 +106,7 @@ public class PhoneCallDetails {
         this.photoUri = photoUri;
         this.subscription = subscription;
         this.durationType = durationType;
+		this.imsvideocallduration = imsvideocallduration;
         this.sourceType = sourceType;
     }
 }

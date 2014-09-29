@@ -343,6 +343,6 @@ public class PhoneCallDetailsHelperTest extends AndroidTestCase {
                 new PhoneCallDetails(TEST_NUMBER, Calls.PRESENTATION_ALLOWED,
                         TEST_FORMATTED_NUMBER, TEST_COUNTRY_ISO, TEST_GEOCODE,
                         new int[]{ Calls.INCOMING_TYPE }, TEST_DATE, TEST_DURATION,
-                        name, 0, "", null, null, TEST_SUBSCRIPTION, TEST_DURATIONTYPE, 0));
+                        name, 0, "", null, null, TEST_SUBSCRIPTION, TEST_DURATIONTYPE, null, 0));
     }
 }
