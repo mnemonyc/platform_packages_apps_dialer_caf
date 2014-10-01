@@ -13,7 +13,8 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content" >
     <item
         android:id="@+id/menu_ip_call_by_slot1"
         android:showAsAction="withText"
@@ -49,4 +50,9 @@
         android:showAsAction="withText"
         android:orderInCategory="1" />
 <!-- add for CSVT -->
+    <item
+        android:id="@+id/menu_add_to_4g_conference_call"
+        android:title="@string/add_to_4g_conference_call"
+        android:showAsAction="withText"
+        android:orderInCategory="1" />
 </menu>

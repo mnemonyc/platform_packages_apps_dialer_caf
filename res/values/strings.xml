@@ -747,6 +747,31 @@
         This is especially valuable for views without textual representation like ImageView. -->
     <string name="description_videocall">Video call <xliff:g id="name">%1$s</xliff:g></string>
 
+    <!--  Title of start conference call -->
+    <string name="conference_call_activity_title">4G conference call</string>
+    <!-- add for 4g conference call, Menu item used to initiate 4g conference call from dialer -->
+    <string name="menu_4g_conference_call">4G conference call</string>
+    <string name="add_to_4g_conference_call">Add to 4G conference call</string>
+    <string name="button_start_conference_call">Start call</string>
+    <string name="contact_app_not_found">Can not find Contact application</string>
+    <string name="number_of_recipients">5</string>
+    <string name="too_many_recipients">Message has too many recipients (<xliff:g id="currentCount">%1$s</xliff:g>). There is a limit of <xliff:g id="maxLimit">%2$s</xliff:g> recipients.</string>
+    <string name="repeated_recipients">Some recipients are repeated!</string>
+    <string name="button_add_participant">Add participants</string>
+
+    <!-- In the title of the compose message activity, when there are multiple recipients, we show
+         the number of recipients in the subtitle of the action bar. There's never a case of one. [CHAR LIMIT=50] -->
+    <plurals name="recipient_count">
+        <!-- Case of 0 or 2 or more results. -->
+        <item quantity="other"><xliff:g id="number" example="15">%1$s</xliff:g> people</item>
+    </plurals>
+
+    <!-- Title of progress dialog for picker -->
+    <string name="pick_too_many_recipients">Too many recipients</string>
+    <!-- Message of progress dialog for picker -->
+    <string name="adding_recipients">Adding recipients\u2026</string>
+    <!-- add for 4g conference call, Menu item used to initiate 4g conference call from dialer -->
+
     <!--  for speed dial -->
     <string name="set_speed_dial">Speed dial settings</string>
     <string name="dialog_title">Tip</string>

@@ -82,6 +82,8 @@ import com.android.contacts.common.activity.TransactionSafeActivity;
 import com.android.contacts.common.preference.ContactsPreferences;
 import com.android.contacts.common.util.PhoneNumberFormatter;
 import com.android.contacts.common.util.StopWatch;
+import com.android.dialer.DialtactsActivity;
+//import com.android.dialer.conference.ConferenceCallActivity;
 import com.android.dialer.NeededForReflection;
 import com.android.dialer.DialtactsActivity;
 import com.android.dialer.R;
@@ -866,8 +868,11 @@ public class DialpadFragment extends Fragment
         final MenuItem addToContactMenuItem = menu.findItem(R.id.menu_add_contacts);
         final MenuItem videocallMenuItem = menu.findItem(R.id.menu_video_call);
         final MenuItem videocallsettingsMenuItem = menu.findItem(R.id.menu_video_call_settings);
+        final MenuItem AddToConferenceCall4GMenuItem = menu.findItem(R.id.menu_add_to_4g_conference_call);
         final MenuItem ipCallBySlot1MenuItem = menu.findItem(R.id.menu_ip_call_by_slot1);
         final MenuItem ipCallBySlot2MenuItem = menu.findItem(R.id.menu_ip_call_by_slot2);
+        //show conference call menu when ims is registered
+        AddToConferenceCall4GMenuItem.setVisible(isIMSSupported());
 
         // We show "video call setting" menu only when the csvt is supported
         //which means the prop "persist.radio.csvt.enabled" = true
@@ -906,6 +911,10 @@ public class DialpadFragment extends Fragment
             addToContactMenuItem.setIntent(DialtactsActivity.getAddNumberToContactIntent(digits));
             addToContactMenuItem.setVisible(true);
 
+        }
+
+        if (dialpadChooserVisible() || !canShow4GConferenceCallButton()) {
+            AddToConferenceCall4GMenuItem.setVisible(false);
         }
     }
 
@@ -1759,6 +1768,13 @@ public class DialpadFragment extends Fragment
             case R.id.menu_video_call_settings:
                 startActivity(getVTCallSettingsIntent());
                 return true;
+
+            case R.id.menu_add_to_4g_conference_call:
+                final CharSequence digits = mDigits.getText();
+                startActivity(get4GConferenceCallIntent(digits.toString()));
+                hideAndClearDialpad(false);
+                return true;
+
             case R.id.menu_ip_call_by_slot1:
                 ipCallBySlot(MSimConstants.SUB1);
                 return true;
@@ -1939,6 +1955,18 @@ public class DialpadFragment extends Fragment
         return mDigits.length() == 0;
     }
 
+    protected boolean canShow4GConferenceCallButton() {
+        if (mDigits.length() == 0){
+            return false;
+        }
+        String input = mDigits.getText().toString();
+        Log.e(TAG, "input" + input);
+        if ((input.indexOf(",")!=-1) || (input.indexOf(";")!=-1)) {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Starts the asyn query to get the last dialed/outgoing
      * number. When the background query finishes, mLastNumberDialed
@@ -1997,6 +2025,12 @@ public class DialpadFragment extends Fragment
         Intent intent = new Intent("com.borqs.videocall.action.LaunchVideoCallSettingsScreen");
         intent.addCategory(Intent.CATEGORY_DEFAULT);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+        return intent;
+    }
+
+    private Intent get4GConferenceCallIntent(String number) {
+        Intent intent = new Intent("android.intent.action.ADDPARTICIPANT");
+        intent.putExtra("confernece_number_key", number);
         return intent;
     }
 
