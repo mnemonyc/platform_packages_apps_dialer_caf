@@ -83,6 +83,7 @@ import com.android.dialer.dialpad.SmartDialpadFragment;
 import com.android.dialer.dialpad.SmartDialNameMatcher;
 import com.android.dialer.dialpad.SmartDialPrefix;
 import com.android.dialer.interactions.PhoneNumberInteraction;
+//import com.android.dialer.conference.ConferenceCallActivity;
 import com.android.dialer.list.AllContactsActivity;
 import com.android.dialer.list.DragDropController;
 import com.android.dialer.list.OnDragDropListener;
@@ -247,7 +248,6 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
         //return this.getResources().getBoolean(R.bool.csvt_enabled);
     }
 
-
     private void createCsvtService() {
         if (isVTSupported()) {
             try {
@@ -324,6 +324,9 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
             final Menu menu = getMenu();
             final MenuItem clearFrequents = menu.findItem(R.id.menu_clear_frequents);
             clearFrequents.setVisible(mPhoneFavoriteFragment.hasFrequents());
+            final MenuItem start4GConferenceCallMenu
+                    = menu.findItem(R.id.menu_4g_conference_call);
+            start4GConferenceCallMenu.setVisible(isIMSSupported());
             super.show();
         }
     }
@@ -597,6 +600,9 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
                 return true;
             case R.id.menu_all_contacts:
                 onShowAllContacts();
+                return true;
+            case R.id.menu_4g_conference_call:
+                onShowConferenceCallStartScreen();
                 return true;
         }
         return false;
@@ -1464,6 +1470,11 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
     @Override
     public void onShowAllContacts() {
         final Intent intent = new Intent(this, AllContactsActivity.class);
+        startActivity(intent);
+    }
+
+    public void onShowConferenceCallStartScreen() {
+        Intent intent = new Intent("android.intent.action.ADDPARTICIPANT");
         startActivity(intent);
     }
 
