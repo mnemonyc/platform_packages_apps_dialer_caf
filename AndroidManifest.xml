@@ -55,6 +55,7 @@
     <uses-permission android:name="com.qti.permission.DIAG" />
     <uses-permission android:name="com.qti.permission.IMS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.GET_TASKS"/>
 
     <application
         android:name="DialerApplication"
