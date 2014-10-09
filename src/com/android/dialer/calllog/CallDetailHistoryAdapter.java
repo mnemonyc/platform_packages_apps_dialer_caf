@@ -145,6 +145,7 @@ public class CallDetailHistoryAdapter extends BaseAdapter {
         ImageView subIconView = (ImageView) result.findViewById(R.id.sub_icon);
         TextView dateView = (TextView) result.findViewById(R.id.date);
         TextView durationView = (TextView) result.findViewById(R.id.duration);
+        View imsCallDurationView = (View) result.findViewById(R.id.ims_call_duration_details);
 
         int callType = details.callTypes[0];
         Log.e("CallDetailHistoryAdapter", "callType = " + callType);
@@ -169,18 +170,20 @@ public class CallDetailHistoryAdapter extends BaseAdapter {
         // Set the duration
         boolean callDurationEnabled = mContext.getResources().getBoolean(
                 R.bool.call_duration_enabled);
-        Log.e("CallDetailHistoryAdapter", "callDurationEnabled = " + callDurationEnabled);
-        Log.e("CallDetailHistoryAdapter", "missed call?" + CallTypeHelper.isMissedCallType(callType));
         if (!callDurationEnabled || Calls.VOICEMAIL_TYPE == callType
-                || CallTypeHelper.isMissedCallType(callType)) {
+                || CallTypeHelper.isMissedCallType(callType)
+                || mCallTypeHelper.isIMSCall(callType)) {
             durationView.setVisibility(View.GONE);
         } else {
+            imsCallDurationView.setVisibility(View.GONE);
             durationView.setVisibility(View.VISIBLE);
             durationView.setText(formatDuration(details.duration, details.durationType));
         }
 
         //set duration for VoLTE and VT
-        setImsCallDurationDetails(result, details);
+        if (mCallTypeHelper.isIMSCall(callType)){
+            setImsCallDurationDetails(result, details);
+        }
 
         return result;
     }
@@ -188,30 +191,38 @@ public class CallDetailHistoryAdapter extends BaseAdapter {
     private void setImsCallDurationDetails(View result, PhoneCallDetails details){
         int callType = details.callTypes[0];
         TextView callTypeTextView_4G = (TextView) result.findViewById(R.id.call_type_text_4g);
+        callTypeTextView_4G.setVisibility(View.GONE);
         TextView videoCallDurationView = (TextView) result.findViewById(R.id.video_call_duration);
+        TextView voiceCallDurationView = (TextView) result.findViewById(R.id.voice_call_duration);
         if(mCallTypeHelper.isIMSCall(callType)){
-            callTypeTextView_4G.setVisibility(View.VISIBLE);
-            callTypeTextView_4G.setText("(HD)");
             videoCallDurationView.setVisibility(View.VISIBLE);
             String videoCallDuration = details.imsvideocallduration;
             String voiceCallDuration = null;
             Log.e("CallDetailHistoryAdapter", "videoCallDuration = " + videoCallDuration);
             if (videoCallDuration != null){
-                voiceCallDuration = formatDuration((details.duration - Long.parseLong(videoCallDuration)), 3);
-                videoCallDuration = formatDuration(Long.parseLong(videoCallDuration), 3);
+                long videotemp = Long.parseLong(videoCallDuration);
+                long voicetemp = details.duration - videotemp;
+                voicetemp = (voicetemp >= 0)? voicetemp:0;
+                videotemp = (videotemp <= details.duration)? videotemp:details.duration;
+                if (videotemp > 0){
+                    videoCallDuration = formatDuration(videotemp, 3);
+                    videoCallDurationView.setText(
+                            mContext.getString(R.string.ims_vt_duration) + videoCallDuration);
+                } else {
+                    videoCallDurationView.setVisibility(View.GONE);
+                }
+                if (voicetemp > 0){
+                    voiceCallDuration = formatDuration(voicetemp, 3);
+                    voiceCallDurationView.setText(
+                            mContext.getString(R.string.ims_volte_duration) + voiceCallDuration);
+                } else {
+                    voiceCallDurationView.setVisibility(View.GONE);
+                }
             } else {
-                videoCallDuration = formatDuration(0, 3);
                 voiceCallDuration = formatDuration(details.duration, 3);
-            }
-            switch (callType){
-                case CallTypeHelper.INCOMING_IMS_VOICE_TYPE:
-                case CallTypeHelper.OUTGOING_IMS_VOICE_TYPE:
-                case CallTypeHelper.MISSED_IMS_VOICE_TYPE:
-                case CallTypeHelper.INCOMING_IMS_VIDEO_TYPE:
-                case CallTypeHelper.OUTGOING_IMS_VIDEO_TYPE:
-                case CallTypeHelper.MISSED_IMS_VIDEO_TYPE:
-                default:
-                    videoCallDurationView.setText("VT: " + videoCallDuration + ", VoLTE: " + voiceCallDuration);
+                videoCallDurationView.setVisibility(View.GONE);
+                voiceCallDurationView.setText(
+                        mContext.getString(R.string.ims_volte_duration) + voiceCallDuration);
             }
         }else {
             videoCallDurationView.setVisibility(View.GONE);
