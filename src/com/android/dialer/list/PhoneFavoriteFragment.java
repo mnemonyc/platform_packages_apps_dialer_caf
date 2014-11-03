@@ -21,7 +21,6 @@ import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.LoaderManager;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Loader;
@@ -31,8 +30,6 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CallLog;
-import android.provider.CallLog.Calls;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -57,7 +54,6 @@ import com.android.contacts.common.list.ContactTileView;
 import com.android.dialer.DialtactsActivity;
 import com.android.dialer.R;
 import com.android.dialer.calllog.CallLogAdapter;
-import com.android.dialer.calllog.CallLogNotificationsHelper;
 import com.android.dialer.calllog.CallLogQuery;
 import com.android.dialer.calllog.CallLogQueryHandler;
 import com.android.dialer.calllog.ContactInfoHelper;
@@ -410,39 +406,10 @@ public class PhoneFavoriteFragment extends Fragment implements OnItemClickListen
         // Save the date of the most recent call log item
         if (cursor != null && cursor.moveToFirst()) {
             mCurrentCallShortcutDate = cursor.getLong(CallLogQuery.DATE);
-            clearMissedCallNotification(cursor);
         }
 
         mCallLogAdapter.changeCursor(cursor);
         mAdapter.notifyDataSetChanged();
-    }
-
-    private void clearMissedCallNotification(Cursor cursor) {
-        if (!isVisible()) {
-            return;
-        }
-        final int callType = cursor.getInt(CallLogQuery.CALL_TYPE);
-        final String number = cursor.getString(CallLogQuery.NUMBER);
-        final int numberPresentation = cursor.getInt(CallLogQuery.NUMBER_PRESENTATION);
-        if (callType == Calls.MISSED_TYPE) {
-            if (numberPresentation == Calls.PRESENTATION_ALLOWED && !TextUtils.isEmpty(number)) {
-                ContentValues values = new ContentValues();
-                values.put(Calls.NEW, 0);
-                values.put(Calls.IS_READ, 1);
-                StringBuilder where = new StringBuilder();
-                where.append(Calls.NEW);
-                where.append(" = 1 AND ");
-                where.append(Calls.TYPE);
-                where.append(" = ?");
-                where.append(" AND ");
-                where.append(Calls.NUMBER);
-                where.append(" = ?");
-                getActivity().getContentResolver().update(Calls.CONTENT_URI, values,
-                        where.toString(), new String[]
-                        { Integer.toString(Calls.MISSED_TYPE), number });
-            }
-            CallLogNotificationsHelper.removeMissedCallNotifications();
-        }
     }
 
     @Override
