@@ -199,31 +199,26 @@ public class CallLogQueryHandler extends NoNullCursorAsyncQueryHandler {
             // Add a clause to fetch only items of type voicemail.
             if ((callType == Calls.INCOMING_TYPE) || (callType == Calls.OUTGOING_TYPE)
                     || (callType == Calls.MISSED_TYPE)) {
-                where.append(String.format("(%s = ? OR %s = ?)", Calls.TYPE, Calls.TYPE));
+                where.append(String.format("(%s = ? OR %s = ? OR %s = ? OR %s = ?)",
+                    Calls.TYPE, Calls.TYPE, Calls.TYPE, Calls.TYPE));
             } else {
                 where.append(String.format("(%s = ?)", Calls.TYPE));
             }
             // Add a clause to fetch only items newer than the requested date
             selectionArgs.add(Integer.toString(callType));
-            if (isVTSupported()) {
-                if (callType == Calls.INCOMING_TYPE) {
-                    selectionArgs.add(Integer.toString(CallTypeHelper.INCOMING_CSVT_TYPE));
-                } else if (callType == Calls.OUTGOING_TYPE) {
-                    selectionArgs.add(Integer.toString(CallTypeHelper.OUTGOING_CSVT_TYPE));
-                } else if (callType == Calls.MISSED_TYPE) {
-                    selectionArgs.add(Integer.toString(CallTypeHelper.MISSED_CSVT_TYPE));
-                }
+            if (callType == Calls.INCOMING_TYPE) {
+                selectionArgs.add(Integer.toString(CallTypeHelper.INCOMING_CSVT_TYPE));
+                selectionArgs.add(Integer.toString(CallTypeHelper.INCOMING_IMS_VOICE_TYPE));
+                selectionArgs.add(Integer.toString(CallTypeHelper.INCOMING_IMS_VIDEO_TYPE));
+            } else if (callType == Calls.OUTGOING_TYPE) {
+                selectionArgs.add(Integer.toString(CallTypeHelper.OUTGOING_CSVT_TYPE));
+                selectionArgs.add(Integer.toString(CallTypeHelper.OUTGOING_IMS_VOICE_TYPE));
+                selectionArgs.add(Integer.toString(CallTypeHelper.OUTGOING_IMS_VIDEO_TYPE));
+            } else if (callType == Calls.MISSED_TYPE) {
+                selectionArgs.add(Integer.toString(CallTypeHelper.MISSED_CSVT_TYPE));
+                selectionArgs.add(Integer.toString(CallTypeHelper.MISSED_IMS_VOICE_TYPE));
+                selectionArgs.add(Integer.toString(CallTypeHelper.MISSED_IMS_VIDEO_TYPE));
             }
-/*            else {
-                if (callType == Calls.INCOMING_TYPE) {
-                    selectionArgs.add(Integer.toString(CallTypeHelper.INCOMING_IMS_TYPE));
-                } else if (callType == Calls.OUTGOING_TYPE) {
-                    selectionArgs.add(Integer.toString(CallTypeHelper.OUTGOING_IMS_TYPE));
-                } else if (callType == Calls.MISSED_TYPE) {
-                    selectionArgs.add(Integer.toString(CallTypeHelper.MISSED_IMS_TYPE));
-                }
-            }
-*/
         }
 
         if (sub > CALL_SUB_ALL) {
