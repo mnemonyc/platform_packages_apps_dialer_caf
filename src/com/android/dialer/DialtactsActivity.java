@@ -867,6 +867,7 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
     @Override
     public void onNewIntent(Intent newIntent) {
         setIntent(newIntent);
+        mStateSaved = false;
         displayFragment(newIntent);
 
         invalidateOptionsMenu();
