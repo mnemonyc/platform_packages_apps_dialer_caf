@@ -91,6 +91,9 @@
     <!-- Color for missed call icons. -->
     <color name="missed_call">#ff2e58</color>
 
+    <!-- Color for blacklist call icons. -->
+    <color name="blacklisted_call">#ff000000</color>
+
     <!-- Color for answered or outgoing call icons. -->
     <color name="answered_call">@color/dialer_green_highlight_color</color>
 
@@ -101,4 +104,12 @@
 
     <color name="floating_action_button_touch_tint">#80ffffff</color>
 
+    <!-- Text color for no favorites message -->
+    <color name="nofavorite_text_color">#777777</color>
+
+    <!-- Colors for incoming and outgoing calls in the call statistics -->
+    <color name="call_stats_incoming">#33b5e5</color>
+    <color name="call_stats_outgoing">#99cc00</color>
+    <color name="call_stats_missed">#eb1313</color>
+    <color name="call_stats_bar_background">#88888888</color>
 </resources>
