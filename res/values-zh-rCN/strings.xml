@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-  ~ Copyright (C) 2012 The Android Open Source Project
-  ~ Copyright (C) 2013 The Linux Foundation. All Rights Reserved.
-  ~
+  ~ Copyright (C) 2013-2014 The Linux Foundation. All Rights Reserved.
   ~ Not a Contribution.
+  ~ Copyright (C) 2012 The Android Open Source Project
+  ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
   ~ You may obtain a copy of the License at
@@ -211,4 +211,7 @@
     <string name="remove_contact" msgid="1080555335283662961">"移除"</string>
     <string name="favorites_menu_speed_dial" msgid="3832518092014707628">"快速拨号"</string>
     <string name="favorites_menu_all_contacts" msgid="992506284449891186">"所有联系人"</string>
+    <string name="input_number">"输入号码"</string>
+    <string name="speed_dial_cancel">"取消"</string>
+    <string name="speed_dial_ok">"确定"</string>
 </resources>
