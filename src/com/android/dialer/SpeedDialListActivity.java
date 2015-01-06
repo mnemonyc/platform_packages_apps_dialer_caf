@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013, The Linux Foundation. All rights reserved.
+ * Copyright (C) 2013-2014, The Linux Foundation. All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are
@@ -40,6 +40,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.Contacts.Data;
 import android.provider.ContactsContract.RawContacts;
 import android.provider.Settings;
@@ -49,12 +50,16 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnCreateContextMenuListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -87,6 +92,19 @@ public class SpeedDialListActivity extends ListActivity implements OnItemClickLi
     private static final int MENU_DELETE = 1;
 
     private static final int PICK_CONTACT_RESULT = 0;
+
+    private static final String[] PROJECTION = new String[] {
+        Phone.RAW_CONTACT_ID,
+        Phone.DISPLAY_NAME,
+        RawContacts.ACCOUNT_TYPE,
+    };
+
+    private static final int DISPLAY_NAME = 1;
+    private static final int ACCOUNT_TYPE = 2;
+
+    private AlertDialog mAddSpeedDialDialog;
+    private EditText mEditNumber;
+    private Button mCompleteButton;
 
     /** Called when the activity is first created. */
     @Override
@@ -189,7 +207,7 @@ public class SpeedDialListActivity extends ListActivity implements OnItemClickLi
             }
         } else if (position < SPEED_ITEMS) {
             if ("".equals(mContactDataNumber[position-1])) {
-                goContactsToPick(position);
+                showAddSpeedDialDialog(position);
             } else {
                 final String numStr = mContactDataNumber[position - 1];
                 final String nameStr = mContactDataName[position - 1];
@@ -220,12 +238,92 @@ public class SpeedDialListActivity extends ListActivity implements OnItemClickLi
         }
     }
 
+    private void showAddSpeedDialDialog(int position) {
+        mPosition = position;
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.set_speed_dial);
+        View contentView = LayoutInflater.from(this).inflate(
+                R.layout.add_speed_dial_dialog, null);
+        builder.setView(contentView);
+        ImageButton pickContacts = (ImageButton) contentView
+                .findViewById(R.id.select_contact);
+        pickContacts.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                goContactsToPick(mPosition);
+                dismissDialog();
+            }
+        });
+        mEditNumber = (EditText) contentView.findViewById(R.id.edit_container);
+        if (null != mContactDataNumber[position - 1]) {
+            mEditNumber.setText(mContactDataNumber[position - 1]);
+        }
+        Button cancelButton = (Button) contentView.findViewById(R.id.btn_cancel);
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dismissDialog();
+            }
+        });
+        mCompleteButton = (Button) contentView.findViewById(R.id.btn_complete);
+        mCompleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mEditNumber.getText().toString().isEmpty()) {
+                    dismissDialog();
+                    return;
+                }
+                saveSpeedDial();
+                dismissDialog();
+            }
+        });
+        mAddSpeedDialDialog = builder.create();
+        mAddSpeedDialDialog.show();
+    }
+
+    private void saveSpeedDial() {
+        int numId = mPosition - 1;
+        String number = mEditNumber.getText().toString();
+        if (!okToSet(number)) {
+            Toast.makeText(this, R.string.assignSpeedDialFailToast,
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+        mContactDataNumber[numId] = number;
+        mContactDataName[numId] = "";
+        mContactSimKey[numId] = false;
+        String selection = Phone.NUMBER + "='" + number + "'";
+        String sortOrder = Phone.NUMBER + ", " + Phone._ID + " LIMIT 1";
+        Cursor c = null;
+        try {
+            c = getContentResolver().query(Phone.CONTENT_URI, PROJECTION,
+                    selection, null, sortOrder);
+            if (null != c && c.moveToFirst()) {
+                String name = c.getString(DISPLAY_NAME);
+                String accountType = c.getString(ACCOUNT_TYPE);
+                mContactDataName[numId] = name;
+                mContactSimKey[numId] = mSpeedDialUtils.isSimAccount(accountType);
+            }
+        } finally {
+            if (null != c) {
+                c.close();
+                c = null;
+            }
+        }
+        matchInfoFromContacts();
+    }
+
+    private void dismissDialog() {
+        if (null != mAddSpeedDialDialog && mAddSpeedDialDialog.isShowing()) {
+            mAddSpeedDialDialog.dismiss();
+        }
+    }
+
     /*
      * goto contacts, used to set or replace speed number
      */
     private void goContactsToPick(int position) {
         // TODO Auto-generated method stub
-        mPosition = position;
         Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds
                .Phone.CONTENT_URI);
         startActivityForResult(intent, PICK_CONTACT_RESULT);
@@ -324,7 +422,7 @@ public class SpeedDialListActivity extends ListActivity implements OnItemClickLi
         int pos = info.position;
         switch(itemId) {
         case MENU_REPLACE:
-            goContactsToPick(pos);
+            showAddSpeedDialDialog(pos);
             break;
         case MENU_DELETE:
             //delete speed number, only need set array data to "",
