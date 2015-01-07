@@ -344,10 +344,12 @@ public class CallLogActivity extends Activity {
     }
 
     private void addSearchFragment() {
+        final FragmentTransaction ft = getFragmentManager().beginTransaction();
         if (mSearchFragment != null) {
+            ft.hide(mSearchFragment);
+            ft.commitAllowingStateLoss();
             return;
         }
-        final FragmentTransaction ft = getFragmentManager().beginTransaction();
         final Fragment searchFragment = new CallLogSearchFragment();
         searchFragment.setUserVisibleHint(false);
         ft.add(R.id.calllog_frame, searchFragment);
