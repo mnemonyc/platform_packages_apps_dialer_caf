@@ -418,7 +418,7 @@ public class PhoneFavoriteFragment extends Fragment implements OnItemClickListen
     }
 
     private void clearMissedCallNotification(Cursor cursor) {
-        if (!isVisible()) {
+        if (!isResumed()) {
             return;
         }
         final int callType = cursor.getInt(CallLogQuery.CALL_TYPE);
