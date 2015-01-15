@@ -150,8 +150,13 @@ public class ContactInfoHelper {
     private ContactInfo lookupContactFromUri(Uri uri) {
         final ContactInfo info;
         long id = -1;
-        Cursor phonesCursor =
-                mContext.getContentResolver().query(uri, PhoneQuery._PROJECTION, null, null, null);
+        Cursor phonesCursor;
+        try {
+            phonesCursor = mContext.getContentResolver()
+                    .query(uri, PhoneQuery._PROJECTION, null, null, null);
+        } catch (Exception e) {
+            phonesCursor = null;
+        }
 
         if (phonesCursor != null) {
             try {
