@@ -7,6 +7,7 @@ import android.app.Application;
 import com.android.contacts.common.extensions.ExtensionsFactory;
 import com.android.contacts.common.ContactPhotoManager;
 import com.android.recorder.CallRecorderService;
+import com.android.incallui.RcsApiManager;
 
 public class DialerApplication extends Application {
     private ContactPhotoManager mContactPhotoManager;
@@ -18,6 +19,8 @@ public class DialerApplication extends Application {
         if (CallRecorderService.getInstance() != null) {
             CallRecorderService.getInstance().init(getApplicationContext());
         }
+
+        RcsApiManager.init(getApplicationContext());
     }
 
     @Override

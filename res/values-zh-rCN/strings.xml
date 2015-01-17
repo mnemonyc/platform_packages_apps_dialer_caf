@@ -194,7 +194,14 @@
         Note: AccessibilityServices use this attribute to announce what the view represents.
         This is especially valuable for views without textual representation like ImageView. -->
     <string name="description_videocall">可视电话 <xliff:g id="name">%1$s</xliff:g></string>
-
+    <!--  for firewall -->
+    <string name="add_to_white_list">加入白名单</string>
+    <string name="add_to_black_list">加入黑名单</string>
+    <string name="firewall_number_len_not_valid">号码错误</string>
+    <string name="firewall_number_in_black">"该号码已在黑名单中"</string>
+    <string name="firewall_number_in_white">"该号码已在白名单中"</string>
+    <string name="firewall_save_success">保存成功</string>
+    <string name="firewall_add_blacklist_warning">如果将该号码加入黑名单，你将不会再收到该号码的消息和来电</string>
     <!--  for speed dial -->
     <string name="set_speed_dial">快速拨号设置</string>
     <string name="dialog_title">提示</string>

@@ -770,6 +770,15 @@
     <string name="pick_too_many_recipients">Too many recipients</string>
     <!-- Message of progress dialog for picker -->
     <string name="adding_recipients">Adding recipients\u2026</string>
+    <!--  for firewall -->
+    <string name="add_to_white_list">Add to white list</string>
+    <string name="add_to_black_list">Add to black list</string>
+    <string name="dialog_title">Tip</string>
+    <string name="firewall_number_len_not_valid">Number is wrong</string>
+    <string name="firewall_number_in_black">"Number already in blacklist"</string>
+    <string name="firewall_number_in_white">"Number already in whitelist"</string>
+    <string name="firewall_save_success">Saved successfully</string>
+    <string name="firewall_add_blacklist_warning">if you add this number to blacklsit, you will not receive the messages and calls from it</string>
     <!-- add for 4g conference call, Menu item used to initiate 4g conference call from dialer -->
 
     <!--  for speed dial -->
