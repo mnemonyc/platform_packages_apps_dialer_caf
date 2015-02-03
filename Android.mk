@@ -28,7 +28,6 @@ LOCAL_AAPT_FLAGS := \
     --extra-packages com.android.phone.common
 
 LOCAL_JAVA_LIBRARIES := telephony-common
-LOCAL_JAVA_LIBRARIES += rcs_service_api
 LOCAL_STATIC_JAVA_LIBRARIES := \
     com.android.services.telephony.common \
     com.android.vcard \
