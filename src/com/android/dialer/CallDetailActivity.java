@@ -17,14 +17,21 @@
 package com.android.dialer;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface.OnClickListener;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
@@ -99,6 +106,16 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
     private static final char LEFT_TO_RIGHT_EMBEDDING = '\u202A';
     private static final char POP_DIRECTIONAL_FORMATTING = '\u202C';
 
+    //add firewall menu
+    private static final Uri WHITELIST_CONTENT_URI = Uri
+                             .parse("content://com.android.firewall/whitelistitems");
+    private static final Uri BLACKLIST_CONTENT_URI = Uri
+                             .parse("content://com.android.firewall/blacklistitems");
+    private static final String NUMBER_KEY = "number";
+    private static final String MODE_KEY = "mode";
+    private static final String FIREWALL_APK_NAME = "com.android.firewall";
+    private static final String FIREWALL_BLACK_WHITE_LIST = "com.android.firewall.FirewallListPage";
+
     /** The time to wait before enabling the blank the screen due to the proximity sensor. */
     private static final long PROXIMITY_BLANK_DELAY_MILLIS = 100;
     /** The time to wait before disabling the blank the screen due to the proximity sensor. */
@@ -161,6 +178,9 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
     private boolean mHasSubOneIpCallOption;
     /** Whether we should show "Ip Call by SIM2" in the options menu. */
     private boolean mHasSubTwoIpCallOption;
+
+    /** Add for black/white list. */
+    private boolean mHasInstallFireWallOption = false;
 
     private ProximitySensorManager mProximitySensorManager;
     private final ProximitySensorListener mProximitySensorListener = new ProximitySensorListener();
@@ -375,6 +395,20 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
     public void onResume() {
         super.onResume();
         updateData(getCallLogEntryUris());
+
+        mHasInstallFireWallOption = isFireWallInstalled();
+    }
+
+    private boolean isFireWallInstalled() {
+        boolean installed = false;
+        try {
+            ApplicationInfo info = getPackageManager().getApplicationInfo(
+                    FIREWALL_APK_NAME, PackageManager.GET_PROVIDERS);
+            installed = (info != null);
+        } catch (NameNotFoundException e) {
+        }
+        Log.d(TAG, "Is Firewall installed ? " + installed);
+        return installed;
     }
 
     /**
@@ -1039,6 +1073,8 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
             menu.findItem(R.id.menu_ip_call_by_slot2).setTitle(getString(
                     com.android.contacts.common.R.string.ip_call_by_slot, sub2Name));
         }
+        menu.findItem(R.id.menu_add_to_black_list).setVisible(mHasInstallFireWallOption);
+        menu.findItem(R.id.menu_add_to_white_list).setVisible(mHasInstallFireWallOption);
         return super.onPrepareOptionsMenu(menu);
     }
     public void onMenuVTCall(MenuItem menuItem) {
@@ -1118,6 +1154,70 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
                         finish();
                     }
                 });
+    }
+
+    public void onMenuAddToBlackList(MenuItem menuItem) {
+        Bundle blackBundle = new Bundle();
+        new AlertDialog.Builder(this)
+            .setMessage(getString(R.string.firewall_add_blacklist_warning))
+            .setPositiveButton(android.R.string.ok, new OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if (addNumberToFirewall(true , mNumber)) {
+                        Toast.makeText(CallDetailActivity.this,
+                            getString(R.string.firewall_save_success),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                }
+            })
+            .setNegativeButton(android.R.string.cancel, null)
+            .create().show();
+
+    }
+
+    public void onMenuAddToWhiteList(MenuItem menuItem) {
+        if (addNumberToFirewall(false , mNumber)) {
+             Toast.makeText(CallDetailActivity.this,
+                getString(R.string.firewall_save_success),
+                    Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+    private boolean addNumberToFirewall(boolean isBlacklist,String number) {
+         if (TextUtils.isEmpty(number)) {
+            Toast.makeText(CallDetailActivity.this,
+                getString(R.string.firewall_number_len_not_valid),
+                    Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        ContentValues values = new ContentValues();
+        String queryNumber = number.replaceAll("[\\-\\/ ]", "");
+        int len = queryNumber.length();
+        if (len > 11) {
+            queryNumber = number.substring(len - 11, len);
+        }
+        Uri firewallUri = isBlacklist? BLACKLIST_CONTENT_URI: WHITELIST_CONTENT_URI;
+        Cursor firewallCursor = getContentResolver().query(firewallUri, new String[] {
+                "_id", "number", "person_id", "name"
+        }, "number" + " LIKE '%" + queryNumber + "'", null, null);
+        if (firewallCursor != null) {
+            if (firewallCursor.getCount() > 0) {
+                firewallCursor.close();
+                firewallCursor = null;
+                String resStr = isBlacklist ? getString(R.string.firewall_number_in_black)
+                    : getString(R.string.firewall_number_in_white);
+                Toast.makeText(CallDetailActivity.this, resStr,
+                    Toast.LENGTH_SHORT).show();
+                return false;
+            }
+            firewallCursor.close();
+            firewallCursor = null;
+        }
+        values.put("number", queryNumber);
+        // add new
+        getContentResolver().insert(firewallUri, values);
+        return true;
     }
 
     /** Invoked when the user presses the home button in the action bar. */

@@ -48,4 +48,17 @@
         android:title="@string/recentCalls_editNumberBeforeCall"
         android:onClick="onMenuEditNumberBeforeCall"
     />
+
+    <item
+        android:id="@+id/menu_add_to_black_list"
+        android:showAsAction="withText"
+        android:title="@string/add_to_black_list"
+        android:onClick="onMenuAddToBlackList"
+    />
+    <item
+        android:id="@+id/menu_add_to_white_list"
+        android:showAsAction="withText"
+        android:title="@string/add_to_white_list"
+        android:onClick="onMenuAddToWhiteList"
+    />
 </menu>
