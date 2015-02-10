@@ -1494,6 +1494,9 @@ public class DialpadFragment extends Fragment
      *                of the regular Dialer UI
      */
     protected void showDialpadChooser(boolean enabled) {
+        if (getActivity() == null) {
+            return;
+        }
         // Check if onCreateView() is already called by checking one of View objects.
         if (!isLayoutReady()) {
             return;
