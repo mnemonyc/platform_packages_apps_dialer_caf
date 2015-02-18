@@ -1349,8 +1349,11 @@ public class CallDetailActivity extends Activity implements ProximitySensorAware
     }
 
     public boolean isIMSSupported(){
-        boolean IMSSupported = this.getResources().getBoolean(R.bool.ims_enabled);
-        return IMSSupported && MoreContactUtils.isAnySimAviable();
+        boolean IMSSupported = this.getResources().getBoolean(R.bool.ims_enabled)
+                && SystemProperties.getBoolean("persist.radio.calls.on.ims", false);
+        boolean IMSRegisrered = SystemProperties.get(
+                "persist.radio.ims.registered", "0").equals("1");
+        return IMSSupported && IMSRegisrered && MoreContactUtils.isAnySimAviable();
     }
 
     /** Returns the given text, forced to be left-to-right. */
