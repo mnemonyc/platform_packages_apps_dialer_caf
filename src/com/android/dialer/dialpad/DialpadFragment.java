@@ -295,7 +295,7 @@ public class DialpadFragment extends Fragment
         public void onCallStateChanged(int state, String incomingNumber) {
             // Log.i(TAG, "PhoneStateListener.onCallStateChanged: "
             //       + state + ", '" + incomingNumber + "'");
-            if ((state == TelephonyManager.CALL_STATE_IDLE) && dialpadChooserVisible()) {
+            if (!phoneIsInUse() && dialpadChooserVisible()) {
                 // Log.i(TAG, "Call ended with dialpad chooser visible!  Taking it down...");
                 // Note there's a race condition in the UI here: the
                 // dialpad chooser could conceivably disappear (on its
