@@ -32,6 +32,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.provider.CallLog.Calls;
 import android.provider.VoicemailContract.Status;
+import android.telephony.SubscriptionManager;
 import android.util.Log;
 
 import com.android.common.io.MoreCloseables;
@@ -67,6 +68,11 @@ public class CallLogQueryHandler extends NoNullCursorAsyncQueryHandler {
      * type.
      */
     public static final int CALL_TYPE_ALL = -1;
+
+   /**
+    * To specifty all slots
+    */
+    public static final int CALL_SIM_ALL = -1;
 
     private final WeakReference<Listener> mListener;
 
