@@ -60,7 +60,7 @@ public class SpecialCharSequenceMgr {
     private static final String SECRET_CODE_ACTION = "android.provider.Telephony.SECRET_CODE";
     private static final String MMI_IMEI_DISPLAY = "*#06#";
     private static final String MMI_REGULATORY_INFO_DISPLAY = "*#07#";
-
+    private static final int IMEI_14_DIGIT = 14;
     /**
      * Remembers the previous {@link QueryHandler} and cancel the operation when needed, to
      * prevent possible crash.
@@ -290,6 +290,12 @@ public class SpecialCharSequenceMgr {
         //In case of no-sim, slotId will be -1.
         if (slotId < 0) slotId = 0;
         imeiStr = telephonyManager.getDeviceId(slotId);
+        boolean enable14DigitImei = context.getResources().getBoolean(
+                com.android.internal.R.bool.config_enable_14digit_imei);
+        if (enable14DigitImei && imeiStr != null
+                && imeiStr.length() > IMEI_14_DIGIT) {
+            imeiStr = imeiStr.substring(0, IMEI_14_DIGIT);
+        }
 
         AlertDialog alert = new AlertDialog.Builder(context)
                 .setTitle(R.string.imei)
