@@ -48,7 +48,7 @@ public class PhoneAccountUtils {
         if (account == null) {
             return null;
         }
-        return account.getIcon(context);
+        return account.createIconDrawable(context);
     }
 
     /**
@@ -60,6 +60,14 @@ public class PhoneAccountUtils {
             return null;
         }
         return account.getLabel().toString();
+    }
+
+    /**
+     * Extract account color from PhoneAccount object.
+     */
+    public static int getAccountColor(Context context, PhoneAccountHandle accountHandle) {
+        PhoneAccount account = getAccountOrNull(context, accountHandle);
+        return account == null ? PhoneAccount.NO_HIGHLIGHT_COLOR : account.getHighlightColor();
     }
 
     /**
