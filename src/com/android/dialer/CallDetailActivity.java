@@ -635,8 +635,10 @@ public class CallDetailActivity extends AnalyticsActivity implements ProximitySe
 
         menu.findItem(R.id.menu_video_call).setVisible(CallUtil.isCSVTEnabled());
 
-        menu.findItem(R.id.menu_add_to_black_list).setVisible(mHasInstallFireWallOption);
-        menu.findItem(R.id.menu_add_to_white_list).setVisible(mHasInstallFireWallOption);
+        menu.findItem(R.id.menu_add_to_black_list).setVisible(mHasInstallFireWallOption
+                && checkNumberInFirewall(true, mNumber));
+        menu.findItem(R.id.menu_add_to_white_list).setVisible(mHasInstallFireWallOption
+                && checkNumberInFirewall(false, mNumber));
 
         return super.onPrepareOptionsMenu(menu);
     }
@@ -677,11 +679,11 @@ public class CallDetailActivity extends AnalyticsActivity implements ProximitySe
 
     }
 
-    private boolean addNumberToFirewall(boolean isBlacklist,String number){
+    private boolean addNumberToFirewall(boolean isBlacklist, String number) {
         Log.d(TAG, "number: " + number);
          if (TextUtils.isEmpty(number)) {
             Toast.makeText(CallDetailActivity.this,
-                getString(R.string.firewall_number_len_not_valid),
+                    getString(R.string.firewall_number_len_not_valid),
                     Toast.LENGTH_SHORT).show();
             return false;
         }
@@ -689,35 +691,64 @@ public class CallDetailActivity extends AnalyticsActivity implements ProximitySe
         ContentValues values = new ContentValues();
         String queryNumber = number.replaceAll("[\\-\\/ ]", "");
         int len = queryNumber.length();
-        if (len > 11){
+        if (len > 11) {
             queryNumber = number.substring(len - 11, len);
         }
         Uri firewallUri = isBlacklist? BLACKLIST_CONTENT_URI: WHITELIST_CONTENT_URI;
-        Cursor fiewallCursor = getContentResolver().query(firewallUri,
-                new String[] {
-                        "_id", "number", "person_id", "name"
-                },
+        Uri checkOtherListUri = isBlacklist? WHITELIST_CONTENT_URI
+                : BLACKLIST_CONTENT_URI;
+        Cursor checkOtherListCursor = getContentResolver().query(checkOtherListUri,
+                new String[] { "_id", "number", "person_id", "name"},
                 "number" + " LIKE '%" + queryNumber + "'",
-                null,
-                null);
-        if (fiewallCursor != null){
-            if (fiewallCursor.getCount() > 0) {
-                fiewallCursor.close();
-                fiewallCursor = null;
-                 String Stoast = isBlacklist?getString(R.string.firewall_number_in_black)
-                                     :getString(R.string.firewall_number_in_white);
+                null, null);
+        try {
+            if (checkOtherListCursor != null
+                    && checkOtherListCursor.getCount() > 0) {
+                String Stoast = isBlacklist? getString(
+                        R.string.firewall_number_in_white)
+                        :getString(R.string.firewall_number_in_black);
                 Toast.makeText(CallDetailActivity.this, Stoast,
-                    Toast.LENGTH_SHORT).show();
-                return false;
+                        Toast.LENGTH_SHORT).show();
+                    return false;
             }
-            fiewallCursor.close();
-            fiewallCursor = null;
+        } finally {
+            if (checkOtherListCursor != null) {
+                checkOtherListCursor.close();
+                checkOtherListCursor = null;
+            }
         }
         values.put("number", queryNumber);
         values.put("name", "");
         // add new
         Uri mUri = getContentResolver().insert(firewallUri, values);
         return ret;
+    }
+
+    private boolean checkNumberInFirewall(boolean isBlacklist, String number) {
+        if (TextUtils.isEmpty(number)) {
+            return false;
+        }
+        String queryNumber = number.replaceAll("[\\-\\/ ]", "");
+        int len = queryNumber.length();
+        if (len > 11) {
+            queryNumber = number.substring(len - 11, len);
+        }
+        Uri firewallUri = isBlacklist? BLACKLIST_CONTENT_URI: WHITELIST_CONTENT_URI;
+        Cursor fiewallCursor = getContentResolver().query(firewallUri,
+                new String[] { "_id", "number", "person_id", "name"},
+                "number" + " LIKE '%" + queryNumber + "'",
+                null, null);
+        try {
+            if (fiewallCursor != null && fiewallCursor.getCount() > 0) {
+                return false;
+            }
+        } finally {
+            if (fiewallCursor != null) {
+                fiewallCursor.close();
+                fiewallCursor = null;
+            }
+        }
+        return true;
     }
 
     public void onMenuRemoveFromCallLog(MenuItem menuItem) {
