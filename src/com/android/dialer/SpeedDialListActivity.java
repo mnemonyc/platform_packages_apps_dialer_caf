@@ -49,6 +49,7 @@ import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.util.SparseArray;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -306,7 +307,7 @@ public class SpeedDialListActivity extends ListActivity implements
             if (record == null) {
                 showAddSpeedDialDialog(number);
             } else {
-                PopupMenu pm = new PopupMenu(this, view);
+                PopupMenu pm = new PopupMenu(this, view, Gravity.START);
                 pm.getMenu().add(number, MENU_REPLACE, 0, R.string.speed_dial_replace);
                 pm.getMenu().add(number, MENU_DELETE, 0, R.string.speed_dial_delete);
                 pm.setOnMenuItemClickListener(this);

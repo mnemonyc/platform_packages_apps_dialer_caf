@@ -94,6 +94,7 @@ import com.android.phone.common.dialpad.DialpadView;
 import com.google.common.annotations.VisibleForTesting;
 
 import java.util.HashSet;
+import java.util.Locale;
 
 import static com.android.internal.telephony.PhoneConstants.SUBSCRIPTION_KEY;
 
@@ -394,6 +395,13 @@ public class DialpadFragment extends AnalyticsFragment
             mDelete.setOnClickListener(this);
             mDelete.setOnLongClickListener(this);
         }
+
+        // Populate the overflow menu in onCreate instead of onResume to avoid PopupMenu's memory leak.
+        mOverflowMenuButton = mDialpadView.getOverflowMenuButton();
+        mOverflowPopupMenu = buildOptionsMenu(mOverflowMenuButton);
+        mOverflowMenuButton.setOnTouchListener(mOverflowPopupMenu.getDragToOpenListener());
+        mOverflowMenuButton.setOnClickListener(this);
+        mOverflowMenuButton.setVisibility(isDigitsEmpty() ? View.INVISIBLE : View.VISIBLE);
 
         mSpacer = fragmentView.findViewById(R.id.spacer);
         mSpacer.setOnTouchListener(new View.OnTouchListener() {
@@ -708,15 +716,6 @@ public class DialpadFragment extends AnalyticsFragment
 
         mSmsPackageComponentName = DialerUtils.getSmsComponent(activity);
 
-        // Populate the overflow menu in onResume instead of onCreate, so that if the SMS activity
-        // is disabled while Dialer is paused, the "Send a text message" option can be correctly
-        // removed when resumed.
-        mOverflowMenuButton = mDialpadView.getOverflowMenuButton();
-        mOverflowPopupMenu = buildOptionsMenu(mOverflowMenuButton);
-        mOverflowMenuButton.setOnTouchListener(mOverflowPopupMenu.getDragToOpenListener());
-        mOverflowMenuButton.setOnClickListener(this);
-        mOverflowMenuButton.setVisibility(isDigitsEmpty() ? View.INVISIBLE : View.VISIBLE);
-
         if (getTelephonyManager().isMultiSimEnabled() &&
                 MoreContactUtils.shouldShowOperator(mContext)) {
             if (SubscriptionManager.isVoicePromptEnabled()) {
@@ -922,6 +921,7 @@ public class DialpadFragment extends AnalyticsFragment
      * @param invoker the View that invoked the options menu, to act as an anchor location.
      */
     private PopupMenu buildOptionsMenu(View invoker) {
+        invoker.setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault()));
         final PopupMenu popupMenu = new PopupMenu(getActivity(), invoker) {
             @Override
             public void show() {
