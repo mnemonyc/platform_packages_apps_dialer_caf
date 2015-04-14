@@ -249,6 +249,7 @@ public class CallLogFragment extends ListFragment
         mAdapter = ObjectFactory.newCallLogAdapter(getActivity(), this, new ContactInfoHelper(
                 getActivity(), currentCountryIso), true, true);
         setListAdapter(mAdapter);
+        getListView().setOnScrollListener(mAdapter);
         getListView().setItemsCanFocus(true);
     }
 
