@@ -36,6 +36,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.view.ViewTreeObserver;
+import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -58,7 +60,8 @@ import java.util.LinkedList;
  * Adapter class to fill in data for the Call Log.
  */
 public class CallLogAdapter extends GroupingListAdapter
-        implements ViewTreeObserver.OnPreDrawListener, CallLogGroupBuilder.GroupCreator {
+        implements ViewTreeObserver.OnPreDrawListener, CallLogGroupBuilder.GroupCreator,
+        OnScrollListener {
 
     /** Interface used to initiate a refresh of the content. */
     public interface CallFetcher {
@@ -108,6 +111,8 @@ public class CallLogAdapter extends GroupingListAdapter
     private ViewTreeObserver mViewTreeObserver = null;
 
     private String mFilterString;
+
+    private boolean mBusy = false;
 
     /**
      * A cache of the contact details for the phone numbers in the call log.
@@ -452,6 +457,9 @@ public class CallLogAdapter extends GroupingListAdapter
                 // Check if thread is finished, and if so return immediately.
                 if (mDone) return;
 
+                // only update contact info when scroll state is not fling.
+                if (mBusy) continue;
+
                 // Obtain next request, if any is available.
                 // Keep synchronized section small.
                 ContactInfoRequest req = null;
@@ -653,8 +661,10 @@ public class CallLogAdapter extends GroupingListAdapter
         final boolean isNew = c.getInt(CallLogQuery.IS_READ) == 0;
         // New items also use the highlighted version of the text.
         final boolean isHighlighted = isNew;
-        mCallLogViewsHelper.setPhoneCallDetails(views, details, isHighlighted,
-                mShowSecondaryActionButton);
+        if (!mBusy) {
+            mCallLogViewsHelper.setPhoneCallDetails(views, details, isHighlighted,
+                    mShowSecondaryActionButton);
+        }
 
         int contactType = ContactPhotoManager.TYPE_DEFAULT;
 
@@ -994,5 +1004,28 @@ public class CallLogAdapter extends GroupingListAdapter
 
     public void setQueryString(String filter) {
         mFilterString = filter;
+    }
+
+    @Override
+    public void onScrollStateChanged(AbsListView view, int scrollState) {
+        switch (scrollState) {
+        case OnScrollListener.SCROLL_STATE_IDLE:
+            mBusy = false;
+            notifyDataSetChanged();
+            break;
+        case OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:
+            mBusy = false;
+            break;
+        case OnScrollListener.SCROLL_STATE_FLING:
+            // Do not update views when scroll state is SCROLL_STATE_FLING
+            mBusy = true;
+            break;
+        }
+    }
+
+    @Override
+    public void onScroll(AbsListView view, int firstVisibleItem,
+            int visibleItemCount, int totalItemCount) {
+        // no-op
     }
 }
