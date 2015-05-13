@@ -1717,6 +1717,9 @@ public class DialpadFragment extends AnalyticsFragment
                 return true;
             case R.id.menu_video_call:
                 final String number = mDigits.getText().toString();
+                if (!CallUtil.isVideoCallNumValid(getActivity(), number)) {
+                    return true;
+                }
                 if (CallUtil.isCSVTEnabled()) {
                     getActivity().startActivity(CallUtil.getCSVTCallIntent(number));
                 } else if (CallUtil.isVideoEnabled(mContext)) {
