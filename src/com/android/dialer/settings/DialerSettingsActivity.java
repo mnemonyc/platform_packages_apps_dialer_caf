@@ -3,6 +3,7 @@ package com.android.dialer.settings;
 import com.google.common.collect.Lists;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.UserHandle;
@@ -59,6 +60,17 @@ public class DialerSettingsActivity extends AnalyticsPreferenceActivity {
             callSettingHeader.summaryRes = R.string.call_settings_description;
             callSettingHeader.intent = DialtactsActivity.getCallSettingsIntent();
             target.add(callSettingHeader);
+        }
+        boolean usageEnable = getResources().getBoolean(com.android.internal.R.bool.config_regional_call_data_usage_enable);
+        if(usageEnable){
+            final Header historyInfoHeader = new Header();
+            historyInfoHeader.titleRes = R.string.call_data_info_label;
+            historyInfoHeader.summaryRes = R.string.call_data_info_description;
+            historyInfoHeader.intent = new Intent(Intent.ACTION_MAIN);
+            historyInfoHeader.intent
+                    .setClassName("com.qualcomm.qti.telephony.extcarrierpack",
+                            "com.qualcomm.qti.telephony.extcarrierpack.TimerInfoActivity");
+            target.add(historyInfoHeader);
         }
     }
 
