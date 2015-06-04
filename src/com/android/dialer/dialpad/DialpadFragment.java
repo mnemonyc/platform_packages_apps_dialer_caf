@@ -67,6 +67,7 @@ import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.contacts.common.CallUtil;
 import com.android.contacts.common.ContactsUtils;
@@ -1719,6 +1720,8 @@ public class DialpadFragment extends AnalyticsFragment
             case R.id.menu_video_call:
                 final String number = mDigits.getText().toString();
                 if (!CallUtil.isVideoCallNumValid(getActivity(), number)) {
+                    Toast.makeText(mContext,
+                            R.string.toast_make_video_call_failed, Toast.LENGTH_LONG).show();
                     return true;
                 }
                 if (CallUtil.isVideoEnabled(mContext)) {
