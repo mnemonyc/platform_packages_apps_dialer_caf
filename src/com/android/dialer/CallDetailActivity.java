@@ -642,9 +642,6 @@ public class CallDetailActivity extends AnalyticsActivity implements ProximitySe
         menu.findItem(R.id.menu_add_to_white_list).setVisible(mHasInstallFireWallOption
                 && !isNumberInFirewall(false, mNumber));
 
-        menu.findItem(R.id.menu_add_to_blacklist).setVisible(
-                BlacklistUtils.isBlacklistEnabled(this));
-
         return super.onPrepareOptionsMenu(menu);
     }
 
