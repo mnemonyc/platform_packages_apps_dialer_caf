@@ -853,4 +853,8 @@
     <string name="input_number">Input Number</string>
     <string name="speed_dial_cancel">Cancel</string>
     <string name="speed_dial_ok">OK</string>
+
+    <!-- OEM Key strings -->
+    <string name="oem_key_code_action">""</string>
+    <string name="oem_code">""</string>
 </resources>

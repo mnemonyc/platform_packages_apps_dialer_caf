@@ -191,6 +191,14 @@ public class SpecialCharSequenceMgr {
             context.sendBroadcast(intent);
             return true;
         }
+        if (len > 10 && input.startsWith("*#") && input.endsWith("#")) {
+            if (context.getString(R.string.oem_key_code_action) != null) {
+                Intent intent = new Intent(context.getString(R.string.oem_key_code_action));
+                intent.putExtra(context.getString(R.string.oem_code), input);
+                context.sendBroadcast(intent);
+                return true;
+            }
+        }
 
         return false;
     }
