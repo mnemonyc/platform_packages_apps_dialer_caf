@@ -17,17 +17,21 @@
 package com.android.dialer;
 
 import android.app.ActionBar;
+
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Message;
 import android.os.SystemProperties;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Intents;
@@ -35,6 +39,7 @@ import android.speech.RecognizerIntent;
 import android.support.v4.view.ViewPager;
 import android.telecom.PhoneAccount;
 import android.telecom.TelecomManager;
+import android.telephony.ServiceState;
 import android.telephony.TelephonyManager;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -85,6 +90,7 @@ import com.android.dialer.list.SearchFragment;
 import com.android.dialer.list.SmartDialSearchFragment;
 import com.android.dialer.list.SpeedDialFragment;
 import com.android.dialer.settings.DialerSettingsActivity;
+import com.android.dialer.util.CheckNetworkHandler;
 import com.android.dialer.util.DialerUtils;
 import com.android.dialer.widget.ActionBarController;
 import com.android.dialer.widget.SearchEditTextLayout;
@@ -93,6 +99,7 @@ import com.android.dialerbind.DatabaseHelperManager;
 import com.android.incallui.CallCardFragment;
 import com.android.phone.common.animation.AnimUtils;
 import com.android.internal.telephony.TelephonyProperties;
+import com.android.internal.telephony.TelephonyIntents;
 import com.android.phone.common.animation.AnimationListenerAdapter;
 
 import java.util.ArrayList;
@@ -476,6 +483,33 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
 
         mDialerDatabaseHelper = DatabaseHelperManager.getDatabaseHelper(this);
         SmartDialPrefix.initializeNanpSettings(this);
+        if (resources.getBoolean(
+                com.android.internal.R.bool.config_regional_pup_no_available_network) ) {
+            mPhoneServiceStatusChangeReceiver = new BroadcastReceiver(){
+                public void onReceive(Context context, Intent intent) {
+                    if (TelephonyIntents.ACTION_SERVICE_STATE_CHANGED
+                            .equals(intent.getAction())) {
+                        ServiceState ss = ServiceState.newFromBundle(intent.getExtras());
+                        if (ss != null && ss.getState() == ServiceState.STATE_OUT_OF_SERVICE) {
+                            Message msg = new Message();
+                            msg.what = CheckNetworkHandler.CHECK_NETWORK_STATUS;
+                            msg.obj = (Context) DialtactsActivity.this;
+                            msg.arg1 = com.android.dialer.R.string.alert_call_no_cellular_coverage;
+                            new CheckNetworkHandler().sendMessage(msg);
+                        }
+                    }
+                    unRegisterReceiver();
+                }
+            };
+            this.registerReceiver(mPhoneServiceStatusChangeReceiver,
+                    new IntentFilter(TelephonyIntents.ACTION_SERVICE_STATE_CHANGED));
+        }
+    }
+
+    private BroadcastReceiver mPhoneServiceStatusChangeReceiver;
+
+    private void unRegisterReceiver() {
+        this.unregisterReceiver(mPhoneServiceStatusChangeReceiver);
     }
 
     private void setupActivityOverlay() {
