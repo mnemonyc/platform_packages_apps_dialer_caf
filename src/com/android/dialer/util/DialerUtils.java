@@ -16,14 +16,21 @@
 package com.android.dialer.util;
 
 import android.app.Activity;
+
+import android.app.AlertDialog.Builder;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.graphics.Point;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Telephony;
@@ -183,5 +190,44 @@ public class DialerUtils {
         if (imm != null) {
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
+    }
+
+    public static boolean checkCellularValid(Context context) {
+        ConnectivityManager conManager = (ConnectivityManager) context
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = conManager
+                .getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        if (netInfo != null && netInfo.isAvailable()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static void pupConnectWifiCallDialog(final Context context,
+            int messageId) {
+        Builder diaBuilder = new Builder(context);
+        diaBuilder.setMessage(messageId);
+        diaBuilder.setPositiveButton(com.android.internal.R.string.ok,
+                new OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(Intent.ACTION_MAIN);
+                        intent.setClassName("com.android.phone",
+                                "com.android.phone.WifiCallingSettings");
+                        context.startActivity(intent);
+                    }
+                });
+        diaBuilder.setOnCancelListener(new OnCancelListener() {
+
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                Intent intent = new Intent(
+                        "com.android.dialer.CONNECTWIFI_DIALOG_CANCEL");
+                context.sendBroadcast(intent);
+            }
+        });
+        diaBuilder.create().show();
     }
 }
