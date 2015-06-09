@@ -1,4 +1,7 @@
 /*
+ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
+ * Not a Contribution.
+ *
  * Copyright (C) 2011 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,11 +23,13 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -33,6 +38,7 @@ import android.media.AudioManager;
 import android.media.ToneGenerator;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Message;
 import android.provider.Contacts.People;
 import android.provider.Contacts.Phones;
 import android.provider.Contacts.PhonesColumns;
@@ -42,6 +48,7 @@ import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.PhoneStateListener;
+import android.telephony.ServiceState;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.text.Editable;
@@ -81,10 +88,12 @@ import com.android.dialer.R;
 import com.android.dialer.SpecialCharSequenceMgr;
 import com.android.dialer.SpeedDialListActivity;
 import com.android.dialer.SpeedDialUtils;
+import com.android.dialer.util.CheckNetworkHandler;
 import com.android.dialer.util.DialerUtils;
 import com.android.dialerbind.analytics.AnalyticsFragment;
 import com.android.internal.telephony.PhoneConstants;
 import com.android.internal.telephony.TelephonyProperties;
+import com.android.internal.telephony.TelephonyIntents;
 import com.android.phone.common.CallLogAsync;
 import com.android.phone.common.HapticFeedback;
 import com.android.phone.common.animation.AnimUtils;
@@ -356,6 +365,44 @@ public class DialpadFragment extends AnalyticsFragment
         }
 
         mDialpadSlideInDuration = getResources().getInteger(R.integer.dialpad_slide_in_duration);
+        if (getActivity().getResources().getBoolean(
+                com.android.internal.R.bool.config_regional_pup_no_available_network)) {
+            Context context = getActivity();
+            mConnectionWifiDialogReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    if ("com.android.dialer.CONNECTWIFI_DIALOG_CANCEL"
+                            .equals(intent.getAction())) {
+                        mHaptic.vibrate();
+                        handleDialButtonPressed();
+                    }
+                }
+            };
+            context.registerReceiver(mConnectionWifiDialogReceiver,
+                    new IntentFilter("com.android.dialer.CONNECTWIFI_DIALOG_CANCEL"));
+            mPhoneServiceStatusChangeReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    if (TelephonyIntents.ACTION_SERVICE_STATE_CHANGED
+                            .equals(intent.getAction())) {
+                        mServiesState = ServiceState.newFromBundle(intent.getExtras());
+                    }
+                }
+            };
+            context.registerReceiver(mPhoneServiceStatusChangeReceiver,
+                    new IntentFilter(TelephonyIntents.ACTION_SERVICE_STATE_CHANGED));
+        }
+    }
+
+    private BroadcastReceiver mConnectionWifiDialogReceiver;
+    private BroadcastReceiver mPhoneServiceStatusChangeReceiver;
+    private ServiceState mServiesState;
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        getActivity().unregisterReceiver(mConnectionWifiDialogReceiver);
+        getActivity().unregisterReceiver(mPhoneServiceStatusChangeReceiver);
     }
 
     @Override
@@ -1048,8 +1095,20 @@ public class DialpadFragment extends AnalyticsFragment
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.dialpad_floating_action_button:
-                mHaptic.vibrate();
-                handleDialButtonPressed();
+                if (getActivity().getResources()
+                        .getBoolean(com.android.internal.R.bool.config_regional_pup_no_available_network)
+                        && mServiesState != null
+                        && mServiesState.getState() == ServiceState.STATE_OUT_OF_SERVICE) {
+                        CheckNetworkHandler handler = new CheckNetworkHandler();
+                        Message msg = handler.obtainMessage();
+                        msg.what = CheckNetworkHandler.CHECK_NETWORK_STATUS;
+                        msg.obj = (Context) getActivity();
+                        msg.arg1 = com.android.dialer.R.string.alert_user_connect_to_wifi_for_call;
+                        handler.sendMessage(msg);
+                } else {
+                    mHaptic.vibrate();
+                    handleDialButtonPressed();
+                }
                 break;
             case R.id.deleteButton: {
                 keyPressed(KeyEvent.KEYCODE_DEL);
