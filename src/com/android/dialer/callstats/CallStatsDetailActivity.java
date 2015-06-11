@@ -84,8 +84,10 @@ public class CallStatsDetailActivity extends Activity {
         }
 
         protected void onPostExecute(ContactInfo info) {
-            mData.updateFromInfo(info);
-            updateData();
+            if (info != null) {
+                mData.updateFromInfo(info);
+                updateData();
+            }
         }
     }
 
