@@ -30,6 +30,7 @@
 package com.android.dialer.util;
 
 import android.content.Context;
+import android.content.Intent;
 
 
 import android.os.Handler;
@@ -94,6 +95,8 @@ public class CheckNetworkHandler extends Handler {
             }else if(wifiCallingStatus == ImsConfig.WifiCallingValueConstants.ON){
                 popMakeWifiCallText();
                 CheckNetworkHandler.this.sendEmptyMessageDelayed(REMOVE_TEXT_VIEW, DELAYED_TIME);
+                Intent broad = new Intent("com.android.wificall.ON");
+                mContext.sendBroadcast(broad);
             }
             Log.d(TAG, "onGetWifiCallingPreference: status = " + wifiCallingStatus +
                     " preference = " + wifiCallingPreference);

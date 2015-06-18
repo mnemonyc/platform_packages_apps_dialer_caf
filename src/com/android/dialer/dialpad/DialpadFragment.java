@@ -376,11 +376,16 @@ public class DialpadFragment extends AnalyticsFragment
                             .equals(intent.getAction())) {
                         mHaptic.vibrate();
                         handleDialButtonPressed();
+                    } else if ("com.android.wificall.ON".equals(intent.getAction())) {
+                        changeDialpadButton();
                     }
                 }
             };
+            IntentFilter filter = new IntentFilter(
+                    "com.android.dialer.CONNECTWIFI_DIALOG_CANCEL");
+            filter.addAction("com.android.wificall.ON");
             context.registerReceiver(mConnectionWifiDialogReceiver,
-                    new IntentFilter("com.android.dialer.CONNECTWIFI_DIALOG_CANCEL"));
+                    filter);
             mPhoneServiceStatusChangeReceiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
@@ -393,6 +398,16 @@ public class DialpadFragment extends AnalyticsFragment
             context.registerReceiver(mPhoneServiceStatusChangeReceiver,
                     new IntentFilter(TelephonyIntents.ACTION_SERVICE_STATE_CHANGED));
         }
+    }
+
+    private void changeDialpadButton() {
+        ImageView floatingActionButton =
+                (ImageButton) getView().findViewById(R.id.dialpad_floating_action_button);
+        if (floatingActionButton == null) {
+            return;
+        }
+        Resources res = getActivity().getResources();
+        floatingActionButton.setImageResource(R.drawable.fab_ic_call_wifi);
     }
 
     private BroadcastReceiver mConnectionWifiDialogReceiver;
