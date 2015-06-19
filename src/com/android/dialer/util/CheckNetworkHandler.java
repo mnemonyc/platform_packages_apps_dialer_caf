@@ -33,6 +33,9 @@ import android.content.Context;
 import android.content.Intent;
 
 
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -41,6 +44,8 @@ import android.view.LayoutInflater;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.telephony.PhoneStateListener;
+import android.telephony.ServiceState;
 import android.telephony.SubscriptionManager;
 
 import com.android.ims.ImsConfig;
@@ -54,11 +59,18 @@ public class CheckNetworkHandler extends Handler {
     private static final String TAG = CheckNetworkHandler.class.getSimpleName();
     public static final int CHECK_NETWORK_STATUS = 1;
     public static final int REMOVE_TEXT_VIEW = 2;
+    public static final int PUP_DIALOG = 3;
+    public static final int PUP_TEXT_VIEW = 4;
     public static final int DELAYED_TIME = 5 * 1000;
+    private static ServiceState mServiceState;
     private ImsConfig mImsConfig;
     private Context mContext;
     private TextView mTextView;
     private int mMessageId;
+
+    public void setServiceState(ServiceState state) {
+        mServiceState = state;
+    }
 
     private ImsConfigListener imsConfigListener = new ImsConfigListener.Stub() {
         public void onGetVideoQuality(int status, int quality) {
@@ -89,12 +101,34 @@ public class CheckNetworkHandler extends Handler {
                 int wifiCallingPreference) {
             if (hasRequestFailed(status)) {
                 Log.e(TAG, "onGetWifiCallingPreference: failed. errorCode = " + status);
-            }else if(wifiCallingStatus == ImsConfig.WifiCallingValueConstants.OFF){
-                DialerUtils.pupConnectWifiCallDialog(mContext,
-                        mMessageId);
-            }else if(wifiCallingStatus == ImsConfig.WifiCallingValueConstants.ON){
-                popMakeWifiCallText();
-                CheckNetworkHandler.this.sendEmptyMessageDelayed(REMOVE_TEXT_VIEW, DELAYED_TIME);
+            }else if(wifiCallingStatus == ImsConfig.WifiCallingValueConstants.OFF
+                    && mServiceState != null
+                    && mServiceState.getState() == ServiceState.STATE_OUT_OF_SERVICE){
+                sendEmptyMessage(PUP_DIALOG);
+            }else if(wifiCallingStatus == ImsConfig.WifiCallingValueConstants.ON) {
+                if (mServiceState != null && mServiceState.getState()
+                        == ServiceState.STATE_IN_SERVICE
+                        && wifiCallingPreference ==
+                        ImsConfig.WifiCallingPreference.CELLULAR_PREFERRED) {
+                    Log.d(TAG, "STATE_IN_SERVICE and CELLULAR_PREFERRED");
+                    return;
+                }
+                WifiManager wifiManager = (WifiManager) mContext.getSystemService(
+                        Context.WIFI_SERVICE);
+                if (!wifiManager.isWifiEnabled()) {
+                    return;
+                }
+                ConnectivityManager connManager = (ConnectivityManager) mContext
+                        .getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo wifi = connManager
+                        .getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+                if (wifiManager.isWifiEnabled() && !wifi.isConnected()) {
+                    return;
+                }
+                if (mServiceState != null) {
+                    sendEmptyMessage(PUP_TEXT_VIEW);
+                    sendEmptyMessageDelayed(REMOVE_TEXT_VIEW, DELAYED_TIME);
+                }
                 Intent broad = new Intent("com.android.wificall.ON");
                 mContext.sendBroadcast(broad);
             }
@@ -138,6 +172,14 @@ public class CheckNetworkHandler extends Handler {
                 WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
                 wm.removeView(mTextView);
             }
+            break;
+
+        case PUP_DIALOG:
+            DialerUtils.pupConnectWifiCallDialog(mContext,
+                    mMessageId);
+            break;
+        case PUP_TEXT_VIEW:
+            popMakeWifiCallText();
             break;
         default:
             Log.i(TAG, "unknow handleMessage with msg.what : " + msg.what);
