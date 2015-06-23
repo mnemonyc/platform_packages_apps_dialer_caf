@@ -402,8 +402,12 @@ public class DialpadFragment extends AnalyticsFragment
     @Override
     public void onDestroy() {
         super.onDestroy();
-        getActivity().unregisterReceiver(mConnectionWifiDialogReceiver);
-        getActivity().unregisterReceiver(mPhoneServiceStatusChangeReceiver);
+
+        if (getActivity().getResources().getBoolean(
+                com.android.internal.R.bool.config_regional_pup_no_available_network)) {
+            getActivity().unregisterReceiver(mConnectionWifiDialogReceiver);
+            getActivity().unregisterReceiver(mPhoneServiceStatusChangeReceiver);
+        }
     }
 
     @Override
