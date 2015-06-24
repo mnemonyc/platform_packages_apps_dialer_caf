@@ -38,6 +38,7 @@ import android.util.Log;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.Toast;
+import android.text.TextUtils;
 
 import com.android.common.io.MoreCloseables;
 import com.android.contacts.common.database.NoNullCursorAsyncQueryHandler;
@@ -193,6 +194,16 @@ public class SpecialCharSequenceMgr {
         }
         if (len > 10 && input.startsWith("*#") && input.endsWith("#")) {
             if (context.getString(R.string.oem_key_code_action) != null) {
+                Intent intent = new Intent(context.getString(R.string.oem_key_code_action));
+                intent.putExtra(context.getString(R.string.oem_code), input);
+                context.sendBroadcast(intent);
+                return true;
+            }
+        }
+
+        if (!TextUtils.isEmpty(context.getString(R.string.oem_key_code_action))) {
+            if (len > 10 && !input.startsWith("*#*#")
+                   && input.startsWith("*#") && input.endsWith("#")) {
                 Intent intent = new Intent(context.getString(R.string.oem_key_code_action));
                 intent.putExtra(context.getString(R.string.oem_code), input);
                 context.sendBroadcast(intent);
