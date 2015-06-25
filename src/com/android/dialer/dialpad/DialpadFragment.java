@@ -1782,7 +1782,9 @@ public class DialpadFragment extends AnalyticsFragment
                 return true;
             case R.id.menu_video_call:
                 final String number = mDigits.getText().toString();
-                if (!CallUtil.isVideoCallNumValid(getActivity(), number)) {
+                if (getResources().getBoolean(
+                           com.android.internal.R.bool.config_regional_number_patterns_video_call) &&
+                    !PhoneNumberUtils.isVideoCallNumValid(number)) {
                     Toast.makeText(mContext,
                             R.string.toast_make_video_call_failed, Toast.LENGTH_LONG).show();
                     return true;
