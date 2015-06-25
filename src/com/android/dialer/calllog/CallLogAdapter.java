@@ -32,6 +32,7 @@ import android.provider.ContactsContract.PhoneLookup;
 import android.telecom.PhoneAccountHandle;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.SubscriptionManager;
+import android.text.format.DateUtils;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -64,6 +65,7 @@ import com.android.dialer.util.ExpirableCache;
 import com.android.dialer.calllog.CallLogAdapterHelper.NumberWithCountryIso;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -414,105 +416,150 @@ public class CallLogAdapter extends GroupingListAdapter
             // when the user expands the actions ViewStub.
         }
 
-        // Lookup contacts with this number
-        final ContactInfo info = mAdapterHelper.lookupContact(
-                number, numberPresentation, countryIso, cachedContactInfo);
-        final Uri lookupUri = info.lookupUri;
-        final String name = info.name;
-        final int ntype = info.type;
-        final String label = info.label;
-        final long photoId = info.photoId;
-        final Uri photoUri = info.photoUri;
-        CharSequence formattedNumber = info.formattedNumber;
-        final int[] callTypes = getCallTypes(c, count);
-        final String geocode = c.getString(CallLogQuery.GEOCODED_LOCATION);
-        final int sourceType = info.sourceType;
-        final int features = getCallFeatures(c, count);
-        final String transcription = c.getString(CallLogQuery.TRANSCRIPTION);
-        final String operator = c.getString(CallLogQuery.OPERATOR);
-        Long dataUsage = null;
-        if (!c.isNull(CallLogQuery.DATA_USAGE)) {
-            dataUsage = c.getLong(CallLogQuery.DATA_USAGE);
-        }
+        if (mAdapterHelper.isBusy()) {
+            // Restore expansion state of the row on rebind.
+            // Inflate the actions ViewStub if required, and set its visibility state accordingly.
+            expandOrCollapseActions(callLogItemView, isExpanded(rowId));
+            setPhoneCallDetailsTemp(views, c, count, number, date);
+        } else {
 
-        final PhoneCallDetails details;
-        final String accountName = info.accountName;
-        final String accountType = info.accountType;
-        Account contactAccount;
+            // Lookup contacts with this number
+            final ContactInfo info = mAdapterHelper.lookupContact(
+                    number, numberPresentation, countryIso, cachedContactInfo);
+            final Uri lookupUri = info.lookupUri;
+            final String name = info.name;
+            final int ntype = info.type;
+            final String label = info.label;
+            final long photoId = info.photoId;
+            final Uri photoUri = info.photoUri;
+            CharSequence formattedNumber = info.formattedNumber;
+            final int[] callTypes = getCallTypes(c, count);
+            final String geocode = c.getString(CallLogQuery.GEOCODED_LOCATION);
+            final int sourceType = info.sourceType;
+            final int features = getCallFeatures(c, count);
+            final String transcription = c.getString(CallLogQuery.TRANSCRIPTION);
+            final String operator = c.getString(CallLogQuery.OPERATOR);
+            Long dataUsage = null;
+            if (!c.isNull(CallLogQuery.DATA_USAGE)) {
+                dataUsage = c.getLong(CallLogQuery.DATA_USAGE);
+            }
 
-        views.reported = info.isBadData;
+            final PhoneCallDetails details;
+            final String accountName = info.accountName;
+            final String accountType = info.accountType;
+            Account contactAccount;
 
-        // The entry can only be reported as invalid if it has a valid ID and the source of the
-        // entry supports marking entries as invalid.
-        views.canBeReportedAsInvalid = mContactInfoHelper.canReportAsInvalid(info.sourceType,
-                info.objectId);
+            views.reported = info.isBadData;
 
-        // Restore expansion state of the row on rebind.  Inflate the actions ViewStub if required,
-        // and set its visibility state accordingly.
-        expandOrCollapseActions(callLogItemView, isExpanded(rowId));
+            // The entry can only be reported as invalid if it has a valid ID and the source of the
+            // entry supports marking entries as invalid.
+            views.canBeReportedAsInvalid = mContactInfoHelper.canReportAsInvalid(info.sourceType,
+                    info.objectId);
 
-        if (TextUtils.isEmpty(name)) {
-            if (mContext.getResources().getBoolean(R.bool.mark_emergency_call_in_call_log) &&
-                    PhoneNumberUtils.isLocalEmergencyNumber(mContext, number)) {
-                String emergencyName = mContext.getString(
-                        com.android.internal.R.string.emergency_call_dialog_number_for_display);
-                details = new PhoneCallDetails(number, numberPresentation,
-                        formattedNumber, countryIso, geocode, callTypes, date, duration,
-                        emergencyName, 0, "", null, null, 0, null, accountIcon, features,
-                        dataUsage, transcription, Calls.DURATION_TYPE_ACTIVE, subId, operator);
+            // Restore expansion state of the row on rebind.  Inflate the actions ViewStub if required,
+            // and set its visibility state accordingly.
+            expandOrCollapseActions(callLogItemView, isExpanded(rowId));
+
+            if (TextUtils.isEmpty(name)) {
+                if (mContext.getResources().getBoolean(R.bool.mark_emergency_call_in_call_log) &&
+                        PhoneNumberUtils.isLocalEmergencyNumber(mContext, number)) {
+                    String emergencyName = mContext.getString(
+                            com.android.internal.R.string.emergency_call_dialog_number_for_display);
+                    details = new PhoneCallDetails(number, numberPresentation,
+                            formattedNumber, countryIso, geocode, callTypes, date, duration,
+                            emergencyName, 0, "", null, null, 0, null, accountIcon, features,
+                            dataUsage, transcription, Calls.DURATION_TYPE_ACTIVE, subId, operator);
+                } else {
+                    details = new PhoneCallDetails(number, numberPresentation,
+                            formattedNumber, countryIso, geocode, callTypes, date, duration,
+                            null, accountIcon, features, dataUsage, transcription, subId, operator);
+                }
             } else {
                 details = new PhoneCallDetails(number, numberPresentation,
-                        formattedNumber, countryIso, geocode, callTypes, date, duration,
-                        null, accountIcon, features, dataUsage, transcription, subId, operator);
+                        formattedNumber, countryIso, geocode, callTypes, date,
+                        duration, name, ntype, label, lookupUri, photoUri, sourceType,
+                        null, accountIcon, features, dataUsage, transcription,
+                        Calls.DURATION_TYPE_ACTIVE, subId, operator);
             }
-        } else {
-            details = new PhoneCallDetails(number, numberPresentation,
-                    formattedNumber, countryIso, geocode, callTypes, date,
-                    duration, name, ntype, label, lookupUri, photoUri, sourceType,
-                    null, accountIcon, features, dataUsage, transcription,
-                    Calls.DURATION_TYPE_ACTIVE, subId, operator);
-        }
 
-        if (!mAdapterHelper.isBusy()) {
-            // Only update views when ListView's scroll state is not SCROLL_STATE_FLING.
             mCallLogViewsHelper.setPhoneCallDetails(mContext, views, details);
-        }
 
+            int contactType = ContactPhotoManager.TYPE_DEFAULT;
+
+            if (isVoicemailNumber) {
+                contactType = ContactPhotoManager.TYPE_VOICEMAIL;
+            } else if (mContactInfoHelper.isBusiness(info.sourceType)) {
+                contactType = ContactPhotoManager.TYPE_BUSINESS;
+            }
+
+            String lookupKey = lookupUri == null ? null
+                    : ContactInfoHelper.getLookupKeyFromUri(lookupUri);
+
+            String nameForDefaultImage = null;
+            if (TextUtils.isEmpty(name)) {
+                nameForDefaultImage = mPhoneNumberHelper.getDisplayNumber(details.accountId,
+                        details.number, details.numberPresentation,
+                        details.formattedNumber).toString();
+            } else {
+                nameForDefaultImage = name;
+            }
+
+            if (!TextUtils.isEmpty(accountName) && !TextUtils.isEmpty(accountType)) {
+                contactAccount = new Account(accountName, accountType);
+            } else {
+                contactAccount = null;
+            }
+            if (photoId == 0 && photoUri != null) {
+                setPhoto(views, photoUri, lookupUri, nameForDefaultImage, lookupKey, contactType, contactAccount);
+            } else {
+                setPhoto(views, photoId, lookupUri, nameForDefaultImage, lookupKey, contactType, contactAccount);
+            }
+
+            // Listen for the first draw
+            mAdapterHelper.registerOnPreDrawListener(view);
+
+            bindBadge(view, info, details, callType);
+        }
+    }
+
+    /**
+     * Sets the name, label, and number for a call log.
+     *
+     * @param views the views to populate
+     * @param c the cursor pointing to the entry in the call log
+     * @param count the number of entries in the current item, greater than 1 if it is a group
+     * @param number the call number
+     * @param date the call date
+     */
+    public void setPhoneCallDetailsTemp(
+            CallLogListItemViews views, Cursor c, int count, String number, long date) {
+        final String formattedNumber = c.getString(CallLogQuery.CACHED_FORMATTED_NUMBER);
+        views.phoneCallDetailsViews.nameView.setText(TextUtils
+                .isEmpty(formattedNumber) ? number : formattedNumber);
+        views.phoneCallDetailsViews.callTypeIcons.clear();
+        final int[] callTypes = getCallTypes(c, count);
+        int callTypeCount = callTypes.length > count
+                ? count : callTypes.length;
+        for (int index = 0; index < callTypeCount; index++) {
+            views.phoneCallDetailsViews.callTypeIcons.add(callTypes[index]);
+        }
+        views.phoneCallDetailsViews.callTypeIcons.requestLayout();
+        ArrayList<CharSequence> descriptionItems = Lists.newArrayList();
+        descriptionItems.clear();
+        final CharSequence geocode = c.getString(CallLogQuery.GEOCODED_LOCATION);
+        if (!TextUtils.isEmpty(geocode)) {
+            descriptionItems.add(geocode);
+        }
+        descriptionItems.add(DateUtils
+                .getRelativeTimeSpanString(date, System.currentTimeMillis(),
+                        DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE));
+        views.phoneCallDetailsViews.callLocationAndDate.setText(DialerUtils.join(mContext
+                .getResources(), descriptionItems));
         int contactType = ContactPhotoManager.TYPE_DEFAULT;
-
-        if (isVoicemailNumber) {
-            contactType = ContactPhotoManager.TYPE_VOICEMAIL;
-        } else if (mContactInfoHelper.isBusiness(info.sourceType)) {
-            contactType = ContactPhotoManager.TYPE_BUSINESS;
-        }
-
-        String lookupKey = lookupUri == null ? null
-                : ContactInfoHelper.getLookupKeyFromUri(lookupUri);
-
-        String nameForDefaultImage = null;
-        if (TextUtils.isEmpty(name)) {
-            nameForDefaultImage = mPhoneNumberHelper.getDisplayNumber(details.accountId,
-                    details.number, details.numberPresentation,
-                    details.formattedNumber).toString();
-        } else {
-            nameForDefaultImage = name;
-        }
-
-        if (!TextUtils.isEmpty(accountName) && !TextUtils.isEmpty(accountType)) {
-            contactAccount = new Account(accountName, accountType);
-        } else {
-            contactAccount = null;
-        }
-        if (photoId == 0 && photoUri != null) {
-            setPhoto(views, photoUri, lookupUri, nameForDefaultImage, lookupKey, contactType, contactAccount);
-        } else {
-            setPhoto(views, photoId, lookupUri, nameForDefaultImage, lookupKey, contactType, contactAccount);
-        }
-
-        // Listen for the first draw
-        mAdapterHelper.registerOnPreDrawListener(view);
-
-        bindBadge(view, info, details, callType);
+        DefaultImageRequest request = new DefaultImageRequest(number, null,
+                contactType, true /* isCircular */);
+        mContactPhotoManager.loadThumbnail(views.quickContactView, 0, null,
+                false /* darkTheme */, true /* isCircular */, request);
     }
 
     /**
