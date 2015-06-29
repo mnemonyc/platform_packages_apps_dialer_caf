@@ -1202,6 +1202,7 @@ public class DialpadFragment extends AnalyticsFragment
                         prefix + getValidDialNumber()));
                 startActivity(callIntent);
             }
+            hideAndClearDialpad(false);
         } else {
             MoreContactUtils.showNoIPNumberDialog(mContext, slotId);
         }
