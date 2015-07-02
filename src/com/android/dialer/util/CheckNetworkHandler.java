@@ -66,7 +66,7 @@ public class CheckNetworkHandler extends Handler {
     private ImsConfig mImsConfig;
     private Context mContext;
     private TextView mTextView;
-    private int mMessageId;
+    private int mMessageFrom;
 
     public void setServiceState(ServiceState state) {
         mServiceState = state;
@@ -103,9 +103,15 @@ public class CheckNetworkHandler extends Handler {
                 Log.e(TAG, "onGetWifiCallingPreference: failed. errorCode = " + status);
             }else if(wifiCallingStatus == ImsConfig.WifiCallingValueConstants.OFF
                     && mServiceState != null
-                    && mServiceState.getState() == ServiceState.STATE_OUT_OF_SERVICE){
+                    && mServiceState.getState() == ServiceState.STATE_OUT_OF_SERVICE
+                    && mMessageFrom == 0){
                 sendEmptyMessage(PUP_DIALOG);
             }else if(wifiCallingStatus == ImsConfig.WifiCallingValueConstants.ON) {
+                if (mMessageFrom == 0) {
+                    Intent intent = new Intent(
+                        "com.android.dialer.CONNECTWIFI_DIALOG_CANCEL");
+                    mContext.sendBroadcast(intent);
+                }
                 if (mServiceState != null && mServiceState.getState()
                         == ServiceState.STATE_IN_SERVICE
                         && wifiCallingPreference ==
@@ -126,7 +132,9 @@ public class CheckNetworkHandler extends Handler {
                     return;
                 }
                 if (mServiceState != null) {
-                    sendEmptyMessage(PUP_TEXT_VIEW);
+                    if (mMessageFrom == 1) {
+                        sendEmptyMessage(PUP_TEXT_VIEW);
+                    }
                     sendEmptyMessageDelayed(REMOVE_TEXT_VIEW, DELAYED_TIME);
                 }
                 Intent broad = new Intent("com.android.wificall.ON");
@@ -151,7 +159,6 @@ public class CheckNetworkHandler extends Handler {
         } else if(mContext == null){
             mContext = (Context) msg.obj;
         }
-        mMessageId = msg.arg1;
         if(mImsConfig == null){
             try {
                 ImsManager imsManager = ImsManager.getInstance(mContext,
@@ -164,6 +171,7 @@ public class CheckNetworkHandler extends Handler {
         }
         switch (msg.what) {
         case CHECK_NETWORK_STATUS:
+            mMessageFrom = msg.arg1;
             checkWifiCallStatus(msg);
             break;
 
@@ -175,8 +183,7 @@ public class CheckNetworkHandler extends Handler {
             break;
 
         case PUP_DIALOG:
-            DialerUtils.pupConnectWifiCallDialog(mContext,
-                    mMessageId);
+            DialerUtils.pupConnectWifiCallDialog(mContext);
             break;
         case PUP_TEXT_VIEW:
             popMakeWifiCallText();

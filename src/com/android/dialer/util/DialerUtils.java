@@ -204,10 +204,9 @@ public class DialerUtils {
         }
     }
 
-    public static void pupConnectWifiCallDialog(final Context context,
-            int messageId) {
+    public static void pupConnectWifiCallDialog(final Context context) {
         Builder diaBuilder = new Builder(context);
-        diaBuilder.setMessage(messageId);
+        diaBuilder.setMessage(com.android.dialer.R.string.alert_call_no_cellular_coverage);
         diaBuilder.setPositiveButton(com.android.internal.R.string.ok,
                 new OnClickListener() {
 

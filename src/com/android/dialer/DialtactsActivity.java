@@ -495,7 +495,7 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
                         Message msg = new Message();
                         msg.what = CheckNetworkHandler.CHECK_NETWORK_STATUS;
                         msg.obj = (Context) DialtactsActivity.this;
-                        msg.arg1 = com.android.dialer.R.string.alert_call_no_cellular_coverage;
+                        msg.arg1 = 1;
                         handler.sendMessage(msg);
                     }
                     unRegisterReceiver();

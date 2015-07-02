@@ -1123,7 +1123,7 @@ public class DialpadFragment extends AnalyticsFragment
                         Message msg = handler.obtainMessage();
                         msg.what = CheckNetworkHandler.CHECK_NETWORK_STATUS;
                         msg.obj = (Context) getActivity();
-                        msg.arg1 = com.android.dialer.R.string.alert_user_connect_to_wifi_for_call;
+                        msg.arg1 = 0;
                         handler.sendMessage(msg);
                 } else {
                     mHaptic.vibrate();
