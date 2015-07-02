@@ -857,4 +857,6 @@
     <!-- OEM Key strings -->
     <string name="oem_key_code_action">""</string>
     <string name="oem_code">""</string>
+    <string name="call_data_info_label">Call/data Usage Timers</string>
+    <string name="call_data_info_description">Voice call usage time and data usage time</string>
 </resources>
