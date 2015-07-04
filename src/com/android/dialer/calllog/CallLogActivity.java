@@ -138,13 +138,13 @@ public class CallLogActivity extends AnalyticsActivity implements
         mViewPagerTabs = (ViewPagerTabs) findViewById(R.id.viewpager_header);
         mViewPager.setOnPageChangeListener(mViewPagerTabs);
         mViewPagerTabs.setViewPager(mViewPager);
-        addSearchFragment();
     }
 
     @Override
     public void onAttachFragment(Fragment fragment) {
         if (fragment instanceof CallLogSearchFragment) {
             mSearchFragment = (CallLogSearchFragment) fragment;
+            setupSearchUi();
         }
     }
 
@@ -208,9 +208,22 @@ public class CallLogActivity extends AnalyticsActivity implements
     }
 
     private void enterSearchUi() {
+        mInSearchUi = true;
         if (mSearchFragment == null) {
+            addSearchFragment();
             return;
         }
+
+        mSearchFragment.setUserVisibleHint(true);
+        final FragmentTransaction transaction = getFragmentManager()
+                .beginTransaction();
+        transaction.show(mSearchFragment);
+        transaction.commitAllowingStateLoss();
+        getFragmentManager().executePendingTransactions();
+        setupSearchUi();
+    }
+
+    private void setupSearchUi() {
         if (mSearchView == null) {
             prepareSearchView();
         }
@@ -225,12 +238,6 @@ public class CallLogActivity extends AnalyticsActivity implements
             updateFragmentVisibility(i, false /* not visible */);
         }
 
-        mSearchFragment.setUserVisibleHint(true);
-        final FragmentTransaction transaction = getFragmentManager()
-                .beginTransaction();
-        transaction.show(mSearchFragment);
-        transaction.commitAllowingStateLoss();
-        getFragmentManager().executePendingTransactions();
         mViewPager.setVisibility(View.GONE);
         mViewPagerTabs.setVisibility(View.GONE);
 
@@ -239,7 +246,6 @@ public class CallLogActivity extends AnalyticsActivity implements
         // layout instead of asking the search menu item to take care of
         // SearchView.
         mSearchView.onActionViewExpanded();
-        mInSearchUi = true;
     }
 
     private void updateFragmentVisibility(int position, boolean visibility) {
@@ -274,7 +280,6 @@ public class CallLogActivity extends AnalyticsActivity implements
         final Fragment searchFragment = new CallLogSearchFragment();
         searchFragment.setUserVisibleHint(false);
         ft.add(R.id.calllog_frame, searchFragment);
-        ft.hide(searchFragment);
         ft.commitAllowingStateLoss();
     }
 
