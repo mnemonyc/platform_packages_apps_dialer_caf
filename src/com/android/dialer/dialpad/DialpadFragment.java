@@ -1202,6 +1202,7 @@ public class DialpadFragment extends AnalyticsFragment
                         prefix + getValidDialNumber()));
                 startActivity(callIntent);
             }
+            hideAndClearDialpad(false);
         } else {
             MoreContactUtils.showNoIPNumberDialog(mContext, slotId);
         }
@@ -2008,7 +2009,6 @@ public class DialpadFragment extends AnalyticsFragment
             final Intent intent = CallUtil.getCallIntent(phoneNumber,
                     activity != null ? activity.getCallOrigin() : null);
             DialerUtils.startActivityWithErrorToast(getActivity(), intent);
-            getActivity().finish();
         }
     }
 
