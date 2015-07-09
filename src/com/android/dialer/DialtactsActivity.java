@@ -490,13 +490,13 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
                     if (TelephonyIntents.ACTION_SERVICE_STATE_CHANGED
                             .equals(intent.getAction())) {
                         ServiceState ss = ServiceState.newFromBundle(intent.getExtras());
-                        if (ss != null && ss.getState() == ServiceState.STATE_OUT_OF_SERVICE) {
-                            Message msg = new Message();
-                            msg.what = CheckNetworkHandler.CHECK_NETWORK_STATUS;
-                            msg.obj = (Context) DialtactsActivity.this;
-                            msg.arg1 = com.android.dialer.R.string.alert_call_no_cellular_coverage;
-                            new CheckNetworkHandler().sendMessage(msg);
-                        }
+                        CheckNetworkHandler handler = new CheckNetworkHandler();
+                        handler.setServiceState(ss);
+                        Message msg = new Message();
+                        msg.what = CheckNetworkHandler.CHECK_NETWORK_STATUS;
+                        msg.obj = (Context) DialtactsActivity.this;
+                        msg.arg1 = 1;
+                        handler.sendMessage(msg);
                     }
                     unRegisterReceiver();
                 }

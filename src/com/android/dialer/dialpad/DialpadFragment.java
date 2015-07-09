@@ -376,11 +376,16 @@ public class DialpadFragment extends AnalyticsFragment
                             .equals(intent.getAction())) {
                         mHaptic.vibrate();
                         handleDialButtonPressed();
+                    } else if ("com.android.wificall.ON".equals(intent.getAction())) {
+                        changeDialpadButton();
                     }
                 }
             };
+            IntentFilter filter = new IntentFilter(
+                    "com.android.dialer.CONNECTWIFI_DIALOG_CANCEL");
+            filter.addAction("com.android.wificall.ON");
             context.registerReceiver(mConnectionWifiDialogReceiver,
-                    new IntentFilter("com.android.dialer.CONNECTWIFI_DIALOG_CANCEL"));
+                    filter);
             mPhoneServiceStatusChangeReceiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
@@ -393,6 +398,16 @@ public class DialpadFragment extends AnalyticsFragment
             context.registerReceiver(mPhoneServiceStatusChangeReceiver,
                     new IntentFilter(TelephonyIntents.ACTION_SERVICE_STATE_CHANGED));
         }
+    }
+
+    private void changeDialpadButton() {
+        ImageView floatingActionButton =
+                (ImageButton) getView().findViewById(R.id.dialpad_floating_action_button);
+        if (floatingActionButton == null) {
+            return;
+        }
+        Resources res = getActivity().getResources();
+        floatingActionButton.setImageResource(R.drawable.ic_dialer_fork_add_call);
     }
 
     private BroadcastReceiver mConnectionWifiDialogReceiver;
@@ -1108,7 +1123,7 @@ public class DialpadFragment extends AnalyticsFragment
                         Message msg = handler.obtainMessage();
                         msg.what = CheckNetworkHandler.CHECK_NETWORK_STATUS;
                         msg.obj = (Context) getActivity();
-                        msg.arg1 = com.android.dialer.R.string.alert_user_connect_to_wifi_for_call;
+                        msg.arg1 = 0;
                         handler.sendMessage(msg);
                 } else {
                     mHaptic.vibrate();
