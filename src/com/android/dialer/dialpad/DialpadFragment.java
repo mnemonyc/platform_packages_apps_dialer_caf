@@ -1788,14 +1788,14 @@ public class DialpadFragment extends AnalyticsFragment
                             R.string.toast_make_video_call_failed, Toast.LENGTH_LONG).show();
                     return true;
                 }
-                if (CallUtil.isCSVTEnabled()) {
-                    getActivity().startActivity(CallUtil.getCSVTCallIntent(number));
-                } else if (CallUtil.isVideoEnabled(mContext)) {
+                if (CallUtil.isVideoEnabled(mContext)) {
                     //add support for ims video call;
                     final Intent intent = CallUtil.getVideoCallIntent(number,
                                 (getActivity() instanceof DialtactsActivity ?
                                     ((DialtactsActivity) getActivity()).getCallOrigin() : null));
                     DialerUtils.startActivityWithErrorToast(getActivity(), intent);
+                } else if (CallUtil.isCSVTEnabled()) {
+                    getActivity().startActivity(CallUtil.getCSVTCallIntent(number));
                 }
                 hideAndClearDialpad(false);
                 return true;
