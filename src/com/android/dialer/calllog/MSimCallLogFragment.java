@@ -88,9 +88,11 @@ public class MSimCallLogFragment extends CallLogFragment
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
             Log.i(TAG, "Sub selected, position: " + position);
             int sub = position - 1;
-            mCallSubFilter = sub;
-            setSelectedSub(sub);
-            fetchCalls();
+            if (mCallSubFilter != sub) {
+                mCallSubFilter = sub;
+                setSelectedSub(sub);
+                fetchCalls();
+            }
         }
 
         @Override
@@ -105,8 +107,11 @@ public class MSimCallLogFragment extends CallLogFragment
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
             Log.i(TAG, "Status selected, position: " + position);
-            mCallTypeFilter = ((SpinnerContent)parent.getItemAtPosition(position)).value;
-            fetchCalls();
+            int type = ((SpinnerContent)parent.getItemAtPosition(position)).value;
+            if (mCallTypeFilter != type) {
+                mCallTypeFilter = type;
+                fetchCalls();
+            }
         }
 
         @Override

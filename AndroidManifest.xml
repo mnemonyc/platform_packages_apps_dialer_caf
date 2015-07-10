@@ -37,6 +37,7 @@
     <uses-permission android:name="android.permission.MODIFY_PHONE_STATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_MEDIA_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
     <uses-permission android:name="android.permission.USE_CREDENTIALS" />
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -68,6 +69,7 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
 
     <application
         android:name="DialerApplication"
@@ -307,21 +309,18 @@
                   android:launchMode="singleInstance"
                   android:configChanges="keyboardHidden"
                   android:exported="false"
-                  android:process="com.android.incallui"
                   android:screenOrientation="nosensor" >
         </activity>
 
         <!-- BroadcastReceiver for receiving Intents from Notification mechanism. -->
         <receiver android:name="com.android.incallui.InCallApp$NotificationBroadcastReceiver"
-                  android:exported="false"
-                  android:process="com.android.incallui">
+                  android:exported="false">
             <intent-filter>
                 <action android:name="com.android.incallui.ACTION_HANG_UP_ONGOING_CALL" />
             </intent-filter>
         </receiver>
 
         <service android:name="com.android.incallui.InCallServiceImpl"
-                 android:process="com.android.incallui"
                  android:permission="android.permission.BIND_INCALL_SERVICE" >
             <intent-filter>
                 <action android:name="android.telecom.InCallService"/>
