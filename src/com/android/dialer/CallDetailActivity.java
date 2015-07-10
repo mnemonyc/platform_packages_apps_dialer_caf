@@ -97,6 +97,7 @@ public class CallDetailActivity extends AnalyticsActivity implements ProximitySe
             .parse("content://com.android.firewall/whitelistitems");
     private static final Uri BLACKLIST_CONTENT_URI = Uri
             .parse("content://com.android.firewall/blacklistitems");
+    private static final int COMPARE_NUMBER_LEN = 11;
     /** The time to wait before enabling the blank the screen due to the proximity sensor. */
     private static final long PROXIMITY_BLANK_DELAY_MILLIS = 100;
     /** The time to wait before disabling the blank the screen due to the proximity sensor. */
@@ -636,8 +637,10 @@ public class CallDetailActivity extends AnalyticsActivity implements ProximitySe
 
         menu.findItem(R.id.menu_video_call).setVisible(CallUtil.isCSVTEnabled());
 
-        menu.findItem(R.id.menu_add_to_black_list).setVisible(mHasInstallFireWallOption);
-        menu.findItem(R.id.menu_add_to_white_list).setVisible(mHasInstallFireWallOption);
+        menu.findItem(R.id.menu_add_to_black_list).setVisible(mHasInstallFireWallOption
+                && !isNumberInFirewall(true, mNumber));
+        menu.findItem(R.id.menu_add_to_white_list).setVisible(mHasInstallFireWallOption
+                && !isNumberInFirewall(false, mNumber));
 
         return super.onPrepareOptionsMenu(menu);
     }
@@ -672,52 +675,74 @@ public class CallDetailActivity extends AnalyticsActivity implements ProximitySe
     public void onMenuAddToWhiteList(MenuItem menuItem) {
         if (addNumberToFirewall(mNumber, true)) {
              Toast.makeText(CallDetailActivity.this,
-                getString(R.string.firewall_save_success),
-                    Toast.LENGTH_SHORT).show();
+                     getString(R.string.firewall_save_success),
+                     Toast.LENGTH_SHORT).show();
         }
-
     }
 
     private boolean addNumberToFirewall(String number, boolean isBlacklist) {
-        Log.d(TAG, "number: " + number);
-         if (TextUtils.isEmpty(number)) {
+        if (TextUtils.isEmpty(number)) {
             Toast.makeText(CallDetailActivity.this,
-                getString(R.string.firewall_number_len_not_valid),
+                    getString(R.string.firewall_number_len_not_valid),
+                    Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        number = formatFirewallNumber(number);
+        Uri reverseFirewallUri = isBlacklist? WHITELIST_CONTENT_URI : BLACKLIST_CONTENT_URI;
+        if (isNumberInFirewall(reverseFirewallUri, number)) {
+            String message = isBlacklist? getString(
+                    R.string.firewall_number_in_white)
+                    :getString(R.string.firewall_number_in_black);
+            Toast.makeText(CallDetailActivity.this, message,
                     Toast.LENGTH_SHORT).show();
             return false;
         }
         ContentValues values = new ContentValues();
-        String queryNumber = number.replaceAll("[\\-\\/ ]", "");
-        int len = queryNumber.length();
-        if (len > 11){
-            queryNumber = number.substring(len - 11, len);
-        }
+        values.put("number", number);
         Uri firewallUri = isBlacklist? BLACKLIST_CONTENT_URI: WHITELIST_CONTENT_URI;
-        Cursor firewallCursor = getContentResolver().query(firewallUri,
-                new String[] {
-                        "_id", "number", "person_id", "name"
-                },
-                "number" + " LIKE '%" + queryNumber + "'",
-                null,
-                null);
-        if (firewallCursor != null){
-            if (firewallCursor.getCount() > 0) {
+        Uri mUri = getContentResolver().insert(firewallUri, values);
+        return true;
+    }
+
+    private boolean isNumberInFirewall(boolean isBlacklist, String number) {
+        if (TextUtils.isEmpty(number)) {
+            return false;
+        }
+        Uri firewallUri = isBlacklist? BLACKLIST_CONTENT_URI : WHITELIST_CONTENT_URI;
+        if(isNumberInFirewall(firewallUri, number)) {
+            return true;
+        }
+        return false;
+    }
+
+    private String formatFirewallNumber(String number) {
+       number = number.replaceAll("[\\-\\/ ]", "");
+        int len = number.length();
+        if (len > COMPARE_NUMBER_LEN) {
+            // we just compare the last 11 number, since we just saved 11 numbers in DB.
+            number = number.substring(len - COMPARE_NUMBER_LEN, len);
+        }
+        return number;
+    }
+
+    private boolean isNumberInFirewall(Uri firewallUri, String number) {
+        number = formatFirewallNumber(number);
+        Cursor firewallCursor = null;
+        try {
+            firewallCursor = getContentResolver().query(firewallUri,
+                    null, "number" + " LIKE '%" + number + "'", null, null);
+            if (firewallCursor != null && firewallCursor.getCount() > 0) {
+                return true;
+            }
+        } catch (Exception e) {
+            Log.w(TAG, e);
+        } finally {
+            if (firewallCursor != null) {
                 firewallCursor.close();
                 firewallCursor = null;
-                String toastString = isBlacklist? getString(R.string.firewall_number_in_black)
-                        : getString(R.string.firewall_number_in_white);
-                Toast.makeText(CallDetailActivity.this, toastString,
-                    Toast.LENGTH_SHORT).show();
-                return false;
             }
-            firewallCursor.close();
-            firewallCursor = null;
         }
-        values.put("number", queryNumber);
-        values.put("name", "");
-        // add new
-        getContentResolver().insert(firewallUri, values);
-        return true;
+        return false;
     }
 
     public void onMenuRemoveFromCallLog(MenuItem menuItem) {
