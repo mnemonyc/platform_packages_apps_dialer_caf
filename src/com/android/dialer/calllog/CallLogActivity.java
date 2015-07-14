@@ -44,6 +44,7 @@ import com.android.dialer.DialtactsActivity;
 import com.android.dialer.R;
 import com.android.dialerbind.analytics.AnalyticsActivity;
 import com.android.dialer.callstats.CallStatsFragment;
+import com.android.dialer.util.DialerUtils;
 import com.android.dialer.widget.DoubleDatePickerDialog;
 
 public class CallLogActivity extends AnalyticsActivity implements
@@ -75,7 +76,7 @@ public class CallLogActivity extends AnalyticsActivity implements
 
         @Override
         public Fragment getItem(int position) {
-            switch (position) {
+            switch (getRtlPosition(position)) {
                 case TAB_INDEX_MSIM:
                     return new MSimCallLogFragment();
                 case TAB_INDEX_MSIM_STATS:
@@ -87,7 +88,7 @@ public class CallLogActivity extends AnalyticsActivity implements
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
             final Object fragment = super.instantiateItem(container, position);
-            switch (position) {
+            switch (getRtlPosition(position)){
                 case TAB_INDEX_MSIM:
                     mMSimCallsFragment = (MSimCallLogFragment)fragment;
                     break;
@@ -138,6 +139,7 @@ public class CallLogActivity extends AnalyticsActivity implements
         mViewPagerTabs = (ViewPagerTabs) findViewById(R.id.viewpager_header);
         mViewPager.setOnPageChangeListener(mViewPagerTabs);
         mViewPagerTabs.setViewPager(mViewPager);
+        mViewPager.setCurrentItem(getRtlPosition(TAB_INDEX_MSIM));
         addSearchFragment();
     }
 
@@ -253,7 +255,7 @@ public class CallLogActivity extends AnalyticsActivity implements
     }
 
     private Fragment getFragmentAt(int position) {
-        switch (position) {
+        switch (getRtlPosition(position)) {
         case TAB_INDEX_MSIM:
             return mMSimCallsFragment;
         case TAB_INDEX_MSIM_STATS:
@@ -409,7 +411,7 @@ public class CallLogActivity extends AnalyticsActivity implements
 
     @Override
     public void onDateSet(long from, long to) {
-        switch (mViewPager.getCurrentItem()) {
+        switch (getRtlPosition(mViewPager.getCurrentItem())) {
             case TAB_INDEX_MSIM:
                 mMSimCallsFragment.onDateSet(from, to);
                 break;
@@ -417,5 +419,12 @@ public class CallLogActivity extends AnalyticsActivity implements
                 mStatsFragment.onDateSet(from, to);
                 break;
         }
+    }
+
+    private int getRtlPosition(int position) {
+        if (DialerUtils.isRtl()) {
+            return TAB_INDEX_COUNT_MSIM - 1 - position;
+        }
+        return position;
     }
 }
