@@ -20,8 +20,10 @@ import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
@@ -240,6 +242,9 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
     private FloatingActionButtonController mFloatingActionButtonController;
 
     private int mActionBarHeight;
+
+    private ImportExportDialogFragment.ExportToSimThread mExportThread = null;
+    private BroadcastReceiver mExportToSimCompleteListener = null;
 
     /**
      * The text returned from a voice search query.  Set in {@link #onActivityResult} and used in
@@ -476,6 +481,7 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
 
         mDialerDatabaseHelper = DatabaseHelperManager.getDatabaseHelper(this);
         SmartDialPrefix.initializeNanpSettings(this);
+        registerExportReceiver();
     }
 
     private void setupActivityOverlay() {
@@ -544,6 +550,12 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
         outState.putBoolean(KEY_IS_DIALPAD_SHOWN, mIsDialpadShown);
         mActionBarController.saveInstanceState(outState);
         mStateSaved = true;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterExportReceiver();
     }
 
     @Override
@@ -718,8 +730,50 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
                         DialtactsActivity.class.getName());
                 startActivity(exportIntent);
             }
+        } else if (requestCode == ImportExportDialogFragment.SUBACTIVITY_MULTI_PICK_CONTACT) {
+            if (resultCode == RESULT_OK) {
+                ArrayList<String[]> contactList = new ArrayList<String[]>();
+                Bundle b = data.getExtras();
+                Bundle choiceSet = b.getBundle(SimContactsConstants.RESULT_KEY);
+                Set<String> set = choiceSet.keySet();
+                Iterator<String> i = set.iterator();
+                while (i.hasNext()) {
+                    String contactInfo[] = choiceSet.getStringArray(i.next());
+                    contactList.add(contactInfo);
+                }
+                if (!contactList.isEmpty()) {
+                    if (!ImportExportDialogFragment.isExportingToSIM()) {
+                        ImportExportDialogFragment.destroyExportToSimThread();
+                        mExportThread = new ImportExportDialogFragment().createExportToSimThread(
+                                ImportExportDialogFragment.mExportSub, contactList,
+                                DialtactsActivity.this);
+                        mExportThread.start();
+                    }
+                }
+            }
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void registerExportReceiver() {
+        mExportToSimCompleteListener = new BroadcastReceiver() {
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                if (action.equals(SimContactsConstants.INTENT_EXPORT_COMPLETE)) {
+                    ImportExportDialogFragment.destroyExportToSimThread();
+                    mExportThread = null;
+                }
+            }
+        };
+        IntentFilter exportCompleteFilter = new IntentFilter(
+                SimContactsConstants.INTENT_EXPORT_COMPLETE);
+        registerReceiver(mExportToSimCompleteListener, exportCompleteFilter);
+    }
+
+    private void unregisterExportReceiver() {
+        if (mExportToSimCompleteListener != null) {
+            unregisterReceiver(mExportToSimCompleteListener);
+        }
     }
 
     private StringBuilder buildUriList(Bundle result) {
