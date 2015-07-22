@@ -2009,6 +2009,7 @@ public class DialpadFragment extends AnalyticsFragment
             final Intent intent = CallUtil.getCallIntent(phoneNumber,
                     activity != null ? activity.getCallOrigin() : null);
             DialerUtils.startActivityWithErrorToast(getActivity(), intent);
+            hideAndClearDialpad(false);
         }
     }
 
