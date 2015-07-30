@@ -343,78 +343,8 @@ public class CallLogAdapter extends GroupingListAdapter
         views.primaryActionView.setVisibility(View.VISIBLE);
 
         final String number = c.getString(CallLogQuery.NUMBER);
-        final int numberPresentation = c.getInt(CallLogQuery.NUMBER_PRESENTATION);
         final long date = c.getLong(CallLogQuery.DATE);
-        final long duration = c.getLong(CallLogQuery.DURATION);
-        final int callType = c.getInt(CallLogQuery.CALL_TYPE);
-        final PhoneAccountHandle accountHandle = PhoneAccountUtils.getAccount(
-                c.getString(CallLogQuery.ACCOUNT_COMPONENT_NAME),
-                c.getString(CallLogQuery.ACCOUNT_ID));
-        final Drawable accountIcon = PhoneAccountUtils.getAccountIcon(mContext,
-                accountHandle);
-        final String countryIso = c.getString(CallLogQuery.COUNTRY_ISO);
-
         final long rowId = c.getLong(CallLogQuery.ID);
-        views.rowId = rowId;
-
-        String accId = c.getString(CallLogQuery.ACCOUNT_ID);
-        int subId = SubscriptionManager.DEFAULT_SUBSCRIPTION_ID;
-        if (accId!= null && !accId.equals("E") && !accId.toLowerCase().contains("sip")) {
-             subId = Integer.parseInt(accId);
-        }
-
-        // For entries in the call log, check if the day group has changed and display a header
-        // if necessary.
-        if (mIsCallLog) {
-            int currentGroup = getDayGroupForCall(rowId);
-            int previousGroup = getPreviousDayGroup(c);
-            if (currentGroup != previousGroup) {
-                views.dayGroupHeader.setVisibility(View.VISIBLE);
-                views.dayGroupHeader.setText(getGroupDescription(currentGroup));
-            } else {
-                views.dayGroupHeader.setVisibility(View.GONE);
-            }
-        } else {
-            views.dayGroupHeader.setVisibility(View.GONE);
-        }
-
-        // Store some values used when the actions ViewStub is inflated on expansion of the actions
-        // section.
-        views.number = number;
-        views.numberPresentation = numberPresentation;
-        views.callType = callType;
-        // NOTE: This is currently not being used, but can be used in future versions.
-        views.accountHandle = accountHandle;
-        views.voicemailUri = c.getString(CallLogQuery.VOICEMAIL_URI);
-        // Stash away the Ids of the calls so that we can support deleting a row in the call log.
-        views.callIds = getCallIds(c, count);
-
-        final ContactInfo cachedContactInfo = getContactInfoFromCallLog(c);
-
-        final boolean isVoicemailNumber =
-                PhoneNumberUtilsWrapper.INSTANCE.isVoicemailNumber(subId, number);
-
-        // Where binding and not in the call log, use default behaviour of invoking a call when
-        // tapping the primary view.
-        if (!mIsCallLog) {
-            views.primaryActionView.setOnClickListener(this.mActionListener);
-
-            // Set return call intent, otherwise null.
-            if (PhoneNumberUtilsWrapper.canPlaceCallsTo(number, numberPresentation)) {
-                // Sets the primary action to call the number.
-                views.primaryActionView.setTag(IntentProvider.getReturnCallIntentProvider(number));
-            } else {
-                // Number is not callable, so hide button.
-                views.primaryActionView.setTag(null);
-            }
-        } else {
-            // In the call log, expand/collapse an actions section for the call log entry when
-            // the primary view is tapped.
-            views.primaryActionView.setOnClickListener(this.mExpandCollapseListener);
-
-            // Note: Binding of the action buttons is done as required in configureActionViews
-            // when the user expands the actions ViewStub.
-        }
 
         if (mAdapterHelper.isBusy()) {
             // Restore expansion state of the row on rebind.
@@ -422,7 +352,77 @@ public class CallLogAdapter extends GroupingListAdapter
             expandOrCollapseActions(callLogItemView, isExpanded(rowId));
             setTempPhoneCallDetails(views, c, count, number, date);
         } else {
+            final int numberPresentation = c.getInt(CallLogQuery.NUMBER_PRESENTATION);
+            final long duration = c.getLong(CallLogQuery.DURATION);
+            final int callType = c.getInt(CallLogQuery.CALL_TYPE);
+            final PhoneAccountHandle accountHandle = PhoneAccountUtils.getAccount(
+                    c.getString(CallLogQuery.ACCOUNT_COMPONENT_NAME),
+                    c.getString(CallLogQuery.ACCOUNT_ID));
+            final Drawable accountIcon = PhoneAccountUtils.getAccountIcon(mContext,
+                    accountHandle);
+            final String countryIso = c.getString(CallLogQuery.COUNTRY_ISO);
 
+            views.rowId = rowId;
+
+            String accId = c.getString(CallLogQuery.ACCOUNT_ID);
+            int subId = SubscriptionManager.DEFAULT_SUBSCRIPTION_ID;
+            if (accId != null && !accId.equals("E") && !accId.toLowerCase().contains("sip")) {
+                 subId = Integer.parseInt(accId);
+            }
+
+            // For entries in the call log, check if the day group has changed and display a header
+            // if necessary.
+            if (mIsCallLog) {
+                int currentGroup = getDayGroupForCall(rowId);
+                int previousGroup = getPreviousDayGroup(c);
+                if (currentGroup != previousGroup) {
+                    views.dayGroupHeader.setVisibility(View.VISIBLE);
+                    views.dayGroupHeader.setText(getGroupDescription(currentGroup));
+                } else {
+                    views.dayGroupHeader.setVisibility(View.GONE);
+                }
+            } else {
+                views.dayGroupHeader.setVisibility(View.GONE);
+            }
+
+            // Store some values used when the actions ViewStub is inflated on expansion
+            // of the actions section.
+            views.number = number;
+            views.numberPresentation = numberPresentation;
+            views.callType = callType;
+            // NOTE: This is currently not being used, but can be used in future versions.
+            views.accountHandle = accountHandle;
+            views.voicemailUri = c.getString(CallLogQuery.VOICEMAIL_URI);
+            // Stash away the Ids of the calls so that we can support deleting a row
+            // in the call log.
+            views.callIds = getCallIds(c, count);
+
+            final ContactInfo cachedContactInfo = getContactInfoFromCallLog(c);
+
+            final boolean isVoicemailNumber =
+                    PhoneNumberUtilsWrapper.INSTANCE.isVoicemailNumber(subId, number);
+
+            // Where binding and not in the call log, use default behaviour of invoking a call when
+            // tapping the primary view.
+            if (!mIsCallLog) {
+                views.primaryActionView.setOnClickListener(this.mActionListener);
+
+                // Set return call intent, otherwise null.
+                if (PhoneNumberUtilsWrapper.canPlaceCallsTo(number, numberPresentation)) {
+                    // Sets the primary action to call the number.
+                    views.primaryActionView.setTag(
+                        IntentProvider.getReturnCallIntentProvider(number));
+                } else {
+                    // Number is not callable, so hide button.
+                    views.primaryActionView.setTag(null);
+                }
+            } else {
+                // In the call log, expand/collapse an actions section for the call log entry when
+                // the primary view is tapped.
+                views.primaryActionView.setOnClickListener(this.mExpandCollapseListener);
+                // Note: Binding of the action buttons is done as required in configureActionViews
+                // when the user expands the actions ViewStub.
+           }
             // Lookup contacts with this number
             final ContactInfo info = mAdapterHelper.lookupContact(
                     number, numberPresentation, countryIso, cachedContactInfo);
@@ -443,7 +443,6 @@ public class CallLogAdapter extends GroupingListAdapter
             if (!c.isNull(CallLogQuery.DATA_USAGE)) {
                 dataUsage = c.getLong(CallLogQuery.DATA_USAGE);
             }
-
             final PhoneCallDetails details;
             final String accountName = info.accountName;
             final String accountType = info.accountType;
@@ -451,13 +450,13 @@ public class CallLogAdapter extends GroupingListAdapter
 
             views.reported = info.isBadData;
 
-            // The entry can only be reported as invalid if it has a valid ID and the source of the
-            // entry supports marking entries as invalid.
-            views.canBeReportedAsInvalid = mContactInfoHelper.canReportAsInvalid(info.sourceType,
-                    info.objectId);
+            // The entry can only be reported as invalid if it has a valid ID and the source
+            // of the entry supports marking entries as invalid.
+            views.canBeReportedAsInvalid = mContactInfoHelper.canReportAsInvalid(
+                    info.sourceType, info.objectId);
 
-            // Restore expansion state of the row on rebind.  Inflate the actions ViewStub if required,
-            // and set its visibility state accordingly.
+            // Restore expansion state of the row on rebind.  Inflate the actions ViewStub
+            // if required, and set its visibility state accordingly.
             expandOrCollapseActions(callLogItemView, isExpanded(rowId));
 
             if (TextUtils.isEmpty(name)) {
@@ -468,11 +467,13 @@ public class CallLogAdapter extends GroupingListAdapter
                     details = new PhoneCallDetails(number, numberPresentation,
                             formattedNumber, countryIso, geocode, callTypes, date, duration,
                             emergencyName, 0, "", null, null, 0, null, accountIcon, features,
-                            dataUsage, transcription, Calls.DURATION_TYPE_ACTIVE, subId, operator);
+                            dataUsage, transcription, Calls.DURATION_TYPE_ACTIVE,
+                            subId, operator);
                 } else {
                     details = new PhoneCallDetails(number, numberPresentation,
                             formattedNumber, countryIso, geocode, callTypes, date, duration,
-                            null, accountIcon, features, dataUsage, transcription, subId, operator);
+                            null, accountIcon, features, dataUsage, transcription,
+                            subId, operator);
                 }
             } else {
                 details = new PhoneCallDetails(number, numberPresentation,
@@ -510,9 +511,11 @@ public class CallLogAdapter extends GroupingListAdapter
                 contactAccount = null;
             }
             if (photoId == 0 && photoUri != null) {
-                setPhoto(views, photoUri, lookupUri, nameForDefaultImage, lookupKey, contactType, contactAccount);
+                setPhoto(views, photoUri, lookupUri, nameForDefaultImage, lookupKey,
+                        contactType, contactAccount);
             } else {
-                setPhoto(views, photoId, lookupUri, nameForDefaultImage, lookupKey, contactType, contactAccount);
+                setPhoto(views, photoId, lookupUri, nameForDefaultImage, lookupKey,
+                        contactType, contactAccount);
             }
 
             // Listen for the first draw
@@ -574,12 +577,7 @@ public class CallLogAdapter extends GroupingListAdapter
                         DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE));
         views.phoneCallDetailsViews.callLocationAndDate.setText(DialerUtils.join(mContext
                 .getResources(), descriptionItems));
-        int contactType = ContactPhotoManager.TYPE_DEFAULT;
-        DefaultImageRequest request = new DefaultImageRequest(number, null,
-                contactType, true /* isCircular */);
-        mContactPhotoManager.loadThumbnail(views.quickContactView, 0, null,
-                false /* darkTheme */, true /* isCircular */, request);
-    }
+ }
 
     /**
      * Given a call Id, look up the day group that the call belongs to.  The day group data is
