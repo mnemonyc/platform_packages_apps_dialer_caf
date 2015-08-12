@@ -407,7 +407,7 @@ public class DialpadFragment extends AnalyticsFragment
             return;
         }
         Resources res = getActivity().getResources();
-        floatingActionButton.setImageResource(R.drawable.ic_dialer_fork_add_call);
+        floatingActionButton.setImageResource(R.drawable.fab_ic_wificall);
     }
 
     private BroadcastReceiver mConnectionWifiDialogReceiver;
