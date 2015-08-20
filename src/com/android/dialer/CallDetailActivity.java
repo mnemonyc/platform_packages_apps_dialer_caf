@@ -673,7 +673,7 @@ public class CallDetailActivity extends AnalyticsActivity implements ProximitySe
     }
 
     public void onMenuAddToWhiteList(MenuItem menuItem) {
-        if (addNumberToFirewall(mNumber, true)) {
+        if (addNumberToFirewall(mNumber, false)) {
              Toast.makeText(CallDetailActivity.this,
                      getString(R.string.firewall_save_success),
                      Toast.LENGTH_SHORT).show();
