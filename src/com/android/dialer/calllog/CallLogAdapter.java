@@ -704,10 +704,17 @@ public class CallLogAdapter extends GroupingListAdapter
             views.videoCallButtonView.setVisibility(View.VISIBLE);
             views.videoCallButtonView.setOnClickListener(mActionListener);
         } else if (CallUtil.isCSVTEnabled() && canPlaceCallToNumber) {
-            views.videoCallButtonView.setTag(
-                    IntentProvider.getReturnCSVTCallIntentProvider(views.number));
-            views.videoCallButtonView.setVisibility(View.VISIBLE);
-            views.videoCallButtonView.setOnClickListener(mActionListener);
+            if (mContext.getResources().getBoolean(
+                    com.android.internal.R.bool.config_regional_number_patterns_video_call) &&
+                    !PhoneNumberUtils.isVideoCallNumValid(views.number)){
+                Log.d(TAG,"invalid video call number");
+                // invalid video call number
+            } else {
+                views.videoCallButtonView.setTag(
+                        IntentProvider.getReturnCSVTCallIntentProvider(views.number));
+                views.videoCallButtonView.setVisibility(View.VISIBLE);
+                views.videoCallButtonView.setOnClickListener(mActionListener);
+            }
         } else {
             views.videoCallButtonView.setTag(null);
             views.videoCallButtonView.setVisibility(View.GONE);

@@ -42,6 +42,7 @@ import android.telecom.PhoneAccount;
 import android.telecom.TelecomManager;
 import android.telephony.ServiceState;
 import android.telephony.TelephonyManager;
+import android.telephony.PhoneNumberUtils;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -1373,8 +1374,15 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
     @Override
     public void onCallNumberDirectly(String phoneNumber, boolean isVideoCall) {
         if (isVideoCall && (CallUtil.isCSVTEnabled() && !CallUtil.isVideoEnabled(this))) {
-            this.startActivity(CallUtil.getCSVTCallIntent(phoneNumber));
-            mClearSearchOnPause = true;
+            if (getResources().getBoolean(
+                    com.android.internal.R.bool.config_regional_number_patterns_video_call) &&
+                    !PhoneNumberUtils.isVideoCallNumValid(phoneNumber)) {
+                Toast.makeText(this,
+                        R.string.toast_make_video_call_failed, Toast.LENGTH_LONG).show();
+            } else {
+                this.startActivity(CallUtil.getCSVTCallIntent(phoneNumber));
+                mClearSearchOnPause = true;
+            }
             return;
         }
         Intent intent = isVideoCall ?

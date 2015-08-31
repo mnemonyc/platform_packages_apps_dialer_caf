@@ -38,6 +38,7 @@ import android.provider.ContactsContract.RawContacts;
 import android.provider.VoicemailContract.Voicemails;
 import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
+import android.telephony.PhoneNumberUtils;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
@@ -647,7 +648,14 @@ public class CallDetailActivity extends AnalyticsActivity implements ProximitySe
 
     public void onMenuVideoCall(MenuItem menuItem) {
         if (CallUtil.isCSVTEnabled()) {
-            startActivity(CallUtil.getCSVTCallIntent(mNumber));
+            if (getResources().getBoolean(
+                    com.android.internal.R.bool.config_regional_number_patterns_video_call) &&
+                    !PhoneNumberUtils.isVideoCallNumValid(mNumber)) {
+                Toast.makeText(this,
+                        R.string.toast_make_video_call_failed, Toast.LENGTH_LONG).show();
+            } else {
+                startActivity(CallUtil.getCSVTCallIntent(mNumber));
+            }
         } else if (false) {
             //add support for ims video call;
         }
