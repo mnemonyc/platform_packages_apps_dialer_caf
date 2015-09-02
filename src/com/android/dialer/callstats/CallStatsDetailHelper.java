@@ -29,6 +29,7 @@ import com.android.dialer.R;
 import com.android.dialer.calllog.CallLogQueryHandler;
 import com.android.dialer.calllog.PhoneNumberDisplayHelper;
 import com.android.dialer.calllog.PhoneNumberUtilsWrapper;
+import com.android.dialer.util.DialerUtils;
 
 /**
  * Class used to populate a detailed view for a callstats item
@@ -57,7 +58,7 @@ public class CallStatsDetailHelper {
                     details.numberType, details.numberLabel);
         }
 
-        final CharSequence nameText;
+        CharSequence nameText;
         final CharSequence numberText;
         final CharSequence labelText;
         final CharSequence displayNumber = mPhoneNumberHelper.getDisplayNumber(details.accountId,
@@ -76,6 +77,9 @@ public class CallStatsDetailHelper {
             nameText = details.name;
             numberText = displayNumber;
             labelText = numberFormattedLabel;
+        }
+        if (DialerUtils.isRtl()) {
+            nameText = "\u202D"+nameText+"\u202C";
         }
 
         float in = 0, out = 0, missed = 0, blacklist = 0;
