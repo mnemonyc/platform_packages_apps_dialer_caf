@@ -1706,6 +1706,7 @@ public class DialpadFragment extends AnalyticsFragment
                 final CharSequence digits = mDigits.getText();
                 final Intent smsIntent = new Intent(Intent.ACTION_SENDTO,
                         Uri.fromParts(ContactsUtils.SCHEME_SMSTO, digits.toString(), null));
+                smsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 smsIntent.setComponent(mSmsPackageComponentName);
                 DialerUtils.startActivityWithErrorToast(getActivity(), smsIntent);
                 return true;
