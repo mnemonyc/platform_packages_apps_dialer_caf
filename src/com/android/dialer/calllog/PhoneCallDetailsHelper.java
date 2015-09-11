@@ -29,6 +29,7 @@ import android.text.format.DateUtils;
 import android.view.View;
 import android.widget.TextView;
 
+import com.android.contacts.common.MoreContactUtils;
 import com.android.contacts.common.testing.NeededForTesting;
 import com.android.contacts.common.util.PhoneNumberHelper;
 import com.android.dialer.PhoneCallDetails;
@@ -121,6 +122,13 @@ public class PhoneCallDetailsHelper {
             }
         } else {
             views.callAccountLabel.setVisibility(View.GONE);
+        }
+
+        if (MoreContactUtils.shouldShowOperator(mContext)) {
+            views.operator.setVisibility(View.VISIBLE);
+            views.operator.setText(details.operator);
+        } else {
+            views.operator.setVisibility(View.GONE);
         }
 
         final CharSequence nameText;

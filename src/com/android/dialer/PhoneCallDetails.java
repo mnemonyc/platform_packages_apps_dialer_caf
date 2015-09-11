@@ -96,6 +96,9 @@ public class PhoneCallDetails {
      */
     public boolean isRead = true;
 
+    // The operator for this call.
+    public String operator;
+
     /**
      * Constructor with required fields for the details of a call with a number associated with a
      * contact.

@@ -22,6 +22,8 @@ import android.provider.CallLog.Calls;
  * The query for the call log table.
  */
 public final class CallLogQuery {
+    private static final String CALLS_OPERATOR = "operator";
+
     public static final String[] _PROJECTION = new String[] {
             Calls._ID,                          // 0
             Calls.NUMBER,                       // 1
@@ -46,7 +48,8 @@ public final class CallLogQuery {
             Calls.FEATURES,                     // 20
             Calls.DATA_USAGE,                   // 21
             Calls.TRANSCRIPTION,                // 22
-            Calls.CACHED_PHOTO_URI              // 23
+            Calls.CACHED_PHOTO_URI,             // 23
+            CALLS_OPERATOR                      // 24
     };
 
     public static final int ID = 0;
@@ -73,4 +76,5 @@ public final class CallLogQuery {
     public static final int DATA_USAGE = 21;
     public static final int TRANSCRIPTION = 22;
     public static final int CACHED_PHOTO_URI = 23;
+    public static final int OPERATOR = 24;
 }
