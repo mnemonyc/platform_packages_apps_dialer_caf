@@ -1414,8 +1414,8 @@ public class DialpadFragment extends AnalyticsFragment
                     mRecipients.getText().toString().trim();
             if (isDigitsShown && isDigitsEmpty()) {
                 handleDialButtonClickWithEmptyDigits();
-            } else if (mAddParticipant && isDigitsEmpty() && mRecipients.isShown()
-                    && isRecipientEmpty()) {
+            } else if (mAddParticipant && isPhoneInUse() && isDigitsEmpty()
+                    && mRecipients.isShown() && isRecipientEmpty()) {
                 // mRecipients must be empty
                 // TODO add support for conference URI in last number dialed
                 // use ErrorDialogFragment instead? also see
