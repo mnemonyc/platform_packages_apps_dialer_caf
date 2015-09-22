@@ -1434,4 +1434,8 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
                         FloatingActionButtonController.ALIGN_END;
         mFloatingActionButtonController.align(align, 0 /* offsetX */, 0 /* offsetY */, animate);
     }
+
+    public void slideActionBar(boolean slideUp, boolean animate) {
+        mActionBarController.slideActionBar(slideUp, animate);
+    }
 }
