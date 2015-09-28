@@ -92,7 +92,7 @@ import com.android.dialer.list.SearchFragment;
 import com.android.dialer.list.SmartDialSearchFragment;
 import com.android.dialer.list.SpeedDialFragment;
 import com.android.dialer.settings.DialerSettingsActivity;
-import com.android.dialer.util.CheckNetworkHandler;
+import com.android.dialer.util.WifiCallUtils;
 import com.android.dialer.util.DialerUtils;
 import com.android.dialer.widget.ActionBarController;
 import com.android.dialer.widget.SearchEditTextLayout;
@@ -489,25 +489,9 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
         mDialerDatabaseHelper = DatabaseHelperManager.getDatabaseHelper(this);
         SmartDialPrefix.initializeNanpSettings(this);
         if (resources.getBoolean(
-                com.android.internal.R.bool.config_regional_pup_no_available_network) ) {
-            mPhoneServiceStatusChangeReceiver = new BroadcastReceiver(){
-                public void onReceive(Context context, Intent intent) {
-                    if (TelephonyIntents.ACTION_SERVICE_STATE_CHANGED
-                            .equals(intent.getAction())) {
-                        ServiceState ss = ServiceState.newFromBundle(intent.getExtras());
-                        CheckNetworkHandler handler = new CheckNetworkHandler();
-                        handler.setServiceState(ss);
-                        Message msg = new Message();
-                        msg.what = CheckNetworkHandler.CHECK_NETWORK_STATUS;
-                        msg.obj = (Context) DialtactsActivity.this;
-                        msg.arg1 = 1;
-                        handler.sendMessage(msg);
-                    }
-                    unRegisterReceiver();
-                }
-            };
-            this.registerReceiver(mPhoneServiceStatusChangeReceiver,
-                    new IntentFilter(TelephonyIntents.ACTION_SERVICE_STATE_CHANGED));
+                com.android.internal.R.bool.config_regional_pup_no_available_network)
+                && mFirstLaunch) {
+            WifiCallUtils.addWifiCallReadyMarqueeMessage((Context) DialtactsActivity.this);
         }
 
         registerExportReceiver();
@@ -573,6 +557,10 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
             commitDialpadFragmentHide();
         }
         super.onPause();
+        if (getResources().getBoolean(
+                com.android.internal.R.bool.config_regional_pup_no_available_network) ) {
+            WifiCallUtils.removeWifiCallReadyMarqueeMessage();
+        }
     }
 
     @Override
