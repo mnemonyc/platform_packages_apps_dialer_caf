@@ -271,7 +271,7 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
                     mListsFragment.getSpeedDialFragment() != null &&
                     mListsFragment.getSpeedDialFragment().hasFrequents());
             final MenuItem ConferDialerOption = menu.findItem(R.id.menu_4g_conference_call);
-            ConferDialerOption.setVisible(CallUtil.isConferDialerEnabled());
+            ConferDialerOption.setVisible(CallUtil.isConferDialerEnabled(getApplicationContext()));
             super.show();
         }
     }
