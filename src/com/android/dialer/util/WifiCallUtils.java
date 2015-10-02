@@ -29,7 +29,10 @@
 
 package com.android.dialer.util;
 
-import android.app.AlertDialog.Builder;
+import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
@@ -150,7 +153,7 @@ public class WifiCallUtils {
     }
 
     public static void pupConnectWifiCallDialog(final Context context) {
-        Builder diaBuilder = new Builder(context);
+        AlertDialog.Builder diaBuilder = new AlertDialog.Builder(context);
         diaBuilder.setMessage(com.android.dialer.R.string.alert_call_no_cellular_coverage);
         diaBuilder.setPositiveButton(com.android.internal.R.string.ok, new OnClickListener() {
             @Override
@@ -180,5 +183,41 @@ public class WifiCallUtils {
         }
 
         return wifiCallTurnOn && wifiAvailableNotConnected && !cellularNetworkAvailable(context);
+    }
+
+    public static void pupConnectWifiCallNotification(final Context context) {
+        if (SystemProperties.getBoolean(SYSTEM_PROPERTY_WIFI_CALL_TURNON, false)
+                && !cellularNetworkAvailable(context)) {
+            final NotificationManager notiManager =
+                    (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+            Intent intent = new Intent();
+            intent.setAction(android.provider.Settings.ACTION_WIFI_SETTINGS);
+            PendingIntent pendingIntent =
+                    PendingIntent.getActivity(
+                            context, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+            Notification.Builder builder = new Notification.Builder(context);
+            builder.setOngoing(false);
+            builder.setWhen(0);
+            builder.setContentIntent(pendingIntent);
+            builder.setAutoCancel(true);
+            builder.setSmallIcon(R.drawable.wifi_calling_on_notification);
+            builder.setContentTitle(
+                    context.getResources().getString(R.string.alert_user_connect_to_wifi_for_call));
+            builder.setContentText(
+                    context.getResources().getString(R.string.alert_user_connect_to_wifi_for_call));
+            notiManager.notify(1, builder.build());
+            new Thread() {
+                public void run() {
+                    try {
+                        Thread.currentThread().sleep(2000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    notiManager.cancel(1);
+                }
+            }.start();
+        }
     }
 }
