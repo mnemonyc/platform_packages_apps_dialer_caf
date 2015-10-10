@@ -89,8 +89,8 @@ import com.android.dialer.R;
 import com.android.dialer.SpecialCharSequenceMgr;
 import com.android.dialer.SpeedDialListActivity;
 import com.android.dialer.SpeedDialUtils;
-import com.android.dialer.util.CheckNetworkHandler;
 import com.android.dialer.util.DialerUtils;
+import com.android.dialer.util.WifiCallUtils;
 import com.android.dialerbind.analytics.AnalyticsFragment;
 import com.android.internal.telephony.PhoneConstants;
 import com.android.internal.telephony.TelephonyProperties;
@@ -1115,16 +1115,10 @@ public class DialpadFragment extends AnalyticsFragment
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.dialpad_floating_action_button:
-                if (getActivity().getResources()
-                        .getBoolean(com.android.internal.R.bool.config_regional_pup_no_available_network)
-                        && mServiesState != null
-                        && mServiesState.getState() == ServiceState.STATE_OUT_OF_SERVICE) {
-                        CheckNetworkHandler handler = new CheckNetworkHandler();
-                        Message msg = handler.obtainMessage();
-                        msg.what = CheckNetworkHandler.CHECK_NETWORK_STATUS;
-                        msg.obj = (Context) getActivity();
-                        msg.arg1 = 0;
-                        handler.sendMessage(msg);
+                if (getActivity().getResources().getBoolean(
+                        com.android.internal.R.bool.config_regional_pup_no_available_network)
+                        && WifiCallUtils.showWifiCallDialog(mContext)) {
+                    WifiCallUtils.pupConnectWifiCallDialog(mContext);
                 } else {
                     mHaptic.vibrate();
                     handleDialButtonPressed();

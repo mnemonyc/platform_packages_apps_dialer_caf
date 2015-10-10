@@ -29,18 +29,27 @@
 
 package com.android.dialer.util;
 
+import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
-
-
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.SystemProperties;
+import android.telephony.CellInfo;
+import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.WindowManager;
 import android.widget.TextView;
-import android.telephony.ServiceState;
-import android.util.Log;
 
 import com.android.dialer.R;
 
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -53,7 +62,8 @@ public class WifiCallUtils {
     private static boolean mViewRemoved = true;
     private static Timer mtimer;
 
-    public static final String SYSTEM_PROPERTY_WIFI_CALL_READY = "persist.sys.wificall.ready";
+    private static final String SYSTEM_PROPERTY_WIFI_CALL_READY = "persist.sys.wificall.ready";
+    private static final String SYSTEM_PROPERTY_WIFI_CALL_TURNON = "persist.sys.wificall.turnon";
 
     public static void addWifiCallReadyMarqueeMessage(Context context) {
         if (mViewRemoved && SystemProperties.getBoolean(SYSTEM_PROPERTY_WIFI_CALL_READY, false)) {
@@ -122,5 +132,92 @@ public class WifiCallUtils {
         Log.d(TAG, "cancelRemoveWifiCallReadyMarqueeMessageTimer");
         mtimer.cancel();
         mtimer.purge();
+    }
+
+    private static boolean cellularNetworkAvailable(Context context) {
+        boolean available = false;
+
+        TelephonyManager tm = (TelephonyManager) context.
+                getSystemService(Context.TELEPHONY_SERVICE);
+        List<CellInfo> cellInfoList = tm.getAllCellInfo();
+
+        if (cellInfoList != null) {
+            for (CellInfo cellinfo : cellInfoList) {
+                if (cellinfo.isRegistered()) {
+                    available = true;
+                }
+            }
+        }
+
+        return available;
+    }
+
+    public static void pupConnectWifiCallDialog(final Context context) {
+        AlertDialog.Builder diaBuilder = new AlertDialog.Builder(context);
+        diaBuilder.setMessage(com.android.dialer.R.string.alert_call_no_cellular_coverage);
+        diaBuilder.setPositiveButton(com.android.internal.R.string.ok, new OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Intent intent = new Intent(Intent.ACTION_MAIN);
+                intent.setClassName("com.android.phone", "com.android.phone.WifiCallingSettings");
+                context.startActivity(intent);
+            }
+        });
+        diaBuilder.setOnCancelListener(new OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+            }
+        });
+        diaBuilder.create().show();
+    }
+
+    public static boolean showWifiCallDialog(final Context context) {
+        boolean wifiAvailableNotConnected = false;
+        boolean wifiCallTurnOn = SystemProperties.getBoolean(SYSTEM_PROPERTY_WIFI_CALL_TURNON, false);
+
+        ConnectivityManager conManager = (ConnectivityManager) context
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo wifiNetworkInfo = conManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        if (wifiNetworkInfo.isAvailable() && !wifiNetworkInfo.isConnected()) {
+            wifiAvailableNotConnected = true;
+        }
+
+        return wifiCallTurnOn && wifiAvailableNotConnected && !cellularNetworkAvailable(context);
+    }
+
+    public static void pupConnectWifiCallNotification(final Context context) {
+        if (SystemProperties.getBoolean(SYSTEM_PROPERTY_WIFI_CALL_TURNON, false)
+                && !cellularNetworkAvailable(context)) {
+            final NotificationManager notiManager =
+                    (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+            Intent intent = new Intent();
+            intent.setAction(android.provider.Settings.ACTION_WIFI_SETTINGS);
+            PendingIntent pendingIntent =
+                    PendingIntent.getActivity(
+                            context, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+            Notification.Builder builder = new Notification.Builder(context);
+            builder.setOngoing(false);
+            builder.setWhen(0);
+            builder.setContentIntent(pendingIntent);
+            builder.setAutoCancel(true);
+            builder.setSmallIcon(R.drawable.wifi_calling_on_notification);
+            builder.setContentTitle(
+                    context.getResources().getString(R.string.alert_user_connect_to_wifi_for_call));
+            builder.setContentText(
+                    context.getResources().getString(R.string.alert_user_connect_to_wifi_for_call));
+            notiManager.notify(1, builder.build());
+            new Thread() {
+                public void run() {
+                    try {
+                        Thread.currentThread().sleep(2000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    notiManager.cancel(1);
+                }
+            }.start();
+        }
     }
 }

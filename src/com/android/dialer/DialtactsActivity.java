@@ -492,6 +492,7 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
                 com.android.internal.R.bool.config_regional_pup_no_available_network)
                 && mFirstLaunch) {
             WifiCallUtils.addWifiCallReadyMarqueeMessage((Context) DialtactsActivity.this);
+            WifiCallUtils.pupConnectWifiCallNotification((Context) DialtactsActivity.this);
         }
 
         registerExportReceiver();
