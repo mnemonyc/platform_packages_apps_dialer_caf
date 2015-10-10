@@ -39,6 +39,7 @@ import android.media.ToneGenerator;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Message;
+import android.os.SystemProperties;
 import android.provider.Contacts.People;
 import android.provider.Contacts.Phones;
 import android.provider.Contacts.PhonesColumns;
@@ -121,7 +122,12 @@ public class DialpadFragment extends AnalyticsFragment
 
     private static final String ACTION_ADD_VOICEMAIL
             = "com.android.phone.CallFeaturesSetting.ADD_VOICEMAIL";
-
+    private static final String ACTION_WIFI_CALL_READY_STATUS_CHANGE
+            = "com.android.wificall.READY";
+    private static final String ACTION_WIFI_CALL_READY_EXTRA
+            = "com.android.wificall.ready.extra";
+    private static final String SYSTEM_PROPERTY_WIFI_CALL_READY
+            = "persist.sys.wificall.ready";
     private Context mContext;
 
     /**
@@ -369,23 +375,16 @@ public class DialpadFragment extends AnalyticsFragment
         if (getActivity().getResources().getBoolean(
                 com.android.internal.R.bool.config_regional_pup_no_available_network)) {
             Context context = getActivity();
-            mConnectionWifiDialogReceiver = new BroadcastReceiver() {
+            mWifiCallReadyReceiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
-                    if ("com.android.dialer.CONNECTWIFI_DIALOG_CANCEL"
-                            .equals(intent.getAction())) {
-                        mHaptic.vibrate();
-                        handleDialButtonPressed();
-                    } else if ("com.android.wificall.ON".equals(intent.getAction())) {
-                        changeDialpadButton();
-                    }
+                    changeDialpadButton(
+                            intent.getBooleanExtra(ACTION_WIFI_CALL_READY_EXTRA, false));
                 }
             };
-            IntentFilter filter = new IntentFilter(
-                    "com.android.dialer.CONNECTWIFI_DIALOG_CANCEL");
-            filter.addAction("com.android.wificall.ON");
-            context.registerReceiver(mConnectionWifiDialogReceiver,
-                    filter);
+            IntentFilter filter = new IntentFilter(ACTION_WIFI_CALL_READY_STATUS_CHANGE);
+            context.registerReceiver(mWifiCallReadyReceiver, filter);
+
             mPhoneServiceStatusChangeReceiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
@@ -400,17 +399,22 @@ public class DialpadFragment extends AnalyticsFragment
         }
     }
 
-    private void changeDialpadButton() {
+    private void changeDialpadButton(boolean ready) {
+        Log.d(TAG, "changeDialpadButton, ready = " + ready);
         ImageView floatingActionButton =
                 (ImageButton) getView().findViewById(R.id.dialpad_floating_action_button);
         if (floatingActionButton == null) {
             return;
         }
         Resources res = getActivity().getResources();
-        floatingActionButton.setImageResource(R.drawable.fab_ic_wificall);
+        if (ready) {
+            floatingActionButton.setImageResource(R.drawable.fab_ic_wificall);
+        } else {
+            floatingActionButton.setImageResource(R.drawable.fab_ic_call);
+        }
     }
 
-    private BroadcastReceiver mConnectionWifiDialogReceiver;
+    private BroadcastReceiver mWifiCallReadyReceiver;
     private BroadcastReceiver mPhoneServiceStatusChangeReceiver;
     private ServiceState mServiesState;
 
@@ -420,7 +424,7 @@ public class DialpadFragment extends AnalyticsFragment
 
         if (getActivity().getResources().getBoolean(
                 com.android.internal.R.bool.config_regional_pup_no_available_network)) {
-            getActivity().unregisterReceiver(mConnectionWifiDialogReceiver);
+            getActivity().unregisterReceiver(mWifiCallReadyReceiver);
             getActivity().unregisterReceiver(mPhoneServiceStatusChangeReceiver);
         }
     }
@@ -796,6 +800,11 @@ public class DialpadFragment extends AnalyticsFragment
             mOperator.setVisibility(View.GONE);
         }
 
+        if (getActivity().getResources().getBoolean(
+                com.android.internal.R.bool.config_regional_pup_no_available_network)) {
+            changeDialpadButton(
+                    SystemProperties.getBoolean(SYSTEM_PROPERTY_WIFI_CALL_READY, false));
+        }
     }
 
     @Override
