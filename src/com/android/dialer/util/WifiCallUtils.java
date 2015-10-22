@@ -171,53 +171,48 @@ public class WifiCallUtils {
         diaBuilder.create().show();
     }
 
-    public static boolean showWifiCallDialog(final Context context) {
-        boolean wifiAvailableNotConnected = false;
-        boolean wifiCallTurnOn = SystemProperties.getBoolean(SYSTEM_PROPERTY_WIFI_CALL_TURNON, false);
-
-        ConnectivityManager conManager = (ConnectivityManager) context
+    private static boolean isWifiNotConnected(final Context context) {
+        ConnectivityManager connManager = (ConnectivityManager) context
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo wifiNetworkInfo = conManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        if (wifiNetworkInfo.isAvailable() && !wifiNetworkInfo.isConnected()) {
-            wifiAvailableNotConnected = true;
-        }
+        NetworkInfo wifiNetworkInfo = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        return (wifiNetworkInfo.isAvailable() && !wifiNetworkInfo.isConnected());
+    }
 
-        return wifiCallTurnOn && wifiAvailableNotConnected && !cellularNetworkAvailable(context);
+    public static boolean isShowingPromptForWifiCall(final Context context) {
+        boolean wifiCallTurnOn = SystemProperties.getBoolean(SYSTEM_PROPERTY_WIFI_CALL_TURNON, false);
+        return wifiCallTurnOn && isWifiNotConnected(context) && !cellularNetworkAvailable(context);
     }
 
     public static void pupConnectWifiCallNotification(final Context context) {
-        if (SystemProperties.getBoolean(SYSTEM_PROPERTY_WIFI_CALL_TURNON, false)
-                && !cellularNetworkAvailable(context)) {
-            final NotificationManager notiManager =
-                    (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        final NotificationManager notiManager =
+                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-            Intent intent = new Intent();
-            intent.setAction(android.provider.Settings.ACTION_WIFI_SETTINGS);
-            PendingIntent pendingIntent =
-                    PendingIntent.getActivity(
-                            context, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent intent = new Intent();
+        intent.setAction(android.provider.Settings.ACTION_WIFI_SETTINGS);
+        PendingIntent pendingIntent =
+                PendingIntent.getActivity(
+                        context, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-            Notification.Builder builder = new Notification.Builder(context);
-            builder.setOngoing(false);
-            builder.setWhen(0);
-            builder.setContentIntent(pendingIntent);
-            builder.setAutoCancel(true);
-            builder.setSmallIcon(R.drawable.wifi_calling_on_notification);
-            builder.setContentTitle(
-                    context.getResources().getString(R.string.alert_user_connect_to_wifi_for_call));
-            builder.setContentText(
-                    context.getResources().getString(R.string.alert_user_connect_to_wifi_for_call));
-            notiManager.notify(1, builder.build());
-            new Thread() {
-                public void run() {
-                    try {
-                        Thread.currentThread().sleep(2000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    notiManager.cancel(1);
+        Notification.Builder builder = new Notification.Builder(context);
+        builder.setOngoing(false);
+        builder.setWhen(0);
+        builder.setContentIntent(pendingIntent);
+        builder.setAutoCancel(true);
+        builder.setSmallIcon(R.drawable.wifi_calling_on_notification);
+        builder.setContentTitle(
+                context.getResources().getString(R.string.alert_user_connect_to_wifi_for_call));
+        builder.setContentText(
+                context.getResources().getString(R.string.alert_user_connect_to_wifi_for_call));
+        notiManager.notify(1, builder.build());
+        new Thread() {
+            public void run() {
+                try {
+                    Thread.currentThread().sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-            }.start();
-        }
+                notiManager.cancel(1);
+            }
+        }.start();
     }
 }

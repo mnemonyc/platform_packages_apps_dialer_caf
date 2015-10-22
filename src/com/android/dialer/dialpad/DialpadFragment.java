@@ -1126,7 +1126,7 @@ public class DialpadFragment extends AnalyticsFragment
             case R.id.dialpad_floating_action_button:
                 if (getActivity().getResources().getBoolean(
                         com.android.internal.R.bool.config_regional_pup_no_available_network)
-                        && WifiCallUtils.showWifiCallDialog(mContext)) {
+                        && WifiCallUtils.isShowingPromptForWifiCall(mContext)) {
                     WifiCallUtils.pupConnectWifiCallDialog(mContext);
                 } else {
                     mHaptic.vibrate();
