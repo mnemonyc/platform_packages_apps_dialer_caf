@@ -139,8 +139,6 @@ class CallStatsAdapter extends ArrayAdapter<CallStatsDetails>
             final CallStatsDetails call = entry.getValue();
             mAllItems.add(call);
             mTotalItem.mergeWith(call);
-            mAdapterHelper.lookupContact(call.number, call.numberPresentation,
-                    call.countryIso, entry.getKey());
         }
     }
 
