@@ -44,6 +44,7 @@ import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
 import android.telephony.PhoneNumberUtils;
+import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -69,6 +70,7 @@ import android.widget.TextView;
 
 import com.android.contacts.common.CallUtil;
 import com.android.contacts.common.GeoUtil;
+import com.android.contacts.common.MoreContactUtils;
 import com.android.contacts.common.util.PermissionsUtil;
 import com.android.contacts.common.util.PhoneNumberFormatter;
 import com.android.contacts.common.util.StopWatch;
@@ -100,6 +102,7 @@ public class DialpadFragment extends Fragment
         PopupMenu.OnMenuItemClickListener,
         DialpadKeyButton.OnPressedListener {
     private static final String TAG = "DialpadFragment";
+    private Context mContext;
 
     /**
      * LinearLayout with getter and setter methods for the translationY property using floats,
@@ -297,6 +300,7 @@ public class DialpadFragment extends Fragment
     private boolean mStartedFromNewIntent = false;
     private boolean mFirstLaunch = false;
     private boolean mAnimate = false;
+    private TextView mOperator;
 
     private static final String PREF_DIGITS_FILLED_BY_INTENT = "pref_digits_filled_by_intent";
 
@@ -454,6 +458,7 @@ public class DialpadFragment extends Fragment
         floatingActionButton.setOnClickListener(this);
         mFloatingActionButtonController = new FloatingActionButtonController(getActivity(),
                 floatingActionButtonContainer, floatingActionButton);
+        mOperator = (TextView)fragmentView.findViewById(R.id.dialpad_floating_operator);
         Trace.endSection();
         Trace.endSection();
         return fragmentView;
@@ -731,7 +736,22 @@ public class DialpadFragment extends Fragment
         }
 
         mFirstLaunch = false;
+
+        if (MoreContactUtils.shouldShowOperator(mContext)) {
+                mOperator.setVisibility(View.VISIBLE);
+                mOperator.setText(MoreContactUtils.getNetworkSpnName(mContext,
+                    SubscriptionManager.getDefaultVoiceSubId()));
+        } else {
+            mOperator.setVisibility(View.GONE);
+        }
+
         Trace.endSection();
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        mContext = activity;
     }
 
     @Override

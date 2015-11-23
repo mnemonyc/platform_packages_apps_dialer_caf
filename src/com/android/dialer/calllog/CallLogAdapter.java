@@ -503,6 +503,7 @@ public class CallLogAdapter extends GroupingListAdapter
         details.features = getCallFeatures(c, count);
         details.geocode = c.getString(CallLogQuery.GEOCODED_LOCATION);
         details.transcription = c.getString(CallLogQuery.TRANSCRIPTION);
+        details.operator = c.getString(CallLogQuery.OPERATOR);
         if (details.callTypes[0] == CallLog.Calls.VOICEMAIL_TYPE) {
             details.isRead = c.getInt(CallLogQuery.IS_READ) == 1;
         }
