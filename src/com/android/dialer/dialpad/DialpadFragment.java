@@ -85,6 +85,7 @@ import com.android.dialer.calllog.PhoneAccountUtils;
 import com.android.dialer.util.DialerUtils;
 import com.android.dialer.util.IntentUtil;
 import com.android.phone.common.CallLogAsync;
+import com.android.phone.common.HapticFeedback;
 import com.android.phone.common.animation.AnimUtils;
 import com.android.phone.common.dialpad.DialpadKeyButton;
 import com.android.phone.common.dialpad.DialpadView;
@@ -228,6 +229,9 @@ public class DialpadFragment extends Fragment
     // determines if we want to playback local DTMF tones.
     private boolean mDTMFToneEnabled;
 
+    // Vibration (haptic feedback) for dialer key presses.
+    private final HapticFeedback mHaptic = new HapticFeedback();
+
     /** Identifier for the "Add Call" intent extra. */
     private static final String ADD_CALL_MODE_KEY = "add_call_mode";
 
@@ -360,6 +364,13 @@ public class DialpadFragment extends Fragment
         mFirstLaunch = state == null;
 
         mCurrentCountryIso = GeoUtil.getCurrentCountryIso(getActivity());
+
+        try {
+            mHaptic.init(getActivity(),
+                         getResources().getBoolean(R.bool.config_enable_dialer_key_vibration));
+        } catch (Resources.NotFoundException nfe) {
+             Log.e(TAG, "Vibrate control bool missing.", nfe);
+        }
 
         mProhibitedPhoneNumberRegexp = getResources().getString(
                 R.string.config_prohibited_phone_number_regexp);
@@ -685,6 +696,9 @@ public class DialpadFragment extends Fragment
                 Settings.System.DTMF_TONE_WHEN_DIALING, 1) == 1;
 
         stopWatch.lap("dtwd");
+
+        // Retrieve the haptic feedback setting.
+        mHaptic.checkSystemSetting();
 
         stopWatch.lap("hptc");
 
