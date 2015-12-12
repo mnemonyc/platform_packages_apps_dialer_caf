@@ -31,6 +31,7 @@ LOCAL_AAPT_FLAGS := \
 
 LOCAL_JAVA_LIBRARIES := telephony-common \
                         ims-common
+LOCAL_JAVA_LIBRARIES += rcs_service_api
 
 LOCAL_STATIC_JAVA_LIBRARIES := \
     android-common \
@@ -39,7 +40,6 @@ LOCAL_STATIC_JAVA_LIBRARIES := \
     android-support-v7-cardview \
     android-support-v7-recyclerview \
     com.android.services.telephony.common \
-    com.android.vcard \
     guava \
     libphonenumber
 
