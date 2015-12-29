@@ -142,22 +142,6 @@ public class SearchFragment extends PhoneNumberPickerFragment {
     }
 
     /**
-     * Adds a plus sign to the query string if original typed number was an international number.
-     */
-    private String addPlusSignPrefixToNumber(String actualNumber) {
-        final StringBuilder number = new StringBuilder();
-
-        // Check if actual number had + sign as the first character and query string does not, then
-        // return a number with a + sign prefixed to the query string. That will be the dial string.
-        if ((actualNumber != null) && actualNumber.startsWith("+") &&
-                !(getQueryString().startsWith("+"))) {
-            number.append('+');
-        }
-        number.append(getQueryString());
-        return number.toString();
-    }
-
-    /**
      * Return true if phone number is prohibited by a value -
      * (R.string.config_prohibited_phone_number_regexp) in the config files. False otherwise.
      */
@@ -196,9 +180,7 @@ public class SearchFragment extends PhoneNumberPickerFragment {
         final DialerPhoneNumberListAdapter adapter = (DialerPhoneNumberListAdapter) getAdapter();
         final int shortcutType = adapter.getShortcutTypeFromPosition(position);
         final OnPhoneNumberPickerActionListener listener;
-
-        String dialingNumber = addPlusSignPrefixToNumber(mAddToContactNumber);
-        boolean ret = checkForProhibitedPhoneNumber(dialingNumber);
+        final String number;
 
         switch (shortcutType) {
             case DialerPhoneNumberListAdapter.SHORTCUT_INVALID:
@@ -206,12 +188,13 @@ public class SearchFragment extends PhoneNumberPickerFragment {
                 break;
             case DialerPhoneNumberListAdapter.SHORTCUT_DIRECT_CALL:
                 listener = getOnPhoneNumberPickerListener();
-                if (listener != null && !ret) {
-                    listener.onCallNumberDirectly(dialingNumber);
+                number = getQueryString();
+                if (listener != null && !checkForProhibitedPhoneNumber(number)) {
+                    listener.onCallNumberDirectly(number);
                 }
                 break;
             case DialerPhoneNumberListAdapter.SHORTCUT_ADD_NUMBER_TO_CONTACTS:
-                final String number = TextUtils.isEmpty(mAddToContactNumber) ?
+                number = TextUtils.isEmpty(mAddToContactNumber) ?
                         adapter.getFormattedQueryString() : mAddToContactNumber;
                 final Intent intent = DialtactsActivity.getAddNumberToContactIntent(number);
                 DialerUtils.startActivityWithErrorToast(getActivity(), intent,
@@ -219,8 +202,10 @@ public class SearchFragment extends PhoneNumberPickerFragment {
                 break;
             case DialerPhoneNumberListAdapter.SHORTCUT_MAKE_VIDEO_CALL:
                 listener = getOnPhoneNumberPickerListener();
-                if (listener != null && !ret) {
-                    listener.onCallNumberDirectly(dialingNumber, true /* isVideoCall */);
+                number = TextUtils.isEmpty(mAddToContactNumber) ?
+                        getQueryString() : mAddToContactNumber;
+                if (listener != null && !checkForProhibitedPhoneNumber(number)) {
+                    listener.onCallNumberDirectly(number, true /* isVideoCall */);
                 }
                 break;
         }
