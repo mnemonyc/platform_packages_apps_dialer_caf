@@ -180,8 +180,7 @@ public class SearchFragment extends PhoneNumberPickerFragment {
         final DialerPhoneNumberListAdapter adapter = (DialerPhoneNumberListAdapter) getAdapter();
         final int shortcutType = adapter.getShortcutTypeFromPosition(position);
         final OnPhoneNumberPickerActionListener listener;
-
-        boolean ret = checkForProhibitedPhoneNumber(mAddToContactNumber);
+        final String number;
 
         switch (shortcutType) {
             case DialerPhoneNumberListAdapter.SHORTCUT_INVALID:
@@ -189,12 +188,13 @@ public class SearchFragment extends PhoneNumberPickerFragment {
                 break;
             case DialerPhoneNumberListAdapter.SHORTCUT_DIRECT_CALL:
                 listener = getOnPhoneNumberPickerListener();
-                if (listener != null && !ret) {
-                    listener.onCallNumberDirectly(getQueryString());
+                number = getQueryString();
+                if (listener != null && !checkForProhibitedPhoneNumber(number)) {
+                    listener.onCallNumberDirectly(number);
                 }
                 break;
             case DialerPhoneNumberListAdapter.SHORTCUT_ADD_NUMBER_TO_CONTACTS:
-                final String number = TextUtils.isEmpty(mAddToContactNumber) ?
+                number = TextUtils.isEmpty(mAddToContactNumber) ?
                         adapter.getFormattedQueryString() : mAddToContactNumber;
                 final Intent intent = DialtactsActivity.getAddNumberToContactIntent(number);
                 DialerUtils.startActivityWithErrorToast(getActivity(), intent,
@@ -202,8 +202,10 @@ public class SearchFragment extends PhoneNumberPickerFragment {
                 break;
             case DialerPhoneNumberListAdapter.SHORTCUT_MAKE_VIDEO_CALL:
                 listener = getOnPhoneNumberPickerListener();
-                if (listener != null && !ret) {
-                    listener.onCallNumberDirectly(mAddToContactNumber, true /* isVideoCall */);
+                number = TextUtils.isEmpty(mAddToContactNumber) ?
+                        getQueryString() : mAddToContactNumber;
+                if (listener != null && !checkForProhibitedPhoneNumber(number)) {
+                    listener.onCallNumberDirectly(number, true /* isVideoCall */);
                 }
                 break;
         }
