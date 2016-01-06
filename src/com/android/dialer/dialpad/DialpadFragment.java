@@ -956,7 +956,7 @@ public class DialpadFragment extends AnalyticsFragment
 
                 final MenuItem ConferDialerOption
                         = menu.findItem(R.id.menu_add_to_4g_conference_call);
-                ConferDialerOption.setVisible(CallUtil.isConferDialerEnabled());
+                ConferDialerOption.setVisible(CallUtil.isConferDialerEnabled(mContext));
 
                 boolean enable = !isDigitsEmpty();
                 for (int i = 0; i < menu.size(); i++) {
