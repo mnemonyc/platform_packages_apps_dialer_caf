@@ -48,4 +48,7 @@
 
     <bool name="mark_emergency_call_in_call_log">false</bool>
 
+    <!-- When set to true, this config enables volume boost function -->
+    <bool name="config_enable_volume_boost">true</bool>
+
 </resources>
