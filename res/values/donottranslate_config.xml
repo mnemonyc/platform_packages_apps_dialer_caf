@@ -51,4 +51,6 @@
     <!-- When set to true, this config enables volume boost function -->
     <bool name="config_enable_volume_boost">true</bool>
 
+    <!-- When set to true,force to set camera direction to front facing -->
+    <bool name="config_enable_camera_front_facing">false</bool>
 </resources>
