@@ -22,6 +22,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.provider.CallLog.Calls;
 import android.telecom.PhoneAccountHandle;
+import android.graphics.drawable.Drawable;
 
 /**
  * The details of a phone call to be shown in the UI.
@@ -44,7 +45,10 @@ public class PhoneCallDetails {
      * There might be multiple types if this represents a set of entries grouped together.
      */
     public int[] callTypes;
-
+    /**
+     * The icon for the account associated with the call.
+     */
+    public Drawable accountIcon;
     // The date of the call, in milliseconds since the epoch.
     public long date;
     // The duration of the call in milliseconds, or 0 for missed calls.

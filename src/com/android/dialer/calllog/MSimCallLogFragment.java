@@ -68,6 +68,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.util.Log;
 import android.preference.PreferenceManager;
+import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 
 import java.util.List;
@@ -411,7 +412,16 @@ public class MSimCallLogFragment extends Fragment implements CallLogQueryHandler
 
     @Override
     public void fetchCalls() {
-        mCallLogQueryHandler.fetchCalls(mCallTypeFilter, mDateLimit);
+        if (mFilterSubSpinnerView.isEnabled()) {
+            int[] subId = SubscriptionManager.getSubId(mCallSubFilter);
+            if (subId != null) {
+                mCallLogQueryHandler.fetchCalls(mCallTypeFilter, mDateLimit, subId[0]);
+            } else {
+                mCallLogQueryHandler.fetchCalls(mCallTypeFilter, mDateLimit);
+            }
+        } else {
+            mCallLogQueryHandler.fetchCalls(mCallTypeFilter, mDateLimit);
+        }
     }
 
     private void updateEmptyMessage(int filterType) {

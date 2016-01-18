@@ -111,6 +111,15 @@ public class PhoneCallDetailsHelper {
             callCount = null;
         }
 
+        //set the account icon if it exists.
+        Drawable icon = details.accountIcon;
+        if (icon != null) {
+            views.callAccountIcon.setVisibility(View.VISIBLE);
+            views.callAccountIcon.setImageDrawable(icon);
+        } else {
+            views.callAccountIcon.setVisibility(View.GONE);
+        }
+
         CharSequence callLocationAndDate = getCallLocationAndDate(details);
 
         // Set the call count, location and date.

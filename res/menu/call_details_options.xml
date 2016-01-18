@@ -22,10 +22,22 @@
         android:onClick="onMenuAddToBlackList" />
 
     <item
+        android:id="@+id/menu_remove_from_black_list"
+        android:showAsAction="withText"
+        android:title="@string/remove_from_black_list"
+        android:onClick="onMenuRemoveFromBlackList" />
+
+    <item
         android:id="@+id/menu_add_to_white_list"
         android:showAsAction="withText"
         android:title="@string/add_to_white_list"
         android:onClick="onMenuAddToWhiteList" />
+
+    <item
+        android:id="@+id/menu_remove_from_white_list"
+        android:showAsAction="withText"
+        android:title="@string/remove_from_white_list"
+        android:onClick="onMenuRemoveFromWhiteList" />
 
     <item android:id="@+id/menu_trash"
         android:icon="@drawable/ic_delete_24dp"

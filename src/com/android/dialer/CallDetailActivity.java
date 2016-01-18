@@ -345,10 +345,23 @@ public class CallDetailActivity extends Activity
         menu.findItem(R.id.menu_report)
                 .setVisible(mHasReportMenuOption)
                 .setOnMenuItemClickListener(this);
+
+        // The number may be not in Firewall, need show both 'ADD' option.
+        // Also it can be in either blacklist or whitelist, then show a
+        // related 'REMOVE' option.
+        boolean isNumInBlacklist = FirewallUtils.isNumberInFirewall(this, true, mNumber);
+        boolean isNumInWhitelist = FirewallUtils.isNumberInFirewall(this, false, mNumber);
+        boolean numNotInFirewall = !isNumInBlacklist && !isNumInWhitelist;
+        boolean numOnlyInBlacklist = isNumInBlacklist && !isNumInWhitelist;
+        boolean numOnlyInWhitelist = !isNumInBlacklist && isNumInWhitelist;
         menu.findItem(R.id.menu_add_to_black_list).setVisible(mHasInstallFireWallOption
-                && !FirewallUtils.isNumberInFirewall(this, true, mNumber));
+                && numNotInFirewall);
+        menu.findItem(R.id.menu_remove_from_black_list).setVisible(mHasInstallFireWallOption
+                && numOnlyInBlacklist);
         menu.findItem(R.id.menu_add_to_white_list).setVisible(mHasInstallFireWallOption
-                && !FirewallUtils.isNumberInFirewall(this, false, mNumber));
+                && numNotInFirewall);
+        menu.findItem(R.id.menu_remove_from_white_list).setVisible(mHasInstallFireWallOption
+                && numOnlyInWhitelist);
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -387,5 +400,20 @@ public class CallDetailActivity extends Activity
 
     public void onMenuAddToWhiteList(MenuItem menuItem) {
         FirewallUtils.tryAddingNumberIntoWhitelist(this, mNumber);
+    }
+
+    public void onMenuRemoveFromBlackList(MenuItem menuItem) {
+        removeFromFirewall(true);
+    }
+
+    public void onMenuRemoveFromWhiteList(MenuItem menuItem) {
+        removeFromFirewall(false);
+    }
+
+    private void removeFromFirewall(boolean isBlacklist) {
+        if (FirewallUtils.removeFromFirewall(this, isBlacklist,  mNumber)) {
+            Toast.makeText(this, R.string.firewall_remove_success,
+                    Toast.LENGTH_SHORT).show();
+        }
     }
 }

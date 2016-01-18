@@ -215,6 +215,9 @@
     <string name="calllog_search_hint">"搜索通话记录"</string>
     <string name="add_to_white_list">加入白名单</string>
     <string name="add_to_black_list">加入黑名单</string>
+    <string name="remove_from_white_list">从白名单移除</string>
+    <string name="remove_from_black_list">从黑名单移除</string>
+    <string name="firewall_remove_success">已移除成功</string>
     <string name="speed_dial_settings">快速拨号设置</string>
     <string name="speed_dial_not_set">(未设置)</string>
     <string name="speed_dial_replace">替换</string>

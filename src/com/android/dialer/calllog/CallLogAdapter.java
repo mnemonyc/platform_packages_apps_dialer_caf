@@ -46,6 +46,7 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.accessibility.AccessibilityEvent;
+import android.graphics.drawable.Drawable;
 
 import com.android.contacts.common.CallUtil;
 import com.android.contacts.common.ClipboardUtils;
@@ -480,6 +481,8 @@ public class CallLogAdapter extends GroupingListAdapter
         final PhoneAccountHandle accountHandle = PhoneAccountUtils.getAccount(
                 c.getString(CallLogQuery.ACCOUNT_COMPONENT_NAME),
                 c.getString(CallLogQuery.ACCOUNT_ID));
+        final Drawable accountIcon = PhoneAccountUtils.getAccountIcon(mContext,
+                accountHandle);
         final String countryIso = c.getString(CallLogQuery.COUNTRY_ISO);
         final ContactInfo cachedContactInfo = mContactInfoHelper.getContactInfo(c);
         final boolean isVoicemailNumber =
@@ -501,6 +504,7 @@ public class CallLogAdapter extends GroupingListAdapter
         details.accountHandle = accountHandle;
         details.callTypes = getCallTypes(c, count);
         details.countryIso = countryIso;
+        details.accountIcon = accountIcon;
         details.date = c.getLong(CallLogQuery.DATE);
         details.duration = c.getLong(CallLogQuery.DURATION);
         details.features = getCallFeatures(c, count);
