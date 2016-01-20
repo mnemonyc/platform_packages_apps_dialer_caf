@@ -868,4 +868,14 @@
     <string name="speed_dial_cancel">Cancel</string>
 
     <string name="speed_dial_ok">OK</string>
+
+    <string name="call_data_info_label">Call/data Usage Timers</string>
+
+    <string name="call_data_info_description">Voice call usage time and data usage time</string>
+
+    <string name="alert_call_over_wifi">Calls will be made over Wi-Fi.</string>
+
+    <string name="alert_call_no_cellular_coverage">No cellular network available. Connect to available Wi-Fi to make calls.</string>
+
+    <string name="alert_user_connect_to_wifi_for_call">Connect to Wi-Fi to make calls.</string>
 </resources>

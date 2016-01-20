@@ -56,9 +56,12 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.Toast;
+import android.Manifest;
+import android.support.v4.app.ActivityCompat;
 
 import com.android.contacts.common.CallUtil;
 import com.android.contacts.common.activity.TransactionSafeActivity;
+import com.android.contacts.common.CallUtil;
 import com.android.contacts.common.dialog.ClearFrequentsDialog;
 import com.android.contacts.common.interactions.ImportExportDialogFragment;
 import com.android.contacts.common.interactions.TouchPointManager;
@@ -85,6 +88,7 @@ import com.android.dialer.list.SpeedDialFragment;
 import com.android.dialer.settings.DialerSettingsActivity;
 import com.android.dialer.util.IntentUtil;
 import com.android.dialer.util.DialerUtils;
+import com.android.dialer.util.WifiCallUtils;
 import com.android.dialer.widget.ActionBarController;
 import com.android.dialer.widget.SearchEditTextLayout;
 import com.android.dialer.widget.SearchEditTextLayout.Callback;
@@ -164,6 +168,12 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
     private SmartDialSearchFragment mSmartDialSearchFragment;
 
     private boolean mDialConferenceButtonPressed = false;
+
+    /* define for Activity permission request for Android6.0 */
+    private static final int PERMISSION_REQUEST_CODE_PHONE_STATE_ENABLED = 0;
+    private static final int PERMISSION_REQUEST_CODE_PHONE_STATE_DISABLED = 1;
+    private static final int PERMISSION_REQUEST_CODE_LOCATION = 2;
+
 
     /**
      * Animation that slides in.
@@ -246,6 +256,8 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
     private FloatingActionButtonController mFloatingActionButtonController;
 
     private int mActionBarHeight;
+
+    private WifiCallUtils mWifiCallUtils;
 
     /**
      * The text returned from a voice search query.  Set in {@link #onActivityResult} and used in
@@ -508,6 +520,20 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
         SmartDialPrefix.initializeNanpSettings(this);
         Trace.endSection();
         Trace.endSection();
+        mWifiCallUtils = new WifiCallUtils();
+        if (resources.getBoolean(R.bool.config_regional_pup_no_available_network)
+                && mFirstLaunch) {
+            mWifiCallUtils.addWifiCallReadyMarqueeMessage((Context) DialtactsActivity.this);
+            if (ActivityCompat.checkSelfPermission(DialtactsActivity.this,
+                        Manifest.permission.ACCESS_COARSE_LOCATION) !=
+                        PackageManager.PERMISSION_GRANTED) {
+                    requestPermissions(
+                            new String[] {Manifest.permission.ACCESS_COARSE_LOCATION},
+                            PERMISSION_REQUEST_CODE_LOCATION);
+            } else {
+                mWifiCallUtils.pupConnectWifiCallNotification((Context) DialtactsActivity.this);
+            }
+        }
     }
 
     @Override
@@ -551,7 +577,6 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
         mFloatingActionButtonController.align(getFabAlignment(), false /* animate */);
         setConferenceDialButtonImage(false);
         setConferenceDialButtonVisibility(true);
-
         if (getIntent().hasExtra(EXTRA_SHOW_TAB)) {
             int index = getIntent().getIntExtra(EXTRA_SHOW_TAB, ListsFragment.TAB_INDEX_SPEED_DIAL);
             if (index < mListsFragment.getTabCount()) {
@@ -562,6 +587,9 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
         }
 
         Trace.endSection();
+        if (getResources().getBoolean(R.bool.config_regional_pup_no_available_network)) {
+            mWifiCallUtils.removeWifiCallReadyMarqueeMessage();
+        }
     }
 
     @Override
@@ -1220,9 +1248,17 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
 
     @Override
     public void setConferenceDialButtonVisibility(boolean enabled) {
-        boolean imsUseEnabled =
-                ImsManager.isVolteEnabledByPlatform(this) &&
-                ImsManager.isEnhanced4gLteModeSettingEnabledByUser(this);
+        boolean imsUseEnabled = false;
+        if (ActivityCompat.checkSelfPermission(DialtactsActivity.this,
+                Manifest.permission.READ_PHONE_STATE) !=
+                PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[] {Manifest.permission.READ_PHONE_STATE}
+                    , enabled ? PERMISSION_REQUEST_CODE_PHONE_STATE_ENABLED
+                    : PERMISSION_REQUEST_CODE_PHONE_STATE_DISABLED);
+        } else {
+            imsUseEnabled = ImsManager.isVolteEnabledByPlatform(this) &&
+                    ImsManager.isEnhanced4gLteModeSettingEnabledByUser(this);
+        }
         if(mConferenceDialButton != null) {
             boolean isCurrentTabAllContacts = (mListsFragment != null) &&
                     (mListsFragment.getCurrentTabIndex() == ListsFragment.TAB_INDEX_ALL_CONTACTS);
@@ -1329,6 +1365,15 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
             // Invalid phone number, but let the call go through so that InCallUI can show
             // an error message.
             phoneNumber = "";
+        }
+        if (isVideoCall && (CallUtil.isVideoEnabled(this))) {
+            if (getResources().getBoolean(
+                    R.bool.config_regional_number_patterns_video_call) &&
+                    !CallUtil.isVideoCallNumValid(phoneNumber)) {
+                Toast.makeText(this,
+                        R.string.toast_make_video_call_failed, Toast.LENGTH_LONG).show();
+                 return;
+            }
         }
         Intent intent = isVideoCall ?
                 IntentUtil.getVideoCallIntent(phoneNumber, getCallOrigin()) :
@@ -1438,5 +1483,35 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
             return FloatingActionButtonController.ALIGN_MIDDLE;
         }
         return FloatingActionButtonController.ALIGN_END;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_REQUEST_CODE_PHONE_STATE_ENABLED:
+            case PERMISSION_REQUEST_CODE_PHONE_STATE_DISABLED:
+                boolean imsUseEnabled = false;
+                boolean enabled = requestCode == PERMISSION_REQUEST_CODE_PHONE_STATE_ENABLED;
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    imsUseEnabled = ImsManager.isVolteEnabledByPlatform(this) &&
+                            ImsManager.isEnhanced4gLteModeSettingEnabledByUser(this);
+                }
+                if(mConferenceDialButton != null) {
+                    boolean isCurrentTabAllContacts = (mListsFragment != null) &&
+                            (mListsFragment.getCurrentTabIndex() ==
+                            ListsFragment.TAB_INDEX_ALL_CONTACTS);
+                    mConferenceDialButton.setVisibility((enabled && imsUseEnabled &&
+                            !isCurrentTabAllContacts) ? View.VISIBLE : View.GONE);
+                }
+                break;
+            case PERMISSION_REQUEST_CODE_LOCATION:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    WifiCallUtils.pupConnectWifiCallNotification((Context) DialtactsActivity.this);
+                }
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
     }
 }
