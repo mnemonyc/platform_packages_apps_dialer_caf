@@ -34,7 +34,7 @@
          Ignored if empty. -->
     <string name="config_prohibited_phone_number_regexp"></string>
 
-    <bool name="add_multi_participants_enabled">true</bool>
+    <bool name="add_multi_participants_enabled">false</bool>
     <bool name="config_conference_call_show_participant_status">true</bool>
 
     <bool name="ims_call_type_enabled">true</bool>
