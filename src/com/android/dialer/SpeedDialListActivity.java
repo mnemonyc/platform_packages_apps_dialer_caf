@@ -64,6 +64,8 @@ import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.QuickContactBadge;
 import android.widget.TextView;
+import android.content.pm.PackageManager;
+import static android.Manifest.permission.READ_CONTACTS;
 
 import com.android.contacts.common.ContactPhotoManager;
 import com.android.contacts.common.ContactPhotoManager.DefaultImageRequest;
@@ -109,6 +111,13 @@ public class SpeedDialListActivity extends ListActivity implements
     private static final int COLUMN_NORMALIZED = 4;
     private static final int MENU_REPLACE = 1001;
     private static final int MENU_DELETE = 1002;
+    private static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 1;
+    private boolean mStartSearch = true;
+    private int mItemPosition;
+    private static String SPEAD_DIAL_NUMBER = "SpeedDialNumber";
+    private static String SAVE_CLICKED_POS = "Clicked_pos";
+    private String mInputNumber;
+    private boolean mConfigChanged;
 
     private static class Record {
         long contactId;
@@ -164,6 +173,29 @@ public class SpeedDialListActivity extends ListActivity implements
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (mAddSpeedDialDialog == null || !mAddSpeedDialDialog.isShowing()) {
+            outState.clear();
+            return;
+        }
+        outState.putInt(SAVE_CLICKED_POS, mItemPosition);
+        outState.putString(SPEAD_DIAL_NUMBER, mEditNumber.getText().toString());
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle state) {
+        super.onRestoreInstanceState(state);
+        if (state.isEmpty()) {
+            return;
+        }
+        mConfigChanged = true;
+        int number = state.getInt(SAVE_CLICKED_POS, mItemPosition);
+        mInputNumber = state.getString(SPEAD_DIAL_NUMBER, "");
+        showAddSpeedDialDialog(number);
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
 
@@ -204,28 +236,55 @@ public class SpeedDialListActivity extends ListActivity implements
     private Record getRecordFromQuery(Uri uri, String[] projection) {
         Record record = null;
         Cursor cursor = null;
-        try {
-            cursor = getContentResolver().query(uri, projection, null, null, null);
-            if (cursor != null && cursor.moveToFirst()) {
-                record = new Record(cursor.getString(COLUMN_NUMBER));
-                record.contactId = cursor.getLong(COLUMN_ID);
-                record.photoId = cursor.getLong(COLUMN_PHOTO);
-                record.name = cursor.getString(COLUMN_NAME);
-                record.normalizedNumber = cursor.getString(COLUMN_NORMALIZED);
-                if (record.normalizedNumber == null) {
-                    record.normalizedNumber = record.number;
-                }
+        if (mStartSearch) {
+            if (checkSelfPermission(READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{READ_CONTACTS},
+                        MY_PERMISSIONS_REQUEST_READ_CONTACTS);
+                return record;
             }
-        } finally {
-            if (cursor != null) {
-                cursor.close();
+            try {
+                cursor = getContentResolver().query(uri, projection, null, null, null);
+                if (cursor != null && cursor.moveToFirst()) {
+                    record = new Record(cursor.getString(COLUMN_NUMBER));
+                    record.contactId = cursor.getLong(COLUMN_ID);
+                    record.photoId = cursor.getLong(COLUMN_PHOTO);
+                    record.name = cursor.getString(COLUMN_NAME);
+                    record.normalizedNumber = cursor.getString(COLUMN_NORMALIZED);
+                    if (record.normalizedNumber == null) {
+                        record.normalizedNumber = record.number;
+                    }
+                }
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
             }
         }
         return record;
     }
 
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_READ_CONTACTS:
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    mStartSearch = true;
+                    return;
+                    } else {
+                    mStartSearch = false;
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+
     private void showAddSpeedDialDialog(final int number) {
         mPickNumber = number;
+        mItemPosition = number;
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.speed_dial_settings);
         View contentView = LayoutInflater.from(this).inflate(
@@ -243,6 +302,11 @@ public class SpeedDialListActivity extends ListActivity implements
         mEditNumber = (EditText) contentView.findViewById(R.id.edit_container);
         if (null != mRecords.get(number)) {
             mEditNumber.setText(SpeedDialUtils.getNumber(this, number));
+
+        } else if (mConfigChanged && !mInputNumber.isEmpty()) {
+            mEditNumber.setText(mInputNumber);
+            mConfigChanged = false;
+            mInputNumber = "";
         }
         Button cancelButton = (Button) contentView
                 .findViewById(R.id.btn_cancel);
@@ -315,6 +379,7 @@ public class SpeedDialListActivity extends ListActivity implements
             }
         } else {
             int number = position + 1;
+            mItemPosition = number;
             final Record record = mRecords.get(number);
             if (record == null) {
                 showAddSpeedDialDialog(number);
@@ -376,6 +441,10 @@ public class SpeedDialListActivity extends ListActivity implements
      * goto contacts, used to set or replace speed number
      */
     private void pickContact(int number) {
+        if (checkSelfPermission(READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{READ_CONTACTS}, MY_PERMISSIONS_REQUEST_READ_CONTACTS);
+            return;
+        }
         mPickNumber = number;
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE);

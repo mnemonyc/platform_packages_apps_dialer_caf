@@ -479,6 +479,12 @@
          Do not translate. -->
     <string name="view_full_call_history_font_family">sans-serif</string>
 
+    <!-- Text displayed when the list of incoming calls is empty -->
+    <string name="recentIncoming_empty">You have no incoming calls.</string>
+
+    <!-- Text displayed when the list of outgoing calls is empty -->
+    <string name="recentOutgoing_empty">You have no outgoing calls.</string>
+
     <!-- Text displayed when the list of missed calls is empty -->
     <string name="recentMissed_empty">You have no missed calls.</string>
 
@@ -878,4 +884,6 @@
     <string name="alert_call_no_cellular_coverage">No cellular network available. Connect to available Wi-Fi to make calls.</string>
 
     <string name="alert_user_connect_to_wifi_for_call">Connect to Wi-Fi to make calls.</string>
+
+    <string name="video_call">Video Calling</string>
 </resources>

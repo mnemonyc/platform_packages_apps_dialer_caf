@@ -23,9 +23,12 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
+import android.content.ServiceConnection;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.os.RemoteException;
 import android.provider.Telephony;
 import android.telecom.TelecomManager;
 import android.text.BidiFormatter;
@@ -49,10 +52,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
+import org.codeaurora.presenceserv.IPresenceService;
+import org.codeaurora.presenceserv.IPresenceServiceCB;
+
 /**
  * General purpose utility methods for the Dialer.
  */
 public class DialerUtils {
+
+    private static final String TAG = "DialerUtils";
 
     /**
      * Attempts to start an activity and displays a toast with the default error message if the
@@ -185,5 +193,111 @@ public class DialerUtils {
         if (imm != null) {
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
+    }
+
+    private static volatile IPresenceService mService;
+    private static boolean mIsBound;
+
+    private static ServiceConnection mConnection = new ServiceConnection() {
+
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            Log.d(TAG, "PresenceService connected");
+            mService = IPresenceService.Stub.asInterface(service);
+            try {
+                mService.registerCallback(mCallback);
+            } catch (RemoteException e) {
+                Log.e(TAG, "PresenceService registerCallback error " + e);
+            }
+        }
+        public void onServiceDisconnected(ComponentName className) {
+            Log.d(TAG, "PresenceService disconnected");
+            mService = null;
+        }
+    };
+
+    private static IPresenceServiceCB mCallback = new IPresenceServiceCB.Stub() {
+
+        public void setIMSEnabledCB() {
+            Log.d(TAG, "PresenceService setIMSEnabled callback");
+        }
+
+    };
+
+    public static void bindService(Context context) {
+        if (!callFromDialtactsActivity(context)) {
+            return;
+        }
+        Log.d(TAG, "PresenceService BindService ");
+        Intent intent = new Intent(IPresenceService.class.getName());
+        intent.setClassName("com.qualcomm.qti.presenceserv",
+                            "com.qualcomm.qti.presenceserv.PresenceService");
+        mIsBound = context.bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    public static void unbindService(Context context) {
+        if (!callFromDialtactsActivity(context)) {
+            return;
+        }
+        Log.d(TAG, "PresenceService unbindService");
+        if (mService != null) {
+            try {
+                mService.unregisterCallback(mCallback);
+            } catch (RemoteException e) {
+                Log.e(TAG, "PresenceService unregister error " + e);
+            }
+        }
+        if (mIsBound) {
+            Log.d(TAG, "PresenceService unbind");
+            context.unbindService(mConnection);
+            mIsBound = false;
+        }
+    }
+
+    public static boolean isBound() {
+        return mIsBound;
+    }
+
+    public static boolean startAvailabilityFetch(String number){
+        Log.d(TAG, "startAvailabilityFetch   number " + number);
+        if (mService != null) {
+            try {
+                boolean vt = false;
+                vt = mService.invokeAvailabilityFetch(number);
+                return vt;
+            } catch (Exception e) {
+                Log.d(TAG, "getVTCapOfContact ERROR " + e);
+            } finally {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    public static boolean getVTCapability(String number) {
+        Log.d(TAG, "getVTCapability   number " + number);
+        if (null != mService) {
+            try {
+                boolean vt = false;
+                vt = mService.hasVTCapability(number);
+                Log.d(TAG,
+                    "getVTCapability success number " + number + " " + vt);
+                return vt;
+            } catch (Exception e) {
+                Log.d(TAG, "getVTCapability ERROR " + e);
+            } finally {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    private static boolean callFromDialtactsActivity(Context context) {
+        String contextString = context.toString();
+        String Caller = contextString.substring(
+            contextString.lastIndexOf(".") + 1, contextString.indexOf("@"));
+        if (Caller.equals("DialtactsActivity")) {
+            return true;
+        }
+        return false;
     }
 }

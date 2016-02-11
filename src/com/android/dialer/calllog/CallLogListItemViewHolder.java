@@ -45,6 +45,9 @@ import com.android.dialer.util.PhoneNumberUtil;
 import com.android.dialer.voicemail.VoicemailPlaybackPresenter;
 import com.android.dialer.voicemail.VoicemailPlaybackLayout;
 
+import org.codeaurora.presenceserv.IPresenceService;
+import android.util.Log;
+
 /**
  * This is an object containing references to views contained by the call log list item. This
  * improves performance by reducing the frequency with which we need to find views by IDs.
@@ -323,10 +326,15 @@ public final class CallLogListItemViewHolder extends RecyclerView.ViewHolder
         } else {
             callButtonView.setVisibility(View.GONE);
         }
-
+        boolean showVideoCall = true;
+        boolean enablePresence = mContext.getResources().getBoolean(
+            R.bool.config_regional_presence_enable);
+        if (enablePresence) {
+            showVideoCall= DialerUtils.startAvailabilityFetch(number);
+        }
         // If one of the calls had video capabilities, show the video call button.
         if (mTelecomCallLogCache.isVideoEnabled() && canPlaceCallToNumber &&
-                phoneCallDetailsViews.callTypeIcons.isVideoShown()) {
+                phoneCallDetailsViews.callTypeIcons.isVideoShown() && showVideoCall) {
             videoCallButtonView.setTag(IntentProvider.getReturnVideoCallIntentProvider(number));
             videoCallButtonView.setVisibility(View.VISIBLE);
         } else {

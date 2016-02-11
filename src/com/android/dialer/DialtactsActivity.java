@@ -102,6 +102,7 @@ import junit.framework.Assert;
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
  * The dialer tab's title is 'phone', a more common name (see strings.xml).
  */
@@ -258,6 +259,8 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
     private int mActionBarHeight;
 
     private WifiCallUtils mWifiCallUtils;
+
+    private boolean mEnablePresence ;
 
     /**
      * The text returned from a voice search query.  Set in {@link #onActivityResult} and used in
@@ -534,6 +537,12 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
                 mWifiCallUtils.pupConnectWifiCallNotification((Context) DialtactsActivity.this);
             }
         }
+
+        mEnablePresence = this.getResources().getBoolean(
+                R.bool.config_regional_presence_enable);
+        if (mEnablePresence && !DialerUtils.isBound()) {
+            DialerUtils.bindService((Context) DialtactsActivity.this);
+        }
     }
 
     @Override
@@ -608,6 +617,14 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
             commitDialpadFragmentHide();
         }
         super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        if (mEnablePresence && DialerUtils.isBound()) {
+            DialerUtils.unbindService((Context) DialtactsActivity.this);
+        }
+        super.onStop();
     }
 
     @Override

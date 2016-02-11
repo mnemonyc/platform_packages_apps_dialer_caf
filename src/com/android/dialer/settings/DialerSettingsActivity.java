@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import com.android.dialer.SpeedDialListActivity;
 import com.android.internal.telephony.ConfigResourceUtil;
+import com.android.contacts.common.CallUtil;
 import com.android.contacts.common.util.PermissionsUtil;
 import com.android.dialer.R;
 
@@ -112,6 +113,16 @@ public class DialerSettingsActivity extends PreferenceActivity {
                             "com.qualcomm.qti.telephony.extcarrierpack.TimerInfoActivity");
             target.add(historyInfoHeader);
         }
+        //video calling
+        boolean enablePresence = this.getResources().getBoolean(
+                R.bool.config_regional_presence_enable);
+        if(enablePresence){
+            Header videocallingHeader = new Header();
+            videocallingHeader.titleRes = R.string.video_call;
+            videocallingHeader.fragment = VideoCallingSettingsFragment.class.getName();
+            target.add(videocallingHeader);
+        }
+
     }
 
     @Override

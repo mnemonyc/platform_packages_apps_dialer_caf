@@ -34,7 +34,7 @@ import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
 import android.util.Log;
-
+import org.codeaurora.presenceserv.IPresenceService;
 /**
  * Adapter for a ListView containing history items from the details of a call.
  */
@@ -130,8 +130,18 @@ public class CallDetailHistoryAdapter extends BaseAdapter {
         TextView durationView = (TextView) result.findViewById(R.id.duration);
 
         int callType = details.callTypes[0];
-        boolean isVideoCall = (details.features & Calls.FEATURES_VIDEO) == Calls.FEATURES_VIDEO
-                && CallUtil.isVideoEnabled(mContext);
+        boolean isVideoCall;
+        boolean enablePresence = mContext.getResources().getBoolean(
+                R.bool.config_regional_presence_enable);
+        if (enablePresence) {
+            boolean showVideoCall = DialerUtils.startAvailabilityFetch(
+                    details.number.toString());
+            isVideoCall = (details.features & Calls.FEATURES_VIDEO) == Calls.FEATURES_VIDEO
+                    && CallUtil.isVideoEnabled(mContext) && showVideoCall;
+        } else {
+            isVideoCall = (details.features & Calls.FEATURES_VIDEO) == Calls.FEATURES_VIDEO
+                    && CallUtil.isVideoEnabled(mContext);
+        }
         boolean isVoLTE = (callType == INCOMING_IMS_TYPE) ||
                           (callType == OUTGOING_IMS_TYPE) ||
                           (callType == MISSED_IMS_TYPE);

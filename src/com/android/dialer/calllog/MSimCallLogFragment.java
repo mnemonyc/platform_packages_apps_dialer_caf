@@ -422,6 +422,7 @@ public class MSimCallLogFragment extends Fragment implements CallLogQueryHandler
         } else {
             mCallLogQueryHandler.fetchCalls(mCallTypeFilter, mDateLimit);
         }
+        updateEmptyMessage(mCallTypeFilter);
     }
 
     private void updateEmptyMessage(int filterType) {
@@ -438,14 +439,20 @@ public class MSimCallLogFragment extends Fragment implements CallLogQueryHandler
 
         final int messageId;
         switch (filterType) {
+            case CallLogQueryHandler.CALL_TYPE_ALL:
+                messageId = R.string.recentCalls_empty;
+                break;
+            case Calls.INCOMING_TYPE:
+                messageId = R.string.recentIncoming_empty;
+                break;
+            case Calls.OUTGOING_TYPE:
+                messageId = R.string.recentOutgoing_empty;
+                break;
             case Calls.MISSED_TYPE:
                 messageId = R.string.recentMissed_empty;
                 break;
             case Calls.VOICEMAIL_TYPE:
                 messageId = R.string.recentVoicemails_empty;
-                break;
-            case CallLogQueryHandler.CALL_TYPE_ALL:
-                messageId = R.string.recentCalls_empty;
                 break;
             default:
                 throw new IllegalArgumentException("Unexpected filter type in CallLogFragment: "
