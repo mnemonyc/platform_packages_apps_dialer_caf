@@ -62,7 +62,7 @@ public class WifiCallUtils {
     private static boolean mViewRemoved = true;
     private static Timer mtimer;
 
-    private static final String SYSTEM_PROPERTY_WIFI_CALL_READY = "persist.sys.wificall.ready";
+    private static final String SYSTEM_PROPERTY_WIFI_CALL_READY = "sys.wificall.ready";
     private static final String SYSTEM_PROPERTY_WIFI_CALL_TURNON = "persist.sys.wificall.turnon";
 
     public static void addWifiCallReadyMarqueeMessage(Context context) {
