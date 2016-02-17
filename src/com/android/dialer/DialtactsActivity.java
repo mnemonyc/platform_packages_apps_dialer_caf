@@ -28,6 +28,7 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.SystemProperties;
 import android.os.Trace;
 import android.provider.CallLog.Calls;
 import android.speech.RecognizerIntent;
@@ -538,8 +539,8 @@ public class DialtactsActivity extends TransactionSafeActivity implements View.O
             }
         }
 
-        mEnablePresence = this.getResources().getBoolean(
-                R.bool.config_regional_presence_enable);
+        mEnablePresence = SystemProperties.getBoolean(
+                        "persist.presence.enable", false);
         if (mEnablePresence && !DialerUtils.isBound()) {
             DialerUtils.bindService((Context) DialtactsActivity.this);
         }

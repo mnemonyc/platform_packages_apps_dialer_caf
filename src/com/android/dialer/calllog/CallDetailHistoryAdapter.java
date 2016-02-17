@@ -17,6 +17,7 @@
 package com.android.dialer.calllog;
 
 import android.content.Context;
+import android.os.SystemProperties;
 import android.provider.CallLog.Calls;
 import android.text.format.DateUtils;
 import android.text.format.Formatter;
@@ -131,8 +132,8 @@ public class CallDetailHistoryAdapter extends BaseAdapter {
 
         int callType = details.callTypes[0];
         boolean isVideoCall;
-        boolean enablePresence = mContext.getResources().getBoolean(
-                R.bool.config_regional_presence_enable);
+        boolean enablePresence = SystemProperties.getBoolean(
+                        "persist.presence.enable", false);
         if (enablePresence) {
             boolean showVideoCall = DialerUtils.startAvailabilityFetch(
                     details.number.toString());
