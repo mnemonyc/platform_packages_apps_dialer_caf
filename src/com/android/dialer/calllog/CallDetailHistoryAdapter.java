@@ -149,7 +149,11 @@ public class CallDetailHistoryAdapter extends BaseAdapter {
                     + ", isVoLTE = " + isVoLTE);
         callTypeIconView.clear();
         callTypeIconView.add(callType);
-        callTypeIconView.setShowVideo(isVideoCall);
+        if (CallTypeIconsView.isCarrierOneEnabled()) {
+             callTypeIconView.addImsOrVideoIcon(callType, isVideoCall);
+        } else {
+             callTypeIconView.setShowVideo(isVideoCall);
+        }
         boolean imsCallLogEnabled = mContext.getResources()
                 .getBoolean(R.bool.ims_call_type_enabled);
         if (!imsCallLogEnabled) {

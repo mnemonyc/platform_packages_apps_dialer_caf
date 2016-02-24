@@ -322,11 +322,20 @@
     <!-- Title for incoming 4G voice call in call details screen [CHAR LIMIT=60] -->
     <string name="type_incoming_volte">Incoming 4G voice call</string>
 
+     <!-- Title for incoming 4G video call in call details screen [CHAR LIMIT=60] -->
+    <string name="type_incoming_volte_video">Incoming 4G video call</string>
+
     <!-- Title for outgoing 4G voice call in call details screen [CHAR LIMIT=60] -->
     <string name="type_outgoing_volte">Outgoing 4G voice call</string>
 
+     <!-- Title for incoming 4G video call in call details screen [CHAR LIMIT=60] -->
+    <string name="type_outgoing_volte_video">Outgoing 4G video call</string>
+
     <!-- Title for missed 4G voice call in call details screen [CHAR LIMIT=60] -->
     <string name="type_missed_volte">Missed 4G voice call</string>
+
+     <!-- Title for missed 4G video call in call details screen [CHAR LIMIT=60] -->
+    <string name="type_missed_volte_video">Missed 4G video call</string>
 
     <!-- Title for voicemail details screen -->
     <string name="type_voicemail">Voicemail</string>

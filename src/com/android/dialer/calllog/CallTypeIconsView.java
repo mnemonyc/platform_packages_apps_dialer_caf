@@ -30,6 +30,7 @@ import android.view.View;
 import com.android.contacts.common.testing.NeededForTesting;
 import com.android.contacts.common.util.BitmapUtil;
 import com.android.dialer.R;
+import com.android.internal.telephony.CarrierAppUtils;
 import com.google.common.collect.Lists;
 
 import java.util.List;
@@ -52,6 +53,8 @@ public class CallTypeIconsView extends View {
     private static final int OUTGOING_IMS_TYPE = 6;
     private static final int MISSED_IMS_TYPE = 7;
 
+    private static boolean mIsCarrierOneEnabled = false;
+
     public CallTypeIconsView(Context context) {
         this(context, null);
     }
@@ -59,6 +62,7 @@ public class CallTypeIconsView extends View {
     public CallTypeIconsView(Context context, AttributeSet attrs) {
         super(context, attrs);
         mResources = new Resources(context);
+        mIsCarrierOneEnabled = isCarrierOneEnabled();
     }
 
     public void clear() {
@@ -77,6 +81,33 @@ public class CallTypeIconsView extends View {
         invalidate();
     }
 
+    public void addImsOrVideoIcon(int callType, boolean showVideo) {
+        mShowVideo = showVideo;
+        if (showVideo) {
+            mWidth += mResources.videoCall.getIntrinsicWidth();
+            mHeight = Math.max(mHeight, mResources.videoCall.getIntrinsicHeight());
+            invalidate();
+        } else {
+            final Drawable drawable = getImsDrawable(callType);
+            if (drawable != null) {
+                mWidth += drawable.getIntrinsicWidth();
+                mHeight = Math.max(mHeight, drawable.getIntrinsicHeight());
+                invalidate();
+            }
+        }
+    }
+
+    private Drawable getImsDrawable(int callType) {
+       switch(callType) {
+         case INCOMING_IMS_TYPE:
+         case OUTGOING_IMS_TYPE:
+         case MISSED_IMS_TYPE:
+              return mResources.imsCall;
+         default:
+              return null;
+       }
+    }
+
     /**
      * Determines whether the video call icon will be shown.
      *
@@ -84,6 +115,10 @@ public class CallTypeIconsView extends View {
      */
     public void setShowVideo(boolean showVideo) {
         mShowVideo = showVideo;
+        if (mIsCarrierOneEnabled) {
+            return;
+        }
+
         if (showVideo) {
             mWidth += mResources.videoCall.getIntrinsicWidth();
             mHeight = Math.max(mHeight, mResources.videoCall.getIntrinsicHeight());
@@ -151,10 +186,26 @@ public class CallTypeIconsView extends View {
         // If showing the video call icon, draw it scaled appropriately.
         if (mShowVideo) {
             final Drawable drawable = mResources.videoCall;
-            final int right = left + mResources.videoCall.getIntrinsicWidth();
-            drawable.setBounds(left, 0, right, mResources.videoCall.getIntrinsicHeight());
+            final int right = left + drawable.getIntrinsicWidth();
+            drawable.setBounds(left, 0, right, drawable.getIntrinsicHeight());
             drawable.draw(canvas);
+            left = right + mResources.iconMargin;
         }
+
+        for (Integer callType : mCallTypes) {
+            final Drawable drawableIms = getImsDrawable(callType);
+            if (drawableIms != null) {
+                final int right = left + drawableIms.getIntrinsicWidth();
+                drawableIms.setBounds(left, 0, right, drawableIms.getIntrinsicHeight());
+                drawableIms.draw(canvas);
+            }
+        }
+    }
+
+    protected static boolean isCarrierOneEnabled() {
+        CarrierAppUtils.CARRIER carrier = CarrierAppUtils.getCarrierId();
+        return (carrier != null && (CarrierAppUtils.CARRIER.TELEPHONY_CARRIER_ONE
+                == carrier));
     }
 
     private static class Resources {
@@ -190,6 +241,15 @@ public class CallTypeIconsView extends View {
         public final int iconMargin;
 
         /**
+         * Drawable repesenting a wifi call.
+         */
+        public final Drawable wifiCall;
+
+        /**
+         * Drawable repesenting a IMS call.
+         */
+        public final Drawable imsCall;
+        /**
          * Configures the call icon drawables.
          * A single white call arrow which points down and left is used as a basis for all of the
          * call arrow icons, applying rotation and colors as needed.
@@ -216,18 +276,31 @@ public class CallTypeIconsView extends View {
             // Get the video call icon, scaled to match the height of the call arrows.
             // We want the video call icon to be the same height as the call arrows, while keeping
             // the same width aspect ratio.
-            Bitmap videoIcon = BitmapFactory.decodeResource(context.getResources(),
+            if (mIsCarrierOneEnabled) {
+                videoCall = r.getDrawable(R.drawable.volte_video).mutate();
+            } else {
+                Bitmap videoIcon = BitmapFactory.decodeResource(context.getResources(),
                     R.drawable.ic_videocam_24dp);
-            int scaledHeight = missed.getIntrinsicHeight();
-            int scaledWidth = (int) ((float) videoIcon.getWidth() *
-                    ((float) missed.getIntrinsicHeight() /
-                            (float) videoIcon.getHeight()));
-            Bitmap scaled = Bitmap.createScaledBitmap(videoIcon, scaledWidth, scaledHeight, false);
-            videoCall = new BitmapDrawable(context.getResources(), scaled);
+                int scaledHeight = missed.getIntrinsicHeight();
+                int scaledWidth = (int) ((float) videoIcon.getWidth() *
+                     ((float) missed.getIntrinsicHeight() /
+                             (float) videoIcon.getHeight()));
+                Bitmap scaled = Bitmap.createScaledBitmap(videoIcon, scaledWidth,
+                     scaledHeight, false);
+                videoCall = new BitmapDrawable(context.getResources(), scaled);
+            }
             videoCall.setColorFilter(r.getColor(R.color.dialtacts_secondary_text_color),
-                    PorterDuff.Mode.MULTIPLY);
+                PorterDuff.Mode.MULTIPLY);
 
             iconMargin = r.getDimensionPixelSize(R.dimen.call_log_icon_margin);
+
+            wifiCall = r.getDrawable(R.drawable.vowifi_services_wifi_calling).mutate();
+            wifiCall.setColorFilter(r.getColor(R.color.dialtacts_secondary_text_color),
+                    PorterDuff.Mode.MULTIPLY);
+
+            imsCall = r.getDrawable(R.drawable.volte_hd).mutate();
+            imsCall.setColorFilter(r.getColor(R.color.dialtacts_secondary_text_color),
+                    PorterDuff.Mode.MULTIPLY);
         }
     }
 }
