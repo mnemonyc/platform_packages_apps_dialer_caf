@@ -43,6 +43,13 @@ public class CallTypeHelper {
     private final CharSequence mOutgoingVoLTEName;
     /** Name used to identify missed video calls. */
     private final CharSequence mMissedVoLTEName;
+
+    private final CharSequence mIncomingVideoLTEName;
+
+    private final CharSequence mOutgoingVideoLTEName;
+
+    private final CharSequence mMissedVideoLTEName;
+
     /** Name used to identify voicemail calls. */
     private final CharSequence mVoicemailName;
     /** Color used to identify new missed calls. */
@@ -67,6 +74,9 @@ public class CallTypeHelper {
         mIncomingVoLTEName = resources.getString(R.string.type_incoming_volte);
         mOutgoingVoLTEName = resources.getString(R.string.type_outgoing_volte);
         mMissedVoLTEName = resources.getString(R.string.type_missed_volte);
+        mIncomingVideoLTEName = resources.getString(R.string.type_incoming_volte_video);
+        mOutgoingVideoLTEName = resources.getString(R.string.type_outgoing_volte_video);
+        mMissedVideoLTEName = resources.getString(R.string.type_missed_volte_video);
         mVoicemailName = resources.getString(R.string.type_voicemail);
         mNewMissedColor = resources.getColor(R.color.call_log_missed_call_highlight_color);
         mNewVoicemailColor = resources.getColor(R.color.call_log_voicemail_highlight_color);
@@ -84,7 +94,7 @@ public class CallTypeHelper {
 
             case INCOMING_IMS_TYPE:
                 if (isVideoCall) {
-                    return mIncomingVideoName;
+                    return mIncomingVideoLTEName;
                 } else {
                     return mIncomingVoLTEName;
                 }
@@ -98,7 +108,7 @@ public class CallTypeHelper {
 
             case OUTGOING_IMS_TYPE:
                 if (isVideoCall) {
-                    return mOutgoingVideoName;
+                    return mOutgoingVideoLTEName;
                 } else {
                     return mOutgoingVoLTEName;
                 }
@@ -112,7 +122,7 @@ public class CallTypeHelper {
 
             case MISSED_IMS_TYPE:
                 if (isVideoCall) {
-                    return mMissedVideoName;
+                    return mMissedVideoLTEName;
                 } else {
                     return mMissedVoLTEName;
                 }

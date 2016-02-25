@@ -20,6 +20,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.Intent;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.provider.CallLog.Calls;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
@@ -83,6 +85,7 @@ public final class CallLogListItemViewHolder extends RecyclerView.ViewHolder
     public View sendMessageView;
     public View detailsButtonView;
     public View callWithNoteButtonView;
+    public ImageView videoCallIconIV;
 
     /**
      * The row Id for the first call associated with the call log entry.  Used as a key for the
@@ -251,6 +254,8 @@ public final class CallLogListItemViewHolder extends RecyclerView.ViewHolder
             videoCallButtonView = actionsView.findViewById(R.id.video_call_action);
             videoCallButtonView.setOnClickListener(this);
 
+            videoCallIconIV = (ImageView) actionsView.findViewById(R.id.videoCallIcon);
+
             createNewContactButtonView = actionsView.findViewById(R.id.create_new_contact_action);
             createNewContactButtonView.setOnClickListener(this);
 
@@ -337,6 +342,14 @@ public final class CallLogListItemViewHolder extends RecyclerView.ViewHolder
                 phoneCallDetailsViews.callTypeIcons.isVideoShown() && showVideoCall) {
             videoCallButtonView.setTag(IntentProvider.getReturnVideoCallIntentProvider(number));
             videoCallButtonView.setVisibility(View.VISIBLE);
+            if (CallTypeIconsView.isCarrierOneEnabled()) {
+                Drawable drawable =  mContext.getResources().getDrawable(R.drawable.volte_video);
+                drawable.setColorFilter(mContext.getResources().getColor(
+                    R.color.dialtacts_secondary_text_color), PorterDuff.Mode.MULTIPLY);
+                videoCallIconIV.setImageDrawable(drawable);
+            } else {
+                videoCallIconIV.setImageResource(R.drawable.ic_videocam_24dp);
+            }
         } else {
             videoCallButtonView.setVisibility(View.GONE);
         }
