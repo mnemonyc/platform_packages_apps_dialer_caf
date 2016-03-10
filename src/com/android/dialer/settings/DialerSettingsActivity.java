@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.SystemProperties;
 import android.os.Process;
 import android.os.UserManager;
 import android.preference.PreferenceActivity;
@@ -114,8 +115,8 @@ public class DialerSettingsActivity extends PreferenceActivity {
             target.add(historyInfoHeader);
         }
         //video calling
-        boolean enablePresence = this.getResources().getBoolean(
-                R.bool.config_regional_presence_enable);
+        boolean enablePresence = SystemProperties.getBoolean(
+                        "persist.presence.enable", false);
         if(enablePresence){
             Header videocallingHeader = new Header();
             videocallingHeader.titleRes = R.string.video_call;
