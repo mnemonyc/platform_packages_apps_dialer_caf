@@ -377,7 +377,7 @@ public class DialpadFragment extends Fragment
     private static final String ACTION_WIFI_CALL_READY_EXTRA
         = "com.android.wificall.ready.extra";
     private static final String SYSTEM_PROPERTY_WIFI_CALL_READY
-        = "persist.sys.wificall.ready";
+        = "sys.wificall.ready";
     private BroadcastReceiver mWifiCallReadyReceiver;
 
     @Override
