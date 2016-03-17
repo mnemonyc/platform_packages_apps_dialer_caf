@@ -23,6 +23,7 @@ import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.SystemProperties;
 import android.provider.CallLog.Calls;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.support.v7.widget.CardView;
@@ -332,8 +333,8 @@ public final class CallLogListItemViewHolder extends RecyclerView.ViewHolder
             callButtonView.setVisibility(View.GONE);
         }
         boolean showVideoCall = true;
-        boolean enablePresence = mContext.getResources().getBoolean(
-            R.bool.config_regional_presence_enable);
+        boolean enablePresence = SystemProperties.getBoolean(
+                        "persist.presence.enable", false);
         if (enablePresence) {
             showVideoCall= DialerUtils.startAvailabilityFetch(number);
         }

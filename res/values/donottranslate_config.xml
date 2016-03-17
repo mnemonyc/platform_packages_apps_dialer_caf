@@ -39,4 +39,7 @@
 
     <bool name="ims_call_type_enabled">true</bool>
     <bool name="call_duration_enabled">true</bool>
+
+    <!-- When set to true, this config enables volume boost function -->
+    <bool name="config_enable_volume_boost">true</bool>
 </resources>
